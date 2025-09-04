@@ -1,0 +1,414 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations for onboarding */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes glow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 5px rgba(20, 184, 166, 0.5));
+  }
+  50% { 
+    filter: drop-shadow(0 0 20px rgba(20, 184, 166, 0.8));
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-in-out;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Code Logo with Loading Bar for ShowWork */
+.code-logo-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.code-logo {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  aspect-ratio: 1;
+  background: #1e293b;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+.code-symbol {
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 0.8em;
+  letter-spacing: -1px;
+  z-index: 2;
+  position: relative;
+  text-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+}
+
+/* Loading bar animation */
+.code-logo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  animation: loadingBar 3s ease-in-out infinite;
+  z-index: 1;
+  box-shadow: 
+    0 0 8px rgba(239, 68, 68, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+
+@keyframes loadingBar {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+}
+
+
+
+/* Ensure logo maintains square proportions */
+.code-logo-container .code-logo {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* Header logo specific styling */
+.flex.items-center.justify-between .code-logo-container {
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+
+.flex.items-center.justify-between .code-logo {
+  width: auto;
+  height: auto;
+  min-width: 48px;
+  min-height: 48px;
+  max-width: 48px;
+  max-height: 48px;
+}
+
+/* Onboarding header logo fix */
+.pt-8.pb-6.px-6 .code-logo-container {
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+}
+
+.pt-8.pb-6.px-6 .code-logo {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  max-width: 48px !important;
+  max-height: 48px !important;
+  aspect-ratio: 1 !important;
+}
+
+/* Hover effects */
+.code-logo-container:hover .code-logo {
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(239, 68, 68, 0.7), 0 0 20px rgba(239, 68, 68, 0.3);
+  transition: all 0.3s ease;
+}
+
+.code-logo-container:hover .code-symbol {
+  color: #fca5a5;
+  transition: color 0.3s ease;
+}
+
+/* ShowWork Design System - Developer Portfolio Platform */
+
+@layer base {
+  :root {
+    /* Background & Surface */
+    --background: 210 20% 98%;
+    --surface: 0 0% 100%;
+    --surface-elevated: 210 20% 99%;
+    
+    /* Typography */
+    --foreground: 215 25% 15%;
+    --foreground-muted: 215 15% 45%;
+    --foreground-subtle: 215 10% 65%;
+
+    /* Brand Colors - Professional Developer Theme */
+    --primary: 215 35% 20%;
+    --primary-glow: 215 45% 35%;
+    --primary-foreground: 0 0% 100%;
+    
+    --accent: 195 100% 50%;
+    --accent-glow: 195 100% 65%;
+    --accent-foreground: 0 0% 100%;
+    
+    --secondary: 210 15% 95%;
+    --secondary-foreground: 215 25% 15%;
+
+    /* UI Elements */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+    --card-border: 215 15% 90%;
+    
+    --input: 215 15% 96%;
+    --input-border: 215 15% 85%;
+    --border: 215 15% 90%;
+    --ring: 215 35% 20%;
+
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(215 35% 20%), hsl(215 45% 35%));
+    --gradient-accent: linear-gradient(135deg, hsl(195 100% 50%), hsl(195 100% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 35% 20%) 0%, hsl(195 100% 50%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(210 15% 96%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 40px hsl(215 35% 20% / 0.15);
+    --shadow-accent-glow: 0 0 40px hsl(195 100% 50% / 0.2);
+
+    /* Animations */
+    --transition-fast: all 0.15s ease;
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-['Inter'];
+  }
+}
+
+@layer utilities {
+  /* Custom Animations */
+  @keyframes glow-pulse {
+    0%, 100% { 
+      opacity: 0.5;
+      transform: scale(0.8);
+    }
+    50% { 
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in {
+    0% {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scale-in {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Custom Gradient Classes */
+  .gradient-primary {
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .gradient-accent {
+    background: var(--gradient-accent);
+    color: hsl(var(--accent-foreground));
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  /* Shadow Utilities */
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-accent-glow {
+    box-shadow: var(--shadow-accent-glow);
+  }
+
+  /* Animation Classes */
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.5s ease-out;
+  }
+
+  /* New prominent animation classes */
+  .animate-fade-in {
+    animation: fade-in-up 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.4s ease-out;
+  }
+
+  /* Animation Delays for staggered effects */
+  .animation-delay-100 {
+    animation-delay: 0.1s;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 0.3s;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  .animation-delay-700 {
+    animation-delay: 0.7s;
+  }
+}
