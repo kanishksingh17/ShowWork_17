@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ShowWorkLogo from './ShowWorkLogo';
-import TransitionPage from './TransitionPage';
 import { User, ChevronLeft, ChevronRight, CheckCircle, Code2, Sparkles, Activity, Monitor, Server, Database, Smartphone, Cloud, Users, Globe, Star, Terminal, Heart, Brain, BarChart3, Gamepad2, Shield, Upload, Plus, X, AlertCircle, Loader2, Clock } from 'lucide-react';
 import { LinkedInIcon, TwitterIcon, GitHubIcon, InstagramIcon, RedditIcon } from './BrandIcons';
 import { Question, getQuestionsForTechStacks, hasTechStackQuestions, getEnhancedQuestionsForTechStacks, getEnhancedQuestionsForTechStack } from '../utils/questionBank';
@@ -1576,25 +1575,11 @@ export default function EnhancedOnboardingFlow({ user, onComplete }: EnhancedOnb
     }
   };
 
-  // Show transition page after completion
+  // Go directly to completion without transition page
   if (showTransition && completionData) {
-    console.log('🎬 Rendering TransitionPage component with data:', {
-      showTransition,
-      completionData,
-      user,
-      selectedPlatforms
-    });
-    return (
-      <TransitionPage
-        user={user}
-        selectedPlatforms={selectedPlatforms}
-        profileData={completionData}
-        onComplete={() => {
-          console.log('✅ TransitionPage completed, calling onComplete callback');
-          onComplete(completionData);
-        }}
-      />
-    );
+    console.log('🎬 Completion data ready, calling onComplete callback directly');
+    onComplete(completionData);
+    return null;
   }
 
   return (
@@ -1614,10 +1599,10 @@ export default function EnhancedOnboardingFlow({ user, onComplete }: EnhancedOnb
           <div className="w-full max-w-3xl">
             {/* Logo - positioned closer to content */}
             <div className="flex items-center space-x-2 mb-6">
-              <span className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                <Code2 className="h-5 w-5 text-white" />
+              <span className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center">
+                <Code2 className="h-5 w-5 text-primary-foreground" />
               </span>
-              <span className="text-xl font-bold text-gray-900">ShowWork</span>
+              <span className="text-xl font-bold text-foreground">ShowWork</span>
             </div>
             
             {/* Progress Bar */}

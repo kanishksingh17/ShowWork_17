@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import User from '../models/User.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -39,20 +40,33 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'Email already exists' });
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
-    await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ message: 'Server error', error: err?.message || err });
+  
+  if (!name || !email || !password) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Name, email, and password are required' 
+    });
   }
-});
+  
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Email already exists' 
+    });
+  }
+  
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = new User({ name, email, password: hashedPassword });
+  await user.save();
+  
+  res.status(201).json({ 
+    success: true,
+    message: 'User registered successfully' 
+  });
+}));
 
 // Login
 router.post('/login', passport.authenticate('local'), (req, res) => {
@@ -76,6 +90,28 @@ router.get('/logout', (req, res) => {
     });
   });
 });
+
+// Get current user
+router.get('/me', asyncHandler(async (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ 
+      success: true, 
+      user: { 
+        _id: req.user._id,
+        name: req.user.name, 
+        email: req.user.email,
+        username: req.user.username,
+        avatar: req.user.avatar,
+        profileCompleted: req.user.profileCompleted
+      } 
+    });
+  } else {
+    res.status(401).json({ 
+      success: false, 
+      message: 'Not authenticated' 
+    });
+  }
+}));
 
 // Health check
 router.get('/health', async (req, res) => {

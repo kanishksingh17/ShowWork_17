@@ -1,0 +1,348 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Profile information
+  title         String?
+  bio           String?
+  location      String?
+  website       String?
+  linkedin      String?
+  github        String?
+  twitter       String?
+  phone         String?
+
+  // Portfolio preferences
+  preferredTemplate String?
+  colorScheme       String?
+  animationStyle    String?
+  layoutStyle       String?
+
+  // Relationships
+  accounts      Account[]
+  sessions      Session[]
+  portfolios    Portfolio[]
+  projects      Project[]
+  skills        Skill[]
+  experiences   Experience[]
+  educations    Education[]
+  testimonials  Testimonial[]
+  analytics     Analytics[]
+  templates     Template[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Portfolio {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  url         String   @unique
+  isPublic    Boolean  @default(false)
+  isPublished Boolean  @default(false)
+  templateId  String?
+  customDomain String?
+  
+  // Portfolio configuration
+  config      Json     // Stores the infinite combination configuration
+  
+  // Performance metrics
+  views       Int      @default(0)
+  uniqueViews Int      @default(0)
+  shares      Int      @default(0)
+  downloads   Int      @default(0)
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  keywords        String[]
+  
+  // Analytics
+  lastViewed DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects   Project[]
+  analytics  Analytics[]
+
+  @@map("portfolios")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  portfolioId String?
+  name        String
+  description String
+  longDescription String? @db.Text
+  technologies String[]
+  imageUrl    String?
+  videoUrl    String?
+  liveUrl     String?
+  githubUrl   String?
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  
+  // Project metrics
+  stars       Int      @default(0)
+  forks       Int      @default(0)
+  views       Int      @default(0)
+  
+  // Project details
+  startDate   DateTime?
+  endDate     DateTime?
+  status      ProjectStatus @default(COMPLETED)
+  category    String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolio  Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
+
+  @@map("projects")
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  category    String
+  level       Int      @default(50) // 0-100
+  years       Int      @default(0)
+  isFeatured  Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("skills")
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  userId      String
+  company     String
+  position    String
+  description String?  @db.Text
+  startDate   DateTime
+  endDate     DateTime?
+  isCurrent   Boolean  @default(false)
+  location    String?
+  achievements String[] @default([])
+  technologies String[] @default([])
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("experiences")
+}
+
+model Education {
+  id          String   @id @default(cuid())
+  userId      String
+  institution String
+  degree      String
+  field       String?
+  startDate   DateTime
+  endDate     DateTime?
+  isCurrent   Boolean  @default(false)
+  gpa         Float?
+  achievements String[] @default([])
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("educations")
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  position  String
+  company   String
+  content   String   @db.Text
+  rating    Int      @default(5) // 1-5 stars
+  imageUrl  String?
+  isPublic  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("testimonials")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  userId      String?
+  name        String
+  category    TemplateCategory
+  type        TemplateType
+  complexity  Complexity
+  industry    String[]
+  description String?
+  
+  // Template configuration
+  config      Json     // Stores the atomic design configuration
+  
+  // Template metrics
+  downloads   Int      @default(0)
+  rating      Float    @default(0)
+  reviews     Int      @default(0)
+  
+  // Template properties
+  isPublic    Boolean  @default(false)
+  isPremium   Boolean  @default(false)
+  price       Float?
+  
+  // Performance metrics
+  lighthouseScore Int?
+  loadTime        Float?
+  bundleSize      Int?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("templates")
+}
+
+model Component {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // atom, molecule, organism
+  category    String
+  description String
+  code        String   @db.Text
+  props       String[]
+  styles      String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("components")
+}
+
+model Analytics {
+  id          String   @id @default(cuid())
+  userId      String
+  portfolioId String?
+  event       String
+  properties  Json?
+  timestamp   DateTime @default(now())
+  ip          String?
+  userAgent   String?
+  referrer    String?
+  country     String?
+  city        String?
+  device      String?
+  browser     String?
+  os          String?
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolio  Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
+
+  @@map("analytics")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+  PREMIUM
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum TemplateCategory {
+  DEVELOPER
+  CREATIVE
+  BUSINESS
+  ACADEMIC
+  FREELANCER
+}
+
+enum TemplateType {
+  CLASSIC
+  MODERN
+  MINIMAL
+  CREATIVE
+  CORPORATE
+  THREE_D
+}
+
+enum Complexity {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}

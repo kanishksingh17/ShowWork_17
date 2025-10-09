@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Check, Code2, Globe, Users, Star, Zap, Database, Server, Layers, Terminal, Brain, Shield, ArrowLeft, Loader, CheckCircle, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Code2, Globe, Users, Star, Zap, Database, Server, Layers, Terminal, Brain, Shield, ArrowLeft, Loader, CheckCircle, XCircle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LinkedInIcon, TwitterIcon, GitHubIcon, InstagramIcon, RedditIcon } from './BrandIcons';
-import TransitionPage from './TransitionPage';
+import { QUESTION_BANK, Question as QuizQuestion, getEnhancedQuestionsForTechStacks } from '@/utils/questionBank';
+import { getHybridQuestions } from '@/utils/webQuestionService';
 
 // Types
 interface TechStack {
@@ -345,6 +346,15 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
   console.log('🚀 DeveloperProfileSetup component is rendering!');
   const navigate = useNavigate();
   
+  // Add loading state to prevent blank page
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  useEffect(() => {
+    console.log('🔧 DeveloperProfileSetup initializing...');
+    setIsInitialized(true);
+    console.log('✅ DeveloperProfileSetup initialized');
+  }, []);
+  
   // State declarations MUST come before any early returns
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedTechStacks, setSelectedTechStacks] = useState<string[]>([]);
@@ -354,7 +364,18 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
   const [currentTechIndex, setCurrentTechIndex] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
   const [showSkillAssessmentIntro, setShowSkillAssessmentIntro] = useState(false);
-  const [showTransition, setShowTransition] = useState(false);
+  
+  // Answer feedback state
+  const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
+  const [lastAnswer, setLastAnswer] = useState<{
+    questionId: string;
+    selectedIndex: number;
+    isCorrect: boolean;
+  } | null>(null);
+  
+  // Dynamic questions from API
+  const [dynamicQuestions, setDynamicQuestions] = useState<QuizQuestion[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
   
   // Profile data state
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -374,26 +395,7 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
     message: ''
   });
   
-  // Show transition page after successful completion
-  if (showTransition) {
-    return (
-      <TransitionPage 
-        user={{
-          name: profileData.fullName,
-          username: profileData.username
-        }}
-        selectedPlatforms={selectedPlatforms}
-        profileData={profileData}
-        onComplete={() => {
-          if (onComplete) {
-            onComplete(profileData);
-          } else {
-            navigate('/dashboard');
-          }
-        }}
-      />
-    );
-  }
+
 
   // Username validation function
   const validateUsername = useCallback((username: string): { isValid: boolean; message: string } => {
@@ -489,9 +491,95 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
     setProfileData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Fetch dynamic questions when tech stacks are selected
+  const fetchQuestionsForTechStacks = useCallback(async () => {
+    if (selectedTechStacks.length === 0) return;
+    
+    setQuestionsLoading(true);
+    console.log('🔄 Fetching dynamic questions for tech stacks:', selectedTechStacks);
+    
+    try {
+      const allQuestions: QuizQuestion[] = [];
+      
+      // Fetch 2 questions per tech stack from API
+      for (const techId of selectedTechStacks) {
+        // Map tech stack IDs to question bank tech stacks
+        const techStackMapping: { [key: string]: string } = {
+          'react': 'react',
+          'nodejs': 'node',
+          'python': 'python',
+          'javascript': 'javascript',
+          'typescript': 'typescript',
+          'vue': 'vue',
+          'angular': 'angular',
+          'java': 'java',
+          'go': 'go',
+          'rust': 'rust',
+          'swift': 'swift',
+          'kotlin': 'kotlin',
+          'php': 'php',
+          'mongodb': 'mongodb',
+          'postgresql': 'postgresql',
+          'mysql': 'mysql',
+          'redis': 'redis',
+          'docker': 'docker',
+          'kubernetes': 'kubernetes',
+          'aws': 'aws',
+          'gcp': 'gcp'
+        };
+        
+        const mappedTechStack = techStackMapping[techId] || techId;
+        
+        try {
+          // First try to get questions from API
+          const apiQuestions = await getHybridQuestions(mappedTechStack, 2, []);
+          if (apiQuestions.length > 0) {
+            allQuestions.push(...apiQuestions);
+            console.log(`✅ Fetched ${apiQuestions.length} API questions for ${mappedTechStack}`);
+          } else {
+            // Fallback to local questions
+            const localQuestions = QUESTION_BANK
+              .filter(q => q.techStack === mappedTechStack)
+              .slice(0, 2);
+            allQuestions.push(...localQuestions);
+            console.log(`📚 Using ${localQuestions.length} local questions for ${mappedTechStack}`);
+          }
+        } catch (error) {
+          console.log(`⚠️ API failed for ${mappedTechStack}, using local questions`);
+          // Fallback to local questions on error
+          const localQuestions = QUESTION_BANK
+            .filter(q => q.techStack === mappedTechStack)
+            .slice(0, 2);
+          allQuestions.push(...localQuestions);
+        }
+      }
+      
+      // Shuffle questions for variety
+      const shuffledQuestions = allQuestions.sort(() => Math.random() - 0.5);
+      setDynamicQuestions(shuffledQuestions);
+      console.log(`🎯 Total questions prepared: ${shuffledQuestions.length}`);
+      
+    } catch (error) {
+      console.error('❌ Error fetching questions:', error);
+      // Emergency fallback to local questions
+      const fallbackQuestions = QUESTION_BANK.slice(0, selectedTechStacks.length * 2);
+      setDynamicQuestions(fallbackQuestions);
+    } finally {
+      setQuestionsLoading(false);
+    }
+  }, [selectedTechStacks]);
+
+  // Fetch questions when tech stacks are selected and moving to quiz step
+  useEffect(() => {
+    if (currentStep === 2 && !showSkillAssessmentIntro && selectedTechStacks.length > 0 && dynamicQuestions.length === 0) {
+      console.log('🎯 Fetching questions for quiz step...');
+      fetchQuestionsForTechStacks();
+    }
+  }, [currentStep, showSkillAssessmentIntro, selectedTechStacks, dynamicQuestions.length, fetchQuestionsForTechStacks]);
+
   // Get questions for selected tech stacks
-  const getQuestionsForSelectedTech = () => {
-    return QUESTIONS.filter(q => selectedTechStacks.includes(q.techId));
+  const getQuestionsForSelectedTech = (): QuizQuestion[] => {
+    return dynamicQuestions;
   };
 
   // Get current question
@@ -524,22 +612,52 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
     );
   };
 
-  // Handle answer submission
-  const handleAnswer = (value: string | number) => {
+  // Handle answer submission with feedback and auto-continue
+  const handleAnswer = (selectedIndex: number) => {
     const currentQuestion = getCurrentQuestion();
-    if (!currentQuestion) return;
+    if (!currentQuestion || showAnswerFeedback) return;
 
+    const isCorrect = selectedIndex === currentQuestion.correctAnswer;
+    
+    // Store the answer feedback
+    setLastAnswer({
+      questionId: currentQuestion.id,
+      selectedIndex,
+      isCorrect
+    });
+    
+    // Store the answer
     setAnswers(prev => {
       const existing = prev.find(a => a.questionId === currentQuestion.id);
       if (existing) {
         return prev.map(a => 
           a.questionId === currentQuestion.id 
-            ? { ...a, value }
+            ? { ...a, value: selectedIndex }
             : a
         );
       }
-      return [...prev, { questionId: currentQuestion.id, value }];
+      return [...prev, { questionId: currentQuestion.id, value: selectedIndex }];
     });
+
+    // Show feedback immediately
+    setShowAnswerFeedback(true);
+    
+    // Auto-continue after 1.5 seconds
+    setTimeout(() => {
+      setShowAnswerFeedback(false);
+      setLastAnswer(null);
+      nextQuestion();
+    }, 1500);
+  };
+  
+  // Auto-continue to next question
+  const nextQuestion = () => {
+    const questions = getQuestionsForSelectedTech();
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setCurrentStep(3); // Move to platform selection
+    }
   };
 
   // Navigation handlers
@@ -601,6 +719,14 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
     }
     if (currentStep === 2) {
       const currentQuestion = getCurrentQuestion();
+      const questions = getQuestionsForSelectedTech();
+      
+      // If no current question, it means all questions are completed
+      if (!currentQuestion) {
+        console.log('Step 2 canProceed: All questions completed, allowing proceed');
+        return true;
+      }
+      
       const canProceedStep2 = currentQuestion && answers.some(a => a.questionId === currentQuestion.id);
       console.log('Step 2 canProceed:', canProceedStep2, 'currentQuestion:', currentQuestion?.id, 'answers:', answers.length);
       return canProceedStep2;
@@ -816,11 +942,27 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
                 setShowSkillAssessmentIntro(false);
                 setCurrentStep(2);
                 setCurrentQuestionIndex(0);
+                // Fetch fresh questions when starting quiz
+                fetchQuestionsForTechStacks();
               }}
-              className="group px-8 py-4 bg-green-600 text-white rounded-xl font-semibold text-lg hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-3 mx-auto"
+              disabled={questionsLoading}
+              className={`group px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-3 mx-auto ${
+                questionsLoading 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-[#1E40AF] text-white hover:bg-[#1D4ED8]'
+              }`}
             >
-              <span>Start Quiz</span>
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              {questionsLoading ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Preparing Questions...</span>
+                </>
+              ) : (
+                <>
+                  <span>Start Quiz</span>
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </>
+              )}
             </button>
           </div>
           
@@ -833,8 +975,8 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
           <div className="flex items-center justify-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-green-600 font-bold text-sm">{questionCount}</span>
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <span className="text-[#1E40AF] font-bold text-sm">{selectedTechStacks.length * 2}</span>
               </div>
               <span className="text-gray-700">Questions Prepared</span>
             </div>
@@ -845,6 +987,11 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
               </div>
               <span className="text-gray-500">Completed</span>
             </div>
+          </div>
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              🌐 Questions will be fetched fresh from our API for maximum variety
+            </p>
           </div>
         </div>
       </div>
@@ -913,15 +1060,18 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
         </div>
 
         {selectedTechStacks.length > 0 && (
-          <div className="text-center bg-green-50 border border-green-200 rounded-2xl p-6">
+          <div className="text-center bg-blue-50 border border-blue-200 rounded-2xl p-6">
             <div className="flex items-center justify-center space-x-2 mb-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <p className="text-green-700 font-semibold">
+              <div className="w-2 h-2 bg-[#1E40AF] rounded-full animate-pulse"></div>
+              <p className="text-[#1E40AF] font-semibold">
                 {selectedTechStacks.length} technolog{selectedTechStacks.length === 1 ? 'y' : 'ies'} selected
               </p>
             </div>
-            <p className="text-green-600 text-sm">
-              We'll create personalized questions based on your selections
+            <p className="text-[#1E40AF] text-sm">
+              🌐 Fresh questions will be fetched from our API for each technology
+            </p>
+            <p className="text-gray-600 text-xs mt-2">
+              Expected: {selectedTechStacks.length * 2} unique questions
             </p>
           </div>
         )}
@@ -933,11 +1083,29 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
   const renderQuestionsStep = () => {
     const currentQuestion = getCurrentQuestion();
     const questions = getQuestionsForSelectedTech();
-    const currentTech = currentQuestion ? TECH_STACKS.find(t => t.id === currentQuestion.techId) : null;
+    const currentTech = currentQuestion ? TECH_STACKS.find(t => t.id === currentQuestion.techStack || selectedTechStacks.find(ts => ts.includes(currentQuestion.techStack))) : null;
     const currentAnswer = answers.find(a => a.questionId === currentQuestion?.id);
     const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-    if (!currentQuestion || !currentTech) {
+    // Show loading state while questions are being fetched
+    if (questionsLoading) {
+      return (
+        <div className="text-center space-y-6">
+          <div className="flex items-center justify-center">
+            <Loader className="w-12 h-12 animate-spin text-[#1E40AF]" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900">Preparing Your Quiz</h3>
+          <p className="text-gray-600">Fetching fresh questions from our database...</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 max-w-md mx-auto">
+            <p className="text-[#1E40AF] text-sm font-medium">
+              Getting {selectedTechStacks.length * 2} personalized questions for your selected technologies
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!currentQuestion) {
       return (
         <div className="text-center space-y-4">
           <div className="text-6xl">🎉</div>
@@ -947,22 +1115,33 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
       );
     }
 
+    // Find the appropriate tech for display
+    const displayTech = TECH_STACKS.find(t => 
+      currentQuestion.techStack === 'react' && t.id === 'react' ||
+      currentQuestion.techStack === 'node' && t.id === 'nodejs' ||
+      currentQuestion.techStack === 'javascript' && t.id === 'javascript' ||
+      currentQuestion.techStack === 'python' && t.id === 'python' ||
+      currentQuestion.techStack === 'typescript' && t.id === 'typescript' ||
+      currentQuestion.techStack === 'vue' && t.id === 'vue' ||
+      currentQuestion.techStack === 'angular' && t.id === 'angular'
+    ) || { id: currentQuestion.techStack, name: currentQuestion.techStack.charAt(0).toUpperCase() + currentQuestion.techStack.slice(1), icon: <Code2 className="w-4 h-4" />, color: 'bg-blue-500' };
+
     return (
       <div className="space-y-8">
         {/* Progress Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-4">
-            <div className={`flex items-center space-x-3 px-6 py-3 rounded-full ${currentTech.color} text-white shadow-lg`}>
+            <div className={`flex items-center space-x-3 px-6 py-3 rounded-full ${displayTech.color} text-white shadow-lg`}>
               <div className="bg-white/20 p-2 rounded-lg">
-                {currentTech.icon}
+                {displayTech.icon}
               </div>
-              <span className="font-semibold text-lg">{currentTech.name}</span>
+              <span className="font-semibold text-lg">{displayTech.name}</span>
             </div>
           </div>
           
           <div className="space-y-2">
             <div className="flex items-center justify-center space-x-2">
-              <span className="text-green-600 font-medium">Question {currentQuestionIndex + 1}</span>
+              <span className="text-[#1E40AF] font-medium">Question {currentQuestionIndex + 1}</span>
               <span className="text-gray-400">of</span>
               <span className="text-gray-700 font-medium">{questions.length}</span>
             </div>
@@ -970,7 +1149,7 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
             {/* Mini Progress Bar */}
             <div className="w-32 h-2 bg-gray-200 rounded-full mx-auto overflow-hidden">
               <div 
-                className="h-full bg-green-500 rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-[#1E40AF] rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -980,7 +1159,7 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
         {/* Question Card */}
         <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm relative overflow-hidden">
           {/* Subtle Background */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -translate-y-16 translate-x-16"></div>
           
           <div className="relative z-10 space-y-8">
             {/* Question */}
@@ -988,84 +1167,81 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
               <h3 className="text-2xl font-bold text-gray-900 mb-2 leading-relaxed">
                 {currentQuestion.question}
               </h3>
-              <div className="w-16 h-1 bg-green-500 rounded-full mx-auto"></div>
+              <div className="w-16 h-1 bg-[#1E40AF] rounded-full mx-auto"></div>
             </div>
 
             {/* Answer Options */}
             <div className="space-y-6">
-              {currentQuestion.type === 'multiple-choice' && (
-                <div className="grid gap-3">
-                  {currentQuestion.options?.map((option, index) => (
+              <div className="grid gap-3">
+                {currentQuestion.options.map((option, index) => {
+                  const isSelected = lastAnswer?.selectedIndex === index;
+                  const isCorrect = index === currentQuestion.correctAnswer;
+                  const isWrong = showAnswerFeedback && isSelected && !isCorrect;
+                  const showCorrect = showAnswerFeedback && isCorrect;
+                  
+                  return (
                     <button
-                      key={option}
-                      onClick={() => handleAnswer(option)}
+                      key={index}
+                      onClick={() => !showAnswerFeedback && handleAnswer(index)}
+                      disabled={showAnswerFeedback}
                       className={`group p-5 rounded-2xl border-2 transition-all duration-300 text-left relative overflow-hidden ${
-                        currentAnswer?.value === option
-                          ? 'border-green-500 bg-green-50 shadow-lg scale-[1.02]'
+                        showAnswerFeedback
+                          ? isCorrect
+                            ? 'border-green-500 bg-green-50 shadow-lg scale-[1.02]'
+                            : isWrong
+                            ? 'border-red-500 bg-red-50 shadow-lg scale-[1.02]'
+                            : 'border-gray-200 bg-gray-100 opacity-75'
+                          : isSelected
+                          ? 'border-[#1E40AF] bg-blue-50 shadow-lg scale-[1.02]'
                           : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 hover:scale-[1.01]'
-                      }`}
+                      } ${showAnswerFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     >
                       <div className="flex items-center space-x-4 relative z-10">
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                          currentAnswer?.value === option
-                            ? 'border-green-500 bg-green-500'
+                          showAnswerFeedback
+                            ? isCorrect
+                              ? 'border-green-500 bg-green-500'
+                              : isWrong
+                              ? 'border-red-500 bg-red-500'
+                              : 'border-gray-400 bg-gray-200'
+                            : isSelected
+                            ? 'border-[#1E40AF] bg-[#1E40AF]'
                             : 'border-gray-400 group-hover:border-gray-500'
                         }`}>
-                          {currentAnswer?.value === option && (
+                          {showAnswerFeedback ? (
+                            isCorrect ? (
+                              <Check className="w-3 h-3 text-white" />
+                            ) : isWrong ? (
+                              <X className="w-3 h-3 text-white" />
+                            ) : null
+                          ) : isSelected ? (
                             <Check className="w-3 h-3 text-white" />
-                          )}
+                          ) : null}
                         </div>
                         <span className={`font-medium transition-all duration-300 ${
-                          currentAnswer?.value === option ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-800'
+                          showAnswerFeedback
+                            ? isCorrect
+                              ? 'text-green-800'
+                              : isWrong
+                              ? 'text-red-800'
+                              : 'text-gray-500'
+                            : isSelected
+                            ? 'text-gray-900'
+                            : 'text-gray-700 group-hover:text-gray-800'
                         }`}>
                           {option}
                         </span>
                       </div>
-                      {currentAnswer?.value === option && (
+                      {showAnswerFeedback && isCorrect && (
                         <div className="absolute inset-0 bg-green-100/30 rounded-2xl"></div>
                       )}
+                      {showAnswerFeedback && isWrong && (
+                        <div className="absolute inset-0 bg-red-100/30 rounded-2xl"></div>
+                      )}
                     </button>
-                  ))}
-                </div>
-              )}
-
-              {currentQuestion.type === 'slider' && (
-                <div className="space-y-6">
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span className="flex items-center space-x-2">
-                      <span>🌱</span>
-                      <span>Beginner ({currentQuestion.min})</span>
-                    </span>
-                    <span className="flex items-center space-x-2">
-                      <span>🚀</span>
-                      <span>Expert ({currentQuestion.max})</span>
-                    </span>
-                  </div>
-                  
-                  <div className="relative">
-                    <input
-                      type="range"
-                      min={currentQuestion.min}
-                      max={currentQuestion.max}
-                      value={currentAnswer?.value || currentQuestion.min}
-                      onChange={(e) => handleAnswer(Number(e.target.value))}
-                      className="w-full h-3 bg-gray-200 rounded-lg appearance-none slider cursor-pointer"
-                      style={{
-                        background: `linear-gradient(to right, #10B981 0%, #10B981 ${((Number(currentAnswer?.value) || currentQuestion.min!) - currentQuestion.min!) / (currentQuestion.max! - currentQuestion.min!) * 100}%, #E5E7EB ${((Number(currentAnswer?.value) || currentQuestion.min!) - currentQuestion.min!) / (currentQuestion.max! - currentQuestion.min!) * 100}%, #E5E7EB 100%)`
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="text-center bg-gray-50 rounded-2xl p-6">
-                    <div className="text-4xl font-bold text-green-600 mb-2">
-                      {currentAnswer?.value || currentQuestion.min}
-                    </div>
-                    <div className="text-gray-500 text-sm">
-                      out of {currentQuestion.max}
-                    </div>
-                  </div>
-                </div>
-              )}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -1099,7 +1275,7 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
                   {platform.icon}
                 </div>
                 {isSelected && (
-                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-[#1E40AF] rounded-full flex items-center justify-center">
                     <Check className="w-4 h-4 text-white" />
                   </div>
                 )}
@@ -1120,8 +1296,8 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
       </div>
 
       {selectedPlatforms.length > 0 && (
-        <div className="text-center bg-green-50 border border-green-200 rounded-2xl p-4">
-          <p className="text-green-700 font-medium">
+        <div className="text-center bg-blue-50 border border-blue-200 rounded-2xl p-4">
+          <p className="text-[#1E40AF] font-medium">
             {selectedPlatforms.length} platform{selectedPlatforms.length === 1 ? '' : 's'} selected
           </p>
         </div>
@@ -1129,10 +1305,23 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
     </div>
   );
 
+  // Show loading state while initializing
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Loading Profile Setup</h2>
+          <p className="text-gray-600">Preparing your personalized experience...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left Progress Panel */}
-      <div className="w-2/5 bg-gradient-to-br from-green-600 via-green-700 to-green-800 p-8 flex flex-col justify-between relative overflow-hidden">
+      <div className="w-2/5 bg-gradient-to-br from-[#1E293B] via-[#1E40AF] to-[#0F172A] p-8 flex flex-col justify-between relative overflow-hidden">
         {/* Background Decoration */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full"></div>
@@ -1179,9 +1368,9 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
               <div key={step.number} className="flex items-start space-x-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
                   isCompleted
-                    ? 'bg-white text-green-600'
+                    ? 'bg-white text-[#1E40AF]'
                     : isActive || isIntroActive
-                    ? 'bg-white text-green-600 ring-4 ring-white/30'
+                    ? 'bg-white text-[#1E40AF] ring-4 ring-white/30'
                     : 'bg-white/20 text-white/60'
                 }`}>
                   {isCompleted ? (
@@ -1284,9 +1473,13 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
                       selectedPlatforms
                     });
                     
-                    // For now, immediately show transition without API call
-                    console.log('Immediately showing transition for testing');
-                    setShowTransition(true);
+                    // Go directly to dashboard for faster UX
+                    console.log('🚀 Calling onComplete immediately for instant dashboard transition');
+                    if (onComplete) {
+                      onComplete(profileData);
+                    } else {
+                      navigate('/dashboard');
+                    }
                     
                     // Optionally try API call in background
                     setTimeout(async () => {
@@ -1329,7 +1522,7 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
                 disabled={!canProceed()}
                 className={`flex items-center px-8 py-3 rounded-lg font-medium transition-all duration-300 ${
                   canProceed() && !isCompleting
-                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    ? 'bg-[#1E40AF] text-white hover:bg-[#1D4ED8]'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
@@ -1358,7 +1551,7 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #10B981;
+            background: #1E40AF;
             cursor: pointer;
             border: 2px solid #ffffff;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -1368,7 +1561,7 @@ export default function DeveloperProfileSetup({ onComplete }: DeveloperProfileSe
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #10B981;
+            background: #1E40AF;
             cursor: pointer;
             border: 2px solid #ffffff;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);

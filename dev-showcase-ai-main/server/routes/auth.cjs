@@ -1,11 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-// Comment out GitHub strategy to prevent error if client ID/secret are missing
-// const GitHubStrategy = require('passport-github2').Strategy;
+const GitHubStrategy = require('passport-github2').Strategy;
 const User = require('../models/User.cjs');
 const router = express.Router();
 
@@ -27,23 +25,23 @@ passport.use(new GoogleStrategy({
   }
 }));
 
-// passport.use(new GitHubStrategy({
-//   clientID: process.env.GITHUB_CLIENT_ID,
-//   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-//   callbackURL: '/auth/github/callback',
-// }, async (accessToken, refreshToken, profile, done) => {
-//   try {
-//     const email = profile.emails[0].value;
-//     let user = await User.findOne({ email });
-//     if (!user) {
-//       user = new User({ name: profile.displayName || profile.username, email, password: 'oauth' });
-//       await user.save();
-//     }
-//     return done(null, user);
-//   } catch (err) {
-//     return done(err, null);
-//   }
-// }));
+passport.use(new GitHubStrategy({
+  clientID: process.env.GITHUB_CLIENT_ID,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  callbackURL: '/auth/github/callback',
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    const email = profile.emails[0].value;
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ name: profile.displayName || profile.username, email, password: 'oauth' });
+      await user.save();
+    }
+    return done(null, user);
+  } catch (err) {
+    return done(err, null);
+  }
+}));
 
 router.get('/health', async (req, res) => {
   try {
@@ -96,19 +94,17 @@ router.get('/google/callback', passport.authenticate('google', {
   res.redirect('http://localhost:3000/dashboard');
 });
 
-// router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
-// router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/login', session: false }), async (req, res) => {
-//   const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-//   res.cookie('token', token, { httpOnly: true });
-//   res.redirect('/dashboard');
-// });
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/login', session: false }), async (req, res) => {
+  const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+  res.cookie('token', token, { httpOnly: true });
+  res.redirect('/dashboard');
+});
 
 router.get('/logout', (req, res) => {
   req.logout(() => {
     res.redirect('http://localhost:3000/');
   });
 });
-
-router.get('/test', (req, res) => res.send('Auth router is working'));
 
 module.exports = router;

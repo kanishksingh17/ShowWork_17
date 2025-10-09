@@ -98,10 +98,10 @@ const ShowWorkLanding = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center space-x-2 group hover:scale-105 transition-all duration-300">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
-                <Code2 className="h-5 w-5 text-primary-foreground" />
+              <div className="w-8 h-8 logo-bg rounded-lg flex items-center justify-center group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
+                <Code2 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">ShowWork</span>
+              <span className="text-xl font-bold text-foreground group-hover:logo-text transition-colors duration-300">ShowWork</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -121,7 +121,7 @@ const ShowWorkLanding = () => {
                 Sign In
               </Button>
               <Button 
-                className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-accent shadow-glow hover:scale-110 hover:shadow-xl transform transition-all duration-300 text-primary-foreground"
+                className="logo-bg hover:opacity-90 shadow-lg hover:scale-110 hover:shadow-xl transform transition-all duration-300 text-white"
                 onClick={() => navigate('/login')}
               >
                 Get Started
@@ -155,7 +155,7 @@ const ShowWorkLanding = () => {
                     Sign In
                   </Button>
                   <Button 
-                    className="w-full gradient-primary"
+                    className="w-full logo-bg text-white"
                     onClick={() => navigate('/login')}
                   >
                     Get Started
@@ -186,7 +186,7 @@ const ShowWorkLanding = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in animation-delay-700">
               <Button 
                 size="lg" 
-                className="gradient-primary shadow-glow text-lg px-8 py-4 hover:scale-110 hover:shadow-2xl transform transition-all duration-300 bg-gradient-to-r from-primary to-primary-glow"
+                className="logo-bg shadow-lg text-lg px-8 py-4 hover:scale-110 hover:shadow-2xl transform transition-all duration-300 text-white hover:opacity-90"
                 onClick={() => navigate('/login')}
               >
                 Start Building Free
@@ -265,42 +265,42 @@ const ShowWorkLanding = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="group bg-surface rounded-xl p-8 border border-card-border hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-4 animate-fade-in animation-delay-100 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 relative z-10">
-                <Zap className="h-6 w-6 text-primary-foreground" />
+              <div className="w-12 h-12 logo-bg rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 relative z-10">
+                <Zap className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors duration-300 relative z-10">AI Content Generation</h3>
+              <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:logo-text transition-colors duration-300 relative z-10">AI Content Generation</h3>
               <p className="text-foreground-muted mb-6 relative z-10 group-hover:translate-x-2 transition-transform duration-300">
                 Generate compelling project descriptions, technical details, and marketing copy with AI assistance.
               </p>
-              <Button variant="ghost" className="text-accent hover:text-accent-glow p-0 group-hover:scale-110 transition-all duration-300 relative z-10">
+              <Button variant="ghost" className="logo-text hover:opacity-80 p-0 group-hover:scale-110 transition-all duration-300 relative z-10">
                 Learn More <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
               </Button>
             </div>
 
             <div className="group bg-surface rounded-xl p-8 border border-card-border hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-4 animate-fade-in animation-delay-300 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent-glow rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 relative z-10">
-                <Globe className="h-6 w-6 text-accent-foreground" />
+              <div className="w-12 h-12 logo-bg rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 relative z-10">
+                <Globe className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:text-accent transition-colors duration-300 relative z-10">Multi-Platform Publishing</h3>
+              <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:logo-text transition-colors duration-300 relative z-10">Multi-Platform Publishing</h3>
               <p className="text-foreground-muted mb-6 relative z-10 group-hover:translate-x-2 transition-transform duration-300">
                 Share your work across social media, job boards, and professional networks with one click.
               </p>
-              <Button variant="ghost" className="text-accent hover:text-accent-glow p-0 group-hover:scale-110 transition-all duration-300 relative z-10">
+              <Button variant="ghost" className="logo-text hover:opacity-80 p-0 group-hover:scale-110 transition-all duration-300 relative z-10">
                 Learn More <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
               </Button>
             </div>
 
             <div className="group bg-surface rounded-xl p-8 border border-card-border hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-4 animate-fade-in animation-delay-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 relative z-10">
-                <Star className="h-6 w-6 text-primary-foreground" />
+              <div className="w-12 h-12 logo-bg rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 relative z-10">
+                <Star className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:text-primary transition-colors duration-300 relative z-10">Professional Templates</h3>
+              <h3 className="text-xl font-semibold mb-4 text-foreground group-hover:logo-text transition-colors duration-300 relative z-10">Professional Templates</h3>
               <p className="text-foreground-muted mb-6 relative z-10 group-hover:translate-x-2 transition-transform duration-300">
                 Choose from dozens of stunning portfolio templates designed by professionals for developers.
               </p>
-              <Button variant="ghost" className="text-accent hover:text-accent-glow p-0 group-hover:scale-110 transition-all duration-300 relative z-10">
+              <Button variant="ghost" className="logo-text hover:opacity-80 p-0 group-hover:scale-110 transition-all duration-300 relative z-10">
                 Learn More <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
               </Button>
             </div>
@@ -320,7 +320,7 @@ const ShowWorkLanding = () => {
             </p>
             <Button 
               size="lg" 
-              className="gradient-primary shadow-glow"
+              className="logo-bg shadow-lg text-white hover:opacity-90"
               onClick={() => navigate('/login')}
             >
               Watch Full Demo
@@ -404,7 +404,7 @@ const ShowWorkLanding = () => {
                 <button
                   key={index}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    index === currentTestimonial ? 'bg-primary' : 'bg-border'
+                    index === currentTestimonial ? 'logo-bg' : 'bg-border'
                   }`}
                   onClick={() => setCurrentTestimonial(index)}
                 />
@@ -433,7 +433,7 @@ const ShowWorkLanding = () => {
               className="flex-1 h-12"
               required
             />
-            <Button type="submit" size="lg" className="gradient-primary">
+            <Button type="submit" size="lg" className="logo-bg text-white hover:opacity-90">
               Get Started Free
             </Button>
           </form>
@@ -458,7 +458,7 @@ const ShowWorkLanding = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="mb-3 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/60"
                 />
-                <Button type="submit" variant="secondary">
+                <Button type="submit" className="logo-bg text-white hover:opacity-90">
                   Subscribe
                 </Button>
               </form>
@@ -495,10 +495,10 @@ const ShowWorkLanding = () => {
           {/* Bottom Section */}
           <div className="border-t border-primary-foreground/20 pt-8 flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-primary-foreground/10 rounded-lg flex items-center justify-center">
-                <Code2 className="h-5 w-5" />
+              <div className="w-8 h-8 logo-bg rounded-lg flex items-center justify-center">
+                <Code2 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-2xl font-bold">ShowWork</span>
+              <span className="text-2xl font-bold text-white">ShowWork</span>
             </div>
             
             <div className="flex items-center space-x-6">

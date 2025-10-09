@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Code2, Upload, Sparkles, Zap, Star, Users, Globe, Rocket, CheckCircle, XCircle, Loader } from 'lucide-react';
-import TransitionPage from '../components/TransitionPage';
 
 interface ProfileCompletionProps {
   user?: any;
@@ -248,21 +247,10 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
     console.log('🖥️ ProfileCompletion is rendering in browser');
   }
 
-  // Show transition page after successful profile completion
+  // Go directly to dashboard after successful profile completion
   if (showTransition) {
-    return (
-      <TransitionPage 
-        user={{
-          name: profileData.fullName,
-          username: profileData.username
-        }}
-        selectedPlatforms={['linkedin', 'github']} // Default platforms for basic profile
-        profileData={profileData}
-        onComplete={() => {
-          navigate('/dashboard');
-        }}
-      />
-    );
+    navigate('/dashboard');
+    return null;
   }
 
   return (

@@ -14,11 +14,8 @@ export default function Login() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.ok ? navigate("/dashboard") : setLoading(false))
-        .catch(() => setLoading(false));
+      // If user is already logged in, redirect to dashboard
+      navigate("/dashboard");
     } else {
       setLoading(false);
     }
@@ -32,21 +29,49 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setSuccess("");
-    const endpoint = isSignup ? "/api/auth/register" : "/api/auth/login";
-    const payload = isSignup ? form : { email: form.email, password: form.password };
+
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || (isSignup ? "Signup failed" : "Login failed"));
       if (isSignup) {
+        // Registration logic
+        const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+        const userExists = existingUsers.find((user: any) => user.email === form.email);
+        
+        if (userExists) {
+          throw new Error("User with this email already exists");
+        }
+
+        if (form.password.length < 6) {
+          throw new Error("Password must be at least 6 characters long");
+        }
+
+        const newUser = {
+          id: Date.now().toString(),
+          name: form.name,
+          email: form.email,
+          password: form.password, // In a real app, this would be hashed
+          createdAt: new Date().toISOString()
+        };
+
+        existingUsers.push(newUser);
+        localStorage.setItem("users", JSON.stringify(existingUsers));
+        
         setIsSignup(false);
-        setSuccess("Account created! Please log in.");
+        setSuccess("Account created successfully! Please log in.");
+        setForm({ email: "", password: "", name: "" });
       } else {
-        localStorage.setItem("token", data.token);
+        // Login logic
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        const user = users.find((u: any) => u.email === form.email && u.password === form.password);
+        
+        if (!user) {
+          throw new Error("Invalid email or password");
+        }
+
+        // Create a simple token (in a real app, this would be a JWT)
+        const token = btoa(JSON.stringify({ userId: user.id, email: user.email }));
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        
         navigate("/dashboard");
       }
     } catch (err: unknown) {
@@ -57,7 +82,25 @@ export default function Login() {
 
   const handleSocialLogin = (provider: "google" | "github") => {
     setSocialLoading(provider);
-    window.location.href = `/api/auth/${provider}`;
+    
+    // Simulate social login with a demo user
+    setTimeout(() => {
+      const demoUser = {
+        id: Date.now().toString(),
+        name: provider === "google" ? "Demo Google User" : "Demo GitHub User",
+        email: provider === "google" ? "demo@gmail.com" : "demo@github.com",
+        provider: provider,
+        createdAt: new Date().toISOString()
+      };
+
+      // Create a simple token
+      const token = btoa(JSON.stringify({ userId: demoUser.id, email: demoUser.email }));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(demoUser));
+      
+      setSocialLoading("");
+      navigate("/dashboard");
+    }, 1500); // Simulate loading time
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -69,10 +112,10 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="flex items-center space-x-2 mb-8 group hover:scale-105 transition-all duration-300">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
-              <Code2 className="h-5 w-5 text-primary-foreground" />
+            <div className="w-8 h-8 logo-bg rounded-lg flex items-center justify-center group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
+              <Code2 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">ShowWork</span>
+            <span className="text-xl font-bold text-foreground group-hover:logo-text transition-colors duration-300">ShowWork</span>
           </div>
 
           {/* Form */}
@@ -175,7 +218,7 @@ export default function Login() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground font-medium rounded-lg hover:from-primary-glow hover:to-accent shadow-glow hover:scale-105 hover:shadow-xl transition-all duration-300 mb-4"
+                className="w-full py-3 px-4 logo-bg text-white font-medium rounded-lg hover:opacity-90 shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 mb-4"
               >
                 {isSignup ? "Create Account" : "Log In"}
               </button>
@@ -208,7 +251,7 @@ export default function Login() {
                     Already have an account?{" "}
                     <button
                       type="button"
-                      className="text-primary hover:text-primary-glow font-medium transition-colors"
+                      className="logo-text hover:opacity-80 font-medium transition-colors"
                       onClick={() => setIsSignup(false)}
                     >
                       Sign in
@@ -219,7 +262,7 @@ export default function Login() {
                     Don't have an account?{" "}
                     <button
                       type="button"
-                      className="text-primary hover:text-primary-glow font-medium transition-colors"
+                      className="logo-text hover:opacity-80 font-medium transition-colors"
                       onClick={() => setIsSignup(true)}
                     >
                       Sign up

@@ -69,7 +69,7 @@ projectSchema.virtual('progressPercentage').get(function() {
 // Static method to get dashboard statistics
 projectSchema.statics.getDashboardStats = async function(userId) {
   const stats = await this.aggregate([
-    { $match: { owner: mongoose.Types.ObjectId(userId) } },
+    { $match: { owner: new mongoose.Types.ObjectId(userId) } },
     {
       $group: {
         _id: '$status',

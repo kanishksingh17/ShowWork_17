@@ -9,6 +9,11 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+// Import error handling middleware
+import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { asyncHandler } from './utils/asyncHandler.js';
+import { validateEnvironment, getEnvConfig } from './config/env.js';
+
 // ES Module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,19 +23,19 @@ process.env.GOOGLE_CLIENT_ID = '1023704543857-3ncqko6crdtn9g1p4q0p9j19jd4alo77.a
 process.env.GOOGLE_CLIENT_SECRET = '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';
 process.env.GITHUB_CLIENT_ID = 'Ov23lieCxcgF7AFq4uVZ';
 process.env.GITHUB_CLIENT_SECRET = '47ea179ee6f940bce9fbff8ccf696ee225074b93';
-process.env.PORT = '5000';
+process.env.PORT = '5001';
 process.env.SESSION_SECRET = 'your-super-secret-session-key-change-this';
 process.env.MONGO_URI = 'mongodb://localhost:27017/showwork';
 process.env.JWT_SECRET = 'your-jwt-secret-key-change-this';
 
-// Debug environment variables
-console.log('🔍 Environment variables check:');
-console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set');
-console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set');
-console.log('GITHUB_CLIENT_ID:', process.env.GITHUB_CLIENT_ID ? 'Set' : 'Not set');
-console.log('GITHUB_CLIENT_SECRET:', process.env.GITHUB_CLIENT_SECRET ? 'Set' : 'Not set');
-console.log('PORT:', process.env.PORT);
-console.log('SESSION_SECRET:', process.env.SESSION_SECRET ? 'Set' : 'Not set');
+// Validate environment variables
+if (!validateEnvironment()) {
+  console.error('❌ Environment validation failed. Exiting...');
+  process.exit(1);
+}
+
+const config = getEnvConfig();
+console.log('✅ Environment configuration loaded');
 
 // Import local modules
 import User from './models/User.js';
@@ -69,7 +74,7 @@ try {
   passport.use(new GoogleStrategy.Strategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/auth/google/callback"
+      callbackURL: "http://localhost:5001/api/auth/google/callback"
     },
     async function(accessToken, refreshToken, profile, cb) {
       try {
@@ -121,7 +126,7 @@ try {
   passport.use(new GitHubStrategy.Strategy({
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/auth/github/callback"
+      callbackURL: "http://localhost:5001/api/auth/github/callback"
     },
     async function(accessToken, refreshToken, profile, cb) {
       try {
@@ -211,8 +216,8 @@ app.get('/api/debug/oauth-status', (req, res) => {
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set',
     githubClientId: process.env.GITHUB_CLIENT_ID ? 'Set' : 'Not set',
     githubClientSecret: process.env.GITHUB_CLIENT_SECRET ? 'Set' : 'Not set',
-    googleCallbackUrl: "http://localhost:5000/api/auth/google/callback",
-    githubCallbackUrl: "http://localhost:5000/api/auth/github/callback",
+    googleCallbackUrl: "http://localhost:5001/api/auth/google/callback",
+    githubCallbackUrl: "http://localhost:5001/api/auth/github/callback",
     frontendUrl: "http://localhost:3000",
     backendPort: PORT,
     mongoUri: MONGO_URI ? 'Set' : 'Not set'
@@ -279,7 +284,7 @@ app.get('/api/auth/google/callback',
         console.error('Session save error:', err);
       }
       console.log('Session saved, redirecting to dashboard');
-      // Successful authentication, redirect to dashboard
+      // Successful authentication, redirect to main dashboard
       res.redirect('http://localhost:3000/dashboard');
     });
   }
@@ -323,7 +328,7 @@ app.get('/api/auth/github/callback',
         console.error('Session save error:', err);
       }
       console.log('Session saved, redirecting to dashboard');
-      // Successful authentication, redirect to dashboard
+      // Successful authentication, redirect to main dashboard
       res.redirect('http://localhost:3000/dashboard');
     });
   }
@@ -546,7 +551,11 @@ app.post('/api/profile/update', async (req, res) => {
 
 
 
-const PORT = process.env.PORT || 5000;
+// Error handling middleware (must be last)
+app.use(notFound);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5001;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/showwork';
 
 // Try to connect to MongoDB, but start server even if it fails
@@ -579,35 +588,58 @@ function startServer() {
     }
   });
 
-  // Handle process termination (only when manually stopped)
-  process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down server...');
-    server.close(() => {
-      console.log('✅ Server closed');
-      process.exit(0);
-    });
-  });
-
+  // Handle process termination gracefully
   process.on('SIGTERM', () => {
-    console.log('\n🛑 Shutting down server...');
-    server.close(() => {
-      console.log('✅ Server closed');
-      process.exit(0);
-    });
+    console.log('\n🛑 Received SIGTERM - Server will continue running');
+    console.log('💡 To stop the server, use Ctrl+C or close the terminal');
   });
 
   // Keep the process alive and prevent automatic shutdown
   console.log('🔒 Server process will stay running until manually stopped');
-  console.log('💡 Press Ctrl+C to stop the server');
+  console.log('💡 Press Ctrl+C twice to stop the server');
+  
+  // Keep-alive mechanism
+  const keepAlive = setInterval(() => {
+    // This keeps the event loop active
+  }, 1000);
+  
+  // Clean up keep-alive on actual shutdown
+  const shutdown = () => {
+    clearInterval(keepAlive);
+    server.close(() => {
+      console.log('✅ Server closed');
+      process.exit(0);
+    });
+  };
+  
+  // Only shutdown on double Ctrl+C
+  let shutdownAttempts = 0;
+  process.on('SIGINT', () => {
+    shutdownAttempts++;
+    if (shutdownAttempts === 1) {
+      console.log('\n🛑 First Ctrl+C detected - Server will continue running');
+      console.log('💡 Press Ctrl+C again within 3 seconds to actually stop the server');
+      setTimeout(() => {
+        shutdownAttempts = 0;
+      }, 3000);
+    } else if (shutdownAttempts === 2) {
+      console.log('\n🛑 Second Ctrl+C detected - Shutting down server...');
+      shutdown();
+    }
+  });
 
-  // Keep the process alive
+  // Enhanced error handling for uncaught exceptions - keep server running
   process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error);
-    console.log('🔄 Restarting server...');
+    console.error('🚨 Uncaught Exception:', error);
+    console.error('Stack:', error.stack);
+    console.log('🔄 Server will continue running despite this error');
+    console.log('💡 Please investigate and fix this issue when possible');
   });
 
   process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-    console.log('🔄 Continuing server operation...');
+    console.error('🚨 Unhandled Rejection at:', promise);
+    console.error('Reason:', reason);
+    console.log('🔄 Server will continue running despite this error');
+    console.log('💡 Please investigate and fix this issue when possible');
   });
 }

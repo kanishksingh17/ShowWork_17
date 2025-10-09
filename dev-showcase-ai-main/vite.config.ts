@@ -1,16 +1,22 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
     port: 3000,
+    strictPort: true,
+    host: "localhost",
+    force: true,
+    hmr: {
+      port: 3001,
+      host: "localhost",
+      clientPort: 3001,
+    },
     proxy: {
       "/api": {
-        target: "http://localhost:5000",
+        target: "http://localhost:5001",
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
@@ -27,14 +33,34 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  define: {
+    'process.env': {}
+  },
   plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+    react({
+      include: "**/*.{jsx,tsx}",
+    }),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  css: {
+    devSourcemap: true,
+  },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['framer-motion', 'lucide-react'],
+        },
+      },
+    },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'framer-motion', 'lucide-react'],
   },
 }));

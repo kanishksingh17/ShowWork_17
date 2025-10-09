@@ -12,10 +12,10 @@
 
 @keyframes glow {
   0%, 100% { 
-    filter: drop-shadow(0 0 5px rgba(20, 184, 166, 0.5));
+    filter: drop-shadow(0 0 5px rgba(30, 58, 138, 0.5));
   }
   50% { 
-    filter: drop-shadow(0 0 20px rgba(20, 184, 166, 0.8));
+    filter: drop-shadow(0 0 20px rgba(30, 58, 138, 0.8));
   }
 }
 
@@ -26,6 +26,57 @@
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
 }
+
+/* Additional Animation Utilities */
+@keyframes fade-in-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes scale-in {
+  from { 
+    opacity: 0; 
+    transform: scale(0.9); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes slide-in-right {
+  from { 
+    opacity: 0; 
+    transform: translateX(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.8s ease-out;
+}
+
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-500 { animation-delay: 0.5s; }
+.animation-delay-700 { animation-delay: 0.7s; }
 
 /* Code Logo with Loading Bar for ShowWork */
 .code-logo-container {
@@ -44,14 +95,14 @@
   min-width: 100%;
   min-height: 100%;
   aspect-ratio: 1;
-  background: #1e293b;
+  background: #1e3a8a;
   border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(30, 58, 138, 0.5), 0 0 15px rgba(30, 58, 138, 0.2);
 }
 
 .code-symbol {
@@ -62,7 +113,7 @@
   letter-spacing: -1px;
   z-index: 2;
   position: relative;
-  text-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+  text-shadow: 0 0 5px rgba(30, 58, 138, 0.4);
 }
 
 /* Loading bar animation */
@@ -73,11 +124,11 @@
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, #ef4444, #dc2626);
+  background: linear-gradient(90deg, #1e3a8a, #1e40af);
   animation: loadingBar 3s ease-in-out infinite;
   z-index: 1;
   box-shadow: 
-    0 0 8px rgba(239, 68, 68, 0.6),
+    0 0 8px rgba(30, 58, 138, 0.6),
     0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -141,12 +192,12 @@
 /* Hover effects */
 .code-logo-container:hover .code-logo {
   transform: scale(1.05);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(239, 68, 68, 0.7), 0 0 20px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(30, 58, 138, 0.7), 0 0 20px rgba(30, 58, 138, 0.3);
   transition: all 0.3s ease;
 }
 
 .code-logo-container:hover .code-symbol {
-  color: #fca5a5;
+  color: #93c5fd;
   transition: color 0.3s ease;
 }
 
@@ -154,29 +205,48 @@
 
 @layer base {
   :root {
-    /* Background & Surface */
+    /* Background & Surface - Keep Light Theme */
     --background: 210 20% 98%;
     --surface: 0 0% 100%;
     --surface-elevated: 210 20% 99%;
     
-    /* Typography */
+    /* Typography - Keep Light Theme */
     --foreground: 215 25% 15%;
     --foreground-muted: 215 15% 45%;
     --foreground-subtle: 215 10% 65%;
 
-    /* Brand Colors - Professional Developer Theme */
-    --primary: 215 35% 20%;
-    --primary-glow: 215 45% 35%;
+    /* Brand Colors - Vibrant Blue Theme */
+    --primary: 221 83% 53%;
+    --primary-glow: 221 83% 63%;
     --primary-foreground: 0 0% 100%;
     
-    --accent: 195 100% 50%;
-    --accent-glow: 195 100% 65%;
+    --accent: 214 95% 68%;
+    --accent-glow: 214 95% 78%;
     --accent-foreground: 0 0% 100%;
+    
+    /* Debug: Test if variables are working */
+    .test-primary {
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+    
+    /* Logo specific classes with fallback */
+    .logo-bg {
+      background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    }
+    
+    .logo-bg-alt {
+      background: linear-gradient(135deg, hsl(221 83% 53%), hsl(221 83% 63%));
+    }
+    
+    .logo-text {
+      color: #3B82F6;
+    }
     
     --secondary: 210 15% 95%;
     --secondary-foreground: 215 25% 15%;
 
-    /* UI Elements */
+    /* UI Elements - Keep Light Theme */
     --card: 0 0% 100%;
     --card-foreground: 215 25% 15%;
     --card-border: 215 15% 90%;
@@ -184,7 +254,7 @@
     --input: 215 15% 96%;
     --input-border: 215 15% 85%;
     --border: 215 15% 90%;
-    --ring: 215 35% 20%;
+    --ring: 221 83% 53%;
 
     /* Status Colors */
     --success: 142 76% 36%;
@@ -194,19 +264,19 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(215 35% 20%), hsl(215 45% 35%));
-    --gradient-accent: linear-gradient(135deg, hsl(195 100% 50%), hsl(195 100% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 35% 20%) 0%, hsl(195 100% 50%) 100%);
+    /* Gradients - Vibrant Blue for Buttons */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(221 83% 63%));
+    --gradient-accent: linear-gradient(135deg, hsl(214 95% 68%), hsl(214 95% 78%));
+    --gradient-hero: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(214 95% 68%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(210 15% 96%) 100%);
 
-    /* Shadows */
+    /* Shadows - Keep Light Theme */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-    --shadow-glow: 0 0 40px hsl(215 35% 20% / 0.15);
-    --shadow-accent-glow: 0 0 40px hsl(195 100% 50% / 0.2);
+    --shadow-glow: 0 0 40px hsl(221 83% 53% / 0.15);
+    --shadow-accent-glow: 0 0 40px hsl(214 95% 68% / 0.2);
 
     /* Animations */
     --transition-fast: all 0.15s ease;
@@ -214,6 +284,31 @@
     --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.75rem;
+
+    /* Utility Classes for Gradients */
+    .gradient-primary {
+      background: var(--gradient-primary);
+    }
+    
+    .gradient-accent {
+      background: var(--gradient-accent);
+    }
+    
+    .gradient-hero {
+      background: var(--gradient-hero);
+    }
+    
+    .gradient-subtle {
+      background: var(--gradient-subtle);
+    }
+    
+    .shadow-glow {
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .shadow-accent-glow {
+      box-shadow: var(--shadow-accent-glow);
+    }
 
     --sidebar-background: 0 0% 98%;
 

@@ -15,7 +15,7 @@ const getEnvVar = (key: string, defaultValue: string = ''): string => {
 
 const API_CONFIG = {
   ENABLE_REAL_APIS: true, // Set to false for testing without API keys
-  QUIZ_API_KEY: getEnvVar('VITE_QUIZ_API_KEY', 'YOUR_KEY'), // Use VITE_ prefix for Vite
+  QUIZ_API_KEY: getEnvVar('VITE_QUIZ_API_KEY', 'YOUR_API_KEY'), // Use VITE_ prefix for Vite
   ENABLE_JSERVICE: false,   // ❌ DISABLED - CORS issues
   ENABLE_OPENTDB: false,    // ❌ DISABLED - Rate limiting issues
   ENABLE_QUIZ_API: true,   // 🔑 QuizAPI.io - Main requirement
@@ -71,7 +71,7 @@ async function fetchQuestionsFromWeb(techStack: string, count: number = 3): Prom
   try {
     // Try APIs in priority order - Skip problematic APIs
     const sources = [
-      () => API_CONFIG.ENABLE_QUIZ_API && API_CONFIG.QUIZ_API_KEY !== 'YOUR_KEY' ? fetchFromQuizAPI(techStack, count) : Promise.reject(new Error('QuizAPI not configured')),  // PRIMARY: QuizAPI.io (if configured)
+      () => API_CONFIG.ENABLE_QUIZ_API && API_CONFIG.QUIZ_API_KEY !== 'YOUR_API_KEY' ? fetchFromQuizAPI(techStack, count) : Promise.reject(new Error('QuizAPI not configured')),  // PRIMARY: QuizAPI.io (if configured)
       () => generateEnhancedWebQuestions(techStack, count) // FALLBACK: Enhanced mock questions (always available)
     ];
 
@@ -108,7 +108,7 @@ async function fetchQuestionsFromWeb(techStack: string, count: number = 3): Prom
  * Fetch from QuizAPI.io (Main requirement - exact endpoint as specified)
  */
 async function fetchFromQuizAPI(techStack: string, count: number): Promise<Question[]> {
-  if (!API_CONFIG.ENABLE_QUIZ_API || API_CONFIG.QUIZ_API_KEY === 'YOUR_KEY') {
+  if (!API_CONFIG.ENABLE_QUIZ_API || API_CONFIG.QUIZ_API_KEY === 'YOUR_API_KEY') {
     throw new Error('QuizAPI disabled or no API key - Please add your API key');
   }
   
