@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.2
+    container_name: showwork-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: showwork
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    restart: unless-stopped
+    networks:
+      - showwork-network
+
+  # Redis for Queue System
+  redis:
+    image: redis:7.2-alpine
+    container_name: showwork-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - showwork-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: showwork-backend
+    ports:
+      - "5001:5001"
+    environment:
+      NODE_ENV: development
+      PORT: 5001
+      DATABASE_URL: mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: http://localhost:5001
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - showwork-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: showwork-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:5001
+      VITE_FRONTEND_URL: http://localhost:3000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - showwork-network
+
+  # Background Workers
+  publish-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: showwork-publish-worker
+    command: node src/workers/publish-worker.js
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+      - backend
+    restart: unless-stopped
+    networks:
+      - showwork-network
+
+  analytics-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: showwork-analytics-worker
+    command: node src/workers/analytics-worker.js
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+      - backend
+    restart: unless-stopped
+    networks:
+      - showwork-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  showwork-network:
+    driver: bridge

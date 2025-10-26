@@ -1,0 +1,11 @@
+# Analytics Worker Production Dockerfile
+# Use the same base image
+FROM node:18
+
+WORKDIR /app
+COPY . .
+
+RUN npm install --production
+
+# Start the analytics worker
+CMD ["node", "src/lib/workers/analytics-worker.js"]

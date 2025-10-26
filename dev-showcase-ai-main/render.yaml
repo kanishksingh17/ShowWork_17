@@ -62,7 +62,7 @@ services:
   - type: worker
     name: showwork-workers
     env: docker
-    dockerfilePath: ./Dockerfile.production
+    dockerfilePath: ./Dockerfile.publish.production
     plan: free
     region: oregon
     envVars:
@@ -85,7 +85,7 @@ services:
   - type: worker
     name: showwork-analytics-workers
     env: docker
-    dockerfilePath: ./Dockerfile.production
+    dockerfilePath: ./Dockerfile.analytics.production
     plan: free
     region: oregon
     envVars:
