@@ -1,23 +1,30 @@
-# Render Infrastructure as Code
-# Deploy ShowWork to Render with this configuration
+# render.yaml
+# =========================================================
+# SHOWWORK Render Deployment Configuration (Production)
+# =========================================================
 
 services:
-  # Backend API Service
+  # -------------------------------------------------------
+  # Backend Service
+  # -------------------------------------------------------
   - type: web
     name: showwork-backend
     env: docker
-    dockerfilePath: ./Dockerfile.production
     plan: free
     region: oregon
+    dockerfilePath: ./Dockerfile.production
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 5001
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: showwork-database
+          property: connectionString
       - key: REDIS_URL
-        sync: false
+        fromService:
+          name: showwork-redis
+          type: redis
+          property: connectionString
       - key: OPENAI_API_KEY
         sync: false
       - key: GOOGLE_CLIENT_ID
@@ -32,35 +39,32 @@ services:
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
-      - key: FRONTEND_URL
-        value: https://showwork-frontend.onrender.com
-      - key: BACKEND_URL
-        value: https://showwork-backend.onrender.com
-      - key: CORS_ORIGIN
-        value: https://showwork-frontend.onrender.com
-    healthCheckPath: /api/health
     autoDeploy: true
 
+  # -------------------------------------------------------
   # Frontend Service
+  # -------------------------------------------------------
   - type: web
     name: showwork-frontend
     env: docker
-    dockerfilePath: ./Dockerfile.frontend.production
     plan: free
     region: oregon
+    dockerfilePath: ./Dockerfile.frontend.production
     envVars:
       - key: NODE_ENV
         value: production
-      - key: VITE_API_URL
-        value: https://showwork-backend.onrender.com
-      - key: FRONTEND_URL
-        value: https://showwork-frontend.onrender.com
-    healthCheckPath: /health
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: showwork-backend
+          type: web
+          property: url
     autoDeploy: true
 
-  # Background Workers
+  # -------------------------------------------------------
+  # Publish Workers
+  # -------------------------------------------------------
   - type: worker
-    name: showwork-workers
+    name: showwork-publish-workers
     env: docker
     dockerfilePath: ./Dockerfile.production
     plan: free
@@ -69,11 +73,14 @@ services:
       - key: NODE_ENV
         value: production
       - key: REDIS_URL
-        sync: false
+        fromService:
+          name: showwork-redis
+          type: redis
+          property: connectionString
       - key: DATABASE_URL
-        sync: false
-      - key: OPENAI_API_KEY
-        sync: false
+        fromDatabase:
+          name: showwork-database
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
@@ -81,7 +88,9 @@ services:
     command: node src/lib/workers/publish-worker.js
     autoDeploy: true
 
+  # -------------------------------------------------------
   # Analytics Workers
+  # -------------------------------------------------------
   - type: worker
     name: showwork-analytics-workers
     env: docker
@@ -92,9 +101,14 @@ services:
       - key: NODE_ENV
         value: production
       - key: REDIS_URL
-        sync: false
+        fromService:
+          name: showwork-redis
+          type: redis
+          property: connectionString
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: showwork-database
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
@@ -102,7 +116,9 @@ services:
     command: node src/lib/workers/analytics-worker.js
     autoDeploy: true
 
-# Database (Use Render Managed Database)
+# -------------------------------------------------------
+# Managed Database
+# -------------------------------------------------------
 databases:
   - name: showwork-database
     plan: free
@@ -110,7 +126,9 @@ databases:
     databaseName: showwork
     user: showwork_user
 
-# Redis (Use Render Redis)
+# -------------------------------------------------------
+# Managed Redis
+# -------------------------------------------------------
 redis:
   - name: showwork-redis
     plan: free
