@@ -1,0 +1,106 @@
+# ==============================
+# 🌐 Render Blueprint File
+# ==============================
+# Deploys full ShowWork app to Render with:
+# - Frontend (Next.js / React)
+# - Backend (Node.js / Express)
+# - Two Workers (Publish + Analytics)
+# - External MongoDB Atlas + Upstash Redis
+# ==============================
+
+services:
+  # ==========================
+  # ⚙️ Backend API Service
+  # ==========================
+  - type: web
+    name: showwork-backend
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+    autoDeploy: true
+
+  # ==========================
+  # 🎨 Frontend (Next.js / React)
+  # ==========================
+  - type: web
+    name: showwork-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://showwork-backend.onrender.com
+    autoDeploy: true
+
+  # ==========================
+  # ⚙️ Publish Worker
+  # ==========================
+  - type: worker
+    name: showwork-publish-worker
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+    command: node src/lib/workers/publish-worker.js
+    autoDeploy: true
+
+  # ==========================
+  # 📊 Analytics Worker
+  # ==========================
+  - type: worker
+    name: showwork-analytics-worker
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+    command: node src/lib/workers/analytics-worker.js
+    autoDeploy: true
