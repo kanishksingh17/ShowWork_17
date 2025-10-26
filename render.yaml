@@ -1,16 +1,16 @@
-# ===========================================
-# 🚀 Render Infrastructure as Code for ShowWork
-# ===========================================
-# This configuration deploys your entire app stack to Render:
-# - Backend API
-# - Frontend Web App
-# - Background Workers
-# - Managed MongoDB & Redis
-# ===========================================
+# ==============================
+# 🌐 Render Blueprint File
+# ==============================
+# Deploys full ShowWork app to Render with:
+# - Frontend (Next.js / React)
+# - Backend (Node.js / Express)
+# - Two Workers (Publish + Analytics)
+# - External MongoDB Atlas + Upstash Redis
+# ==============================
 
 services:
   # ==========================
-  # 🧠 Backend API Service
+  # ⚙️ Backend API Service
   # ==========================
   - type: web
     name: showwork-backend
@@ -22,7 +22,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 5001
+        value: 8000
       - key: DATABASE_URL
         sync: false
       - key: REDIS_URL
@@ -44,7 +44,7 @@ services:
     autoDeploy: true
 
   # ==========================
-  # 🌐 Frontend Web Service
+  # 🎨 Frontend (Next.js / React)
   # ==========================
   - type: web
     name: showwork-frontend
@@ -75,9 +75,32 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
     command: node src/lib/workers/publish-worker.js
     autoDeploy: true
 
   # ==========================
   # 📊 Analytics Worker
   # ==========================
+  - type: worker
+    name: showwork-analytics-worker
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+    command: node src/lib/workers/analytics-worker.js
+    autoDeploy: true
