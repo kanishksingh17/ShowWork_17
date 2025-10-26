@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,15 +6,20 @@
 
 /* Custom animations for onboarding */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes glow {
-  0%, 100% { 
+  0%,
+  100% {
     filter: drop-shadow(0 0 5px rgba(30, 58, 138, 0.5));
   }
-  50% { 
+  50% {
     filter: drop-shadow(0 0 20px rgba(30, 58, 138, 0.8));
   }
 }
@@ -29,35 +34,35 @@
 
 /* Additional Animation Utilities */
 @keyframes fade-in-up {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes scale-in {
-  from { 
-    opacity: 0; 
-    transform: scale(0.9); 
+  from {
+    opacity: 0;
+    transform: scale(0.9);
   }
-  to { 
-    opacity: 1; 
-    transform: scale(1); 
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 @keyframes slide-in-right {
-  from { 
-    opacity: 0; 
-    transform: translateX(20px); 
+  from {
+    opacity: 0;
+    transform: translateX(20px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateX(0); 
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -73,10 +78,18 @@
   animation: slide-in-right 0.8s ease-out;
 }
 
-.animation-delay-100 { animation-delay: 0.1s; }
-.animation-delay-300 { animation-delay: 0.3s; }
-.animation-delay-500 { animation-delay: 0.5s; }
-.animation-delay-700 { animation-delay: 0.7s; }
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+.animation-delay-500 {
+  animation-delay: 0.5s;
+}
+.animation-delay-700 {
+  animation-delay: 0.7s;
+}
 
 /* Code Logo with Loading Bar for ShowWork */
 .code-logo-container {
@@ -102,12 +115,15 @@
   align-items: center;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(30, 58, 138, 0.5), 0 0 15px rgba(30, 58, 138, 0.2);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 3px rgba(30, 58, 138, 0.5),
+    0 0 15px rgba(30, 58, 138, 0.2);
 }
 
 .code-symbol {
   color: #ffffff;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-weight: bold;
   font-size: 0.8em;
   letter-spacing: -1px;
@@ -118,7 +134,7 @@
 
 /* Loading bar animation */
 .code-logo::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -127,12 +143,10 @@
   background: linear-gradient(90deg, #1e3a8a, #1e40af);
   animation: loadingBar 3s ease-in-out infinite;
   z-index: 1;
-  box-shadow: 
+  box-shadow:
     0 0 8px rgba(30, 58, 138, 0.6),
     0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
-
 
 @keyframes loadingBar {
   0% {
@@ -148,8 +162,6 @@
     opacity: 0.8;
   }
 }
-
-
 
 /* Ensure logo maintains square proportions */
 .code-logo-container .code-logo {
@@ -192,7 +204,10 @@
 /* Hover effects */
 .code-logo-container:hover .code-logo {
   transform: scale(1.05);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(30, 58, 138, 0.7), 0 0 20px rgba(30, 58, 138, 0.3);
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.2),
+    0 0 0 4px rgba(30, 58, 138, 0.7),
+    0 0 20px rgba(30, 58, 138, 0.3);
   transition: all 0.3s ease;
 }
 
@@ -209,7 +224,7 @@
     --background: 210 20% 98%;
     --surface: 0 0% 100%;
     --surface-elevated: 210 20% 99%;
-    
+
     /* Typography - Keep Light Theme */
     --foreground: 215 25% 15%;
     --foreground-muted: 215 15% 45%;
@@ -219,30 +234,30 @@
     --primary: 221 83% 53%;
     --primary-glow: 221 83% 63%;
     --primary-foreground: 0 0% 100%;
-    
+
     --accent: 214 95% 68%;
     --accent-glow: 214 95% 78%;
     --accent-foreground: 0 0% 100%;
-    
+
     /* Debug: Test if variables are working */
     .test-primary {
       background-color: hsl(var(--primary));
       color: hsl(var(--primary-foreground));
     }
-    
+
     /* Logo specific classes with fallback */
     .logo-bg {
-      background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     }
-    
+
     .logo-bg-alt {
       background: linear-gradient(135deg, hsl(221 83% 53%), hsl(221 83% 63%));
     }
-    
+
     .logo-text {
-      color: #3B82F6;
+      color: #3b82f6;
     }
-    
+
     --secondary: 210 15% 95%;
     --secondary-foreground: 215 25% 15%;
 
@@ -250,7 +265,7 @@
     --card: 0 0% 100%;
     --card-foreground: 215 25% 15%;
     --card-border: 215 15% 90%;
-    
+
     --input: 215 15% 96%;
     --input-border: 215 15% 85%;
     --border: 215 15% 90%;
@@ -265,10 +280,26 @@
     --destructive-foreground: 0 0% 100%;
 
     /* Gradients - Vibrant Blue for Buttons */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(221 83% 63%));
-    --gradient-accent: linear-gradient(135deg, hsl(214 95% 68%), hsl(214 95% 78%));
-    --gradient-hero: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(214 95% 68%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(210 15% 96%) 100%);
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(221 83% 53%),
+      hsl(221 83% 63%)
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(214 95% 68%),
+      hsl(214 95% 78%)
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(221 83% 53%) 0%,
+      hsl(214 95% 68%) 100%
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(210 20% 98%) 0%,
+      hsl(210 15% 96%) 100%
+    );
 
     /* Shadows - Keep Light Theme */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -289,23 +320,23 @@
     .gradient-primary {
       background: var(--gradient-primary);
     }
-    
+
     .gradient-accent {
       background: var(--gradient-accent);
     }
-    
+
     .gradient-hero {
       background: var(--gradient-hero);
     }
-    
+
     .gradient-subtle {
       background: var(--gradient-subtle);
     }
-    
+
     .shadow-glow {
       box-shadow: var(--shadow-glow);
     }
-    
+
     .shadow-accent-glow {
       box-shadow: var(--shadow-accent-glow);
     }
@@ -379,19 +410,25 @@
 @layer utilities {
   /* Custom Animations */
   @keyframes glow-pulse {
-    0%, 100% { 
+    0%,
+    100% {
       opacity: 0.5;
       transform: scale(0.8);
     }
-    50% { 
+    50% {
       opacity: 1;
       transform: scale(1.2);
     }
   }
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 
   @keyframes fade-in-up {

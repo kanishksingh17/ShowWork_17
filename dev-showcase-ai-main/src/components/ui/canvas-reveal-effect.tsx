@@ -43,7 +43,7 @@ export const CanvasRevealEffect = ({
     window.addEventListener("resize", updateCanvasSize);
 
     let animationFrame: number;
-    let startTime = Date.now();
+    const startTime = Date.now();
 
     const animate = () => {
       if (!canvas || !ctx) return;
@@ -62,19 +62,23 @@ export const CanvasRevealEffect = ({
         for (let j = 0; j < rows; j++) {
           const x = i * dotSpacing;
           const y = j * dotSpacing;
-          
+
           // Ripple wave animation from center
           const centerX = cols / 2;
           const centerY = rows / 2;
           const distance = Math.sqrt((i - centerX) ** 2 + (j - centerY) ** 2);
           const wave = Math.sin(elapsed * 2 + distance * 0.3) * 0.5 + 0.5;
           const fadeIn = Math.max(0, 1 - (distance * 0.05 - elapsed * 1.5));
-          
+
           if (fadeIn > 0) {
-            const opacity = wave * fadeIn * (opacities[Math.floor(distance) % opacities.length] || 0.5) * 0.8;
+            const opacity =
+              wave *
+              fadeIn *
+              (opacities[Math.floor(distance) % opacities.length] || 0.5) *
+              0.8;
             const colorIndex = Math.floor(distance) % colors.length;
             const [r, g, b] = colors[colorIndex] || [147, 51, 234];
-            
+
             ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
             ctx.beginPath();
             ctx.arc(x, y, (dotSize || 2) * (0.5 + wave * 0.5), 0, Math.PI * 2);

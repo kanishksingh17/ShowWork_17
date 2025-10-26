@@ -1,111 +1,121 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard,
-  Package,
-  BarChart,
-  Users,
-  Folder,
-  Plug,
-  Settings,
-  LogOut
-} from 'lucide-react';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UnifiedSidebar } from "../components/UnifiedSidebar";
+import { BarChart3, TrendingUp, Users, Eye } from "lucide-react";
 
 export default function Analytics() {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // Clear any stored user data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('showcase-projects');
-    
-    // Redirect to login page
-    navigate('/login');
-  };
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-br from-[#1E293B] to-[#0F172A] text-white flex flex-col rounded-xl shadow-lg m-4">
-        <div className="p-6 flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
-            <span className="text-white font-mono text-sm font-bold">&lt;/&gt;</span>
-          </div>
-          <h1 className="text-xl font-extrabold text-white">ShowWork</h1>
-        </div>
-        
-        <nav className="flex-1 px-4 py-2 space-y-1">
-          <div 
-            className="flex items-center px-4 py-3 text-sm font-medium text-[#9CA3AF] hover:bg-white/10 hover:text-white rounded-lg cursor-pointer transition-all duration-200"
-            onClick={() => navigate('/dashboard')}
-          >
-            <LayoutDashboard className="w-5 h-5 mr-3" />
-            Dashboard
-          </div>
-          <div 
-            className="flex items-center px-4 py-3 text-sm font-medium text-[#9CA3AF] hover:bg-white/10 hover:text-white rounded-lg cursor-pointer transition-all duration-200"
-            onClick={() => navigate('/showcase')}
-          >
-            <Package className="w-5 h-5 mr-3" />
-            Showcase
-          </div>
-          <div 
-            className="flex items-center px-4 py-3 text-sm font-medium bg-blue-600 text-white shadow-sm rounded-lg cursor-pointer transition-all duration-200"
-            onClick={() => navigate('/analytics')}
-          >
-            <BarChart className="w-5 h-5 mr-3" />
-            Analytics
-          </div>
-          <div 
-            className="flex items-center px-4 py-3 text-sm font-medium text-[#9CA3AF] hover:bg-white/10 hover:text-white rounded-lg cursor-pointer transition-all duration-200"
-            onClick={() => navigate('/community')}
-          >
-            <Users className="w-5 h-5 mr-3" />
-            Community
-          </div>
-          <div 
-            className="flex items-center px-4 py-3 text-sm font-medium text-[#9CA3AF] hover:bg-white/10 hover:text-white rounded-lg cursor-pointer transition-all duration-200"
-            onClick={() => navigate('/portfolio')}
-          >
-            <Folder className="w-5 h-5 mr-3" />
-            Portfolio
-          </div>
-          <div 
-            className="flex items-center px-4 py-3 text-sm font-medium text-[#9CA3AF] hover:bg-white/10 hover:text-white rounded-lg cursor-pointer transition-all duration-200"
-            onClick={() => navigate('/integrations')}
-          >
-            <Plug className="w-5 h-5 mr-3" />
-            Integrations
-          </div>
-        </nav>
-        
-        <div className="px-4 py-2 border-t border-white/10">
-          <div 
-            className="flex items-center px-4 py-3 text-sm font-medium text-[#9CA3AF] hover:bg-white/10 hover:text-white rounded-lg cursor-pointer transition-all duration-200"
-            onClick={() => navigate('/settings')}
-          >
-            <Settings className="w-5 h-5 mr-3" />
-            Settings
-          </div>
-        <div
-          className="flex items-center px-4 py-3 text-sm font-medium text-[#9CA3AF] hover:bg-white/10 hover:text-white rounded-lg cursor-pointer transition-all duration-200"
-          onClick={handleLogout}
-        >
-          <LogOut className="w-5 h-5 mr-3" />
-          Logout
-        </div>
-        </div>
-      </aside>
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <UnifiedSidebar currentPage="analytics" />
 
-      {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Analytics</h1>
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <p className="text-gray-600">Analytics dashboard coming soon...</p>
+      <div className="flex-1 flex">
+        {/* Main Content */}
+        <div className="flex-1 p-6">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Analytics
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Track your portfolio and content performance
+              </p>
+            </div>
+          </div>
+
+          {/* Analytics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Total Views
+                    </p>
+                    <p className="text-2xl font-bold text-blue-600">12,345</p>
+                  </div>
+                  <Eye className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Engagement
+                    </p>
+                    <p className="text-2xl font-bold text-green-600">2,847</p>
+                  </div>
+                  <TrendingUp className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Followers
+                    </p>
+                    <p className="text-2xl font-bold text-purple-600">1,234</p>
+                  </div>
+                  <Users className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Posts
+                    </p>
+                    <p className="text-2xl font-bold text-orange-600">89</p>
+                  </div>
+                  <BarChart3 className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Content Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-gray-500">
+                  <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">
+                    Performance Charts
+                  </h3>
+                  <p>Detailed analytics coming soon...</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Platform Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-gray-500">
+                  <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">
+                    Platform Analytics
+                  </h3>
+                  <p>Cross-platform insights coming soon...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
-

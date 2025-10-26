@@ -1,27 +1,32 @@
 // OpenAI API Test Component - Test your API key integration
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { OpenAIClient, PortfolioContentGenerator } from '../services/openaiService';
-import { getOpenAIKey } from '../config/apiConfig';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
-  Sparkles, 
-  Code, 
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  OpenAIClient,
+  PortfolioContentGenerator,
+} from "../services/openaiService";
+import { getOpenAIKey } from "../config/apiConfig";
+import {
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Sparkles,
+  Code,
   Palette,
   FileText,
-  Search
-} from 'lucide-react';
+  Search,
+} from "lucide-react";
 
 const OpenAITestComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [testResults, setTestResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [testInput, setTestInput] = useState('Senior Software Engineer with React and Node.js expertise');
+  const [testInput, setTestInput] = useState(
+    "Senior Software Engineer with React and Node.js expertise",
+  );
 
   const runOpenAITests = async () => {
     setIsLoading(true);
@@ -30,45 +35,45 @@ const OpenAITestComponent = () => {
 
     try {
       const apiKey = getOpenAIKey();
-      console.log('Using OpenAI API Key:', apiKey.substring(0, 20) + '...');
+      console.log("Using OpenAI API Key:", apiKey.substring(0, 20) + "...");
 
       const generator = new PortfolioContentGenerator(apiKey);
-      
+
       // Test 1: Professional Bio Generation
-      console.log('Testing Professional Bio Generation...');
+      console.log("Testing Professional Bio Generation...");
       const bio = await generator.generateProfessionalBio({
-        name: 'John Doe',
-        title: 'Senior Software Engineer',
-        skills: ['React', 'Node.js', 'TypeScript'],
-        experience: [{ duration: '5 years' }]
+        name: "John Doe",
+        title: "Senior Software Engineer",
+        skills: ["React", "Node.js", "TypeScript"],
+        experience: [{ duration: "5 years" }],
       });
 
       // Test 2: Project Description Generation
-      console.log('Testing Project Description Generation...');
+      console.log("Testing Project Description Generation...");
       const projectDesc = await generator.generateProjectDescription({
-        name: 'E-commerce Platform',
-        technologies: ['React', 'Node.js', 'MongoDB'],
-        description: 'Full-stack e-commerce solution',
+        name: "E-commerce Platform",
+        technologies: ["React", "Node.js", "MongoDB"],
+        description: "Full-stack e-commerce solution",
         stars: 45,
-        forks: 12
+        forks: 12,
       });
 
       // Test 3: SEO Metadata Generation
-      console.log('Testing SEO Metadata Generation...');
+      console.log("Testing SEO Metadata Generation...");
       const seoMetadata = await generator.generateSEOMetadata({
-        name: 'John Doe',
-        title: 'Senior Software Engineer',
-        skills: ['React', 'Node.js', 'TypeScript'],
-        location: 'San Francisco, CA'
+        name: "John Doe",
+        title: "Senior Software Engineer",
+        skills: ["React", "Node.js", "TypeScript"],
+        location: "San Francisco, CA",
       });
 
       // Test 4: Color Palette Generation
-      console.log('Testing Color Palette Generation...');
-      const colorPalette = await generator.generateColorPalette('developer');
+      console.log("Testing Color Palette Generation...");
+      const colorPalette = await generator.generateColorPalette("developer");
 
       // Test 5: Call-to-Action Generation
-      console.log('Testing Call-to-Action Generation...');
-      const ctaText = await generator.generateCallToAction('developer');
+      console.log("Testing Call-to-Action Generation...");
+      const ctaText = await generator.generateCallToAction("developer");
 
       setTestResults({
         bio,
@@ -76,13 +81,12 @@ const OpenAITestComponent = () => {
         seoMetadata,
         colorPalette,
         ctaText,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
-      console.log('All OpenAI tests completed successfully!');
-
+      console.log("All OpenAI tests completed successfully!");
     } catch (error) {
-      console.error('OpenAI API test failed:', error);
+      console.error("OpenAI API test failed:", error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -91,26 +95,25 @@ const OpenAITestComponent = () => {
 
   const testCustomInput = async () => {
     if (!testInput.trim()) return;
-    
+
     setIsLoading(true);
     setError(null);
 
     try {
       const apiKey = getOpenAIKey();
       const generator = new PortfolioContentGenerator(apiKey);
-      
+
       const bio = await generator.generateProfessionalBio({
-        name: 'Custom User',
+        name: "Custom User",
         title: testInput,
-        skills: ['Various'],
-        experience: []
+        skills: ["Various"],
+        experience: [],
       });
 
       setTestResults({
         customBio: bio,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       setError(error.message);
     } finally {
@@ -127,7 +130,8 @@ const OpenAITestComponent = () => {
             OpenAI API Integration Test
           </h1>
           <p className="text-[#94A3B8] text-lg">
-            Test your OpenAI API key integration with the portfolio generation system
+            Test your OpenAI API key integration with the portfolio generation
+            system
           </p>
         </div>
 
@@ -143,16 +147,17 @@ const OpenAITestComponent = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[#94A3B8]">
-                  OpenAI API Key: <code className="bg-black/20 px-2 py-1 rounded">
+                  OpenAI API Key:{" "}
+                  <code className="bg-black/20 px-2 py-1 rounded">
                     {getOpenAIKey().substring(0, 20)}...
                   </code>
                 </p>
                 <p className="text-sm text-[#94A3B8] mt-1">
-                  Status: {getOpenAIKey() ? 'Configured' : 'Not Found'}
+                  Status: {getOpenAIKey() ? "Configured" : "Not Found"}
                 </p>
               </div>
-              <Badge variant={getOpenAIKey() ? 'default' : 'destructive'}>
-                {getOpenAIKey() ? 'Ready' : 'Error'}
+              <Badge variant={getOpenAIKey() ? "default" : "destructive"}>
+                {getOpenAIKey() ? "Ready" : "Error"}
               </Badge>
             </div>
           </CardContent>
@@ -169,9 +174,10 @@ const OpenAITestComponent = () => {
             </CardHeader>
             <CardContent>
               <p className="text-[#94A3B8] mb-4">
-                Run comprehensive tests for all OpenAI API endpoints used in portfolio generation.
+                Run comprehensive tests for all OpenAI API endpoints used in
+                portfolio generation.
               </p>
-              <Button 
+              <Button
                 onClick={runOpenAITests}
                 disabled={isLoading}
                 className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/80"
@@ -208,7 +214,7 @@ const OpenAITestComponent = () => {
                 placeholder="Enter your professional title..."
                 className="mb-4 bg-white/10 border-white/20 text-white"
               />
-              <Button 
+              <Button
                 onClick={testCustomInput}
                 disabled={isLoading || !testInput.trim()}
                 className="w-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/80"
@@ -245,9 +251,7 @@ const OpenAITestComponent = () => {
         {/* Test Results */}
         {testResults && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Test Results
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Test Results</h2>
 
             {/* Professional Bio */}
             {testResults.bio && (
@@ -291,13 +295,16 @@ const OpenAITestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Title:</strong> {testResults.seoMetadata.metaTitle}
+                      <strong className="text-white">Title:</strong>{" "}
+                      {testResults.seoMetadata.metaTitle}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Description:</strong> {testResults.seoMetadata.metaDescription}
+                      <strong className="text-white">Description:</strong>{" "}
+                      {testResults.seoMetadata.metaDescription}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Keywords:</strong> {testResults.seoMetadata.keywords.join(', ')}
+                      <strong className="text-white">Keywords:</strong>{" "}
+                      {testResults.seoMetadata.keywords.join(", ")}
                     </p>
                   </div>
                 </CardContent>
@@ -315,15 +322,22 @@ const OpenAITestComponent = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center space-x-4">
-                    {testResults.colorPalette.map((color: string, index: number) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <div 
-                          className="w-8 h-8 rounded border-2 border-white/20"
-                          style={{ backgroundColor: color }}
-                        />
-                        <code className="text-[#94A3B8] text-sm">{color}</code>
-                      </div>
-                    ))}
+                    {testResults.colorPalette.map(
+                      (color: string, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center space-x-2"
+                        >
+                          <div
+                            className="w-8 h-8 rounded border-2 border-white/20"
+                            style={{ backgroundColor: color }}
+                          />
+                          <code className="text-[#94A3B8] text-sm">
+                            {color}
+                          </code>
+                        </div>
+                      ),
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -341,13 +355,16 @@ const OpenAITestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Primary CTA:</strong> {testResults.ctaText.primaryCTA}
+                      <strong className="text-white">Primary CTA:</strong>{" "}
+                      {testResults.ctaText.primaryCTA}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Secondary CTA:</strong> {testResults.ctaText.secondaryCTA}
+                      <strong className="text-white">Secondary CTA:</strong>{" "}
+                      {testResults.ctaText.secondaryCTA}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Contact CTA:</strong> {testResults.ctaText.contactCTA}
+                      <strong className="text-white">Contact CTA:</strong>{" "}
+                      {testResults.ctaText.contactCTA}
                     </p>
                   </div>
                 </CardContent>
@@ -374,13 +391,17 @@ const OpenAITestComponent = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center text-green-400">
                   <CheckCircle className="w-5 h-5 mr-2" />
-                  <span className="font-medium">All tests completed successfully!</span>
+                  <span className="font-medium">
+                    All tests completed successfully!
+                  </span>
                 </div>
                 <p className="text-green-300 mt-2">
-                  Your OpenAI API key is working correctly. Portfolio generation is ready to use.
+                  Your OpenAI API key is working correctly. Portfolio generation
+                  is ready to use.
                 </p>
                 <p className="text-green-300 text-sm mt-1">
-                  Test completed at: {new Date(testResults.timestamp).toLocaleString()}
+                  Test completed at:{" "}
+                  {new Date(testResults.timestamp).toLocaleString()}
                 </p>
               </CardContent>
             </Card>

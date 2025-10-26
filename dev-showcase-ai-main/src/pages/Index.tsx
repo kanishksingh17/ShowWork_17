@@ -1,4 +1,4 @@
-import ShowWorkLanding from '@/components/ShowWorkLanding';
+import ShowWorkLanding from "@/components/ShowWorkLanding";
 
 const Index = () => {
   return <ShowWorkLanding />;

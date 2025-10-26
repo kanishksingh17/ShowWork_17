@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 
 /**
  * Custom hook for localStorage with debouncing
@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
-  debounceMs: number = 500
+  debounceMs: number = 500,
 ): [T, (value: T) => void, boolean] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
@@ -23,26 +23,29 @@ export function useLocalStorage<T>(
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced save function
-  const setValue = useCallback((value: T) => {
-    setStoredValue(value);
-    setIsLoading(true);
+  const setValue = useCallback(
+    (value: T) => {
+      setStoredValue(value);
+      setIsLoading(true);
 
-    // Clear existing timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    // Set new timeout
-    debounceRef.current = setTimeout(() => {
-      try {
-        window.localStorage.setItem(key, JSON.stringify(value));
-        setIsLoading(false);
-      } catch (error) {
-        console.error(`Error setting localStorage key "${key}":`, error);
-        setIsLoading(false);
+      // Clear existing timeout
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
       }
-    }, debounceMs);
-  }, [key, debounceMs]);
+
+      // Set new timeout
+      debounceRef.current = setTimeout(() => {
+        try {
+          window.localStorage.setItem(key, JSON.stringify(value));
+          setIsLoading(false);
+        } catch (error) {
+          console.error(`Error setting localStorage key "${key}":`, error);
+          setIsLoading(false);
+        }
+      }, debounceMs);
+    },
+    [key, debounceMs],
+  );
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -61,13 +64,19 @@ export function useLocalStorage<T>(
  */
 export function useFormPersistence<T extends Record<string, any>>(
   initialData: T,
-  formKey: string = 'showwork-form-data'
+  formKey: string = "showwork-form-data",
 ): [T, (updates: Partial<T>) => void, boolean] {
-  const [formData, setFormData, isLoading] = useLocalStorage(formKey, initialData);
+  const [formData, setFormData, isLoading] = useLocalStorage(
+    formKey,
+    initialData,
+  );
 
-  const updateFormData = useCallback((updates: Partial<T>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-  }, [setFormData]);
+  const updateFormData = useCallback(
+    (updates: Partial<T>) => {
+      setFormData((prev) => ({ ...prev, ...updates }));
+    },
+    [setFormData],
+  );
 
   return [formData, updateFormData, isLoading];
 }
@@ -76,10 +85,14 @@ export function useFormPersistence<T extends Record<string, any>>(
  * Hook for managing current step persistence
  */
 export function useStepPersistence(
-  initialStep: string = 'project-info',
-  stepKey: string = 'showwork-current-step'
+  initialStep: string = "project-info",
+  stepKey: string = "showwork-current-step",
 ): [string, (step: string) => void, boolean] {
-  const [currentStep, setCurrentStep, isLoading] = useLocalStorage(stepKey, initialStep, 100); // Faster save for step changes
-  
+  const [currentStep, setCurrentStep, isLoading] = useLocalStorage(
+    stepKey,
+    initialStep,
+    100,
+  ); // Faster save for step changes
+
   return [currentStep, setCurrentStep, isLoading];
 }

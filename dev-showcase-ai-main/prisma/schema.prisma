@@ -75,6 +75,10 @@ model User {
   testimonials  Testimonial[]
   analytics     Analytics[]
   templates     Template[]
+  scheduledPosts ScheduledPost[]
+  analyticsEvents AnalyticsEvent[]
+  userTokens UserToken[]
+  analyticsAggregates AnalyticsAggregate[]
 
   @@map("users")
 }
@@ -112,6 +116,9 @@ model Portfolio {
   metaDescription String?
   keywords        String[]
   
+  // Portfolio Health Score
+  healthJson      Json?    // Cached health object: { overall, breakdown, recommendedImprovements, lastComputedAt }
+  
   // Analytics
   lastViewed DateTime?
   createdAt  DateTime @default(now())
@@ -143,20 +150,85 @@ model Project {
   stars       Int      @default(0)
   forks       Int      @default(0)
   views       Int      @default(0)
+  likes       Int      @default(0)
   
   // Project details
   startDate   DateTime?
   endDate     DateTime?
   status      ProjectStatus @default(COMPLETED)
   category    String?
+  visibility  ProjectVisibility @default(PRIVATE)
+  tags        String[]
+  domain      String?    // Extracted domain (e.g., "web-development", "mobile", "data-science")
+  
+  // Code quality metrics
+  codeQualityScore Int? @default(0)
+  testCoverage     Int? @default(0)
+  openIssues       Int? @default(0)
+  criticalBugs      Int? @default(0)
+  complexity       String? @default("medium")
+  lastCommit       DateTime?
+  contributors     Int? @default(0)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   portfolio  Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
+  mediaFiles ProjectMediaFile[]
+  teamMembers ProjectTeamMember[]
+  scheduledPosts ScheduledPost[]
+  analyticsEvents AnalyticsEvent[]
+  analyticsAggregates AnalyticsAggregate[]
 
   @@map("projects")
+}
+
+model ProjectMediaFile {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  type      String
+  size      Int
+  url       String
+  thumbnailUrl String?
+  category  MediaCategory
+  metadata  Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_media_files")
+}
+
+model ProjectTeamMember {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  role      String
+  avatar    String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_team_members")
+}
+
+enum ProjectVisibility {
+  PUBLIC
+  PRIVATE
+  UNLISTED
+}
+
+enum MediaCategory {
+  IMAGES
+  VIDEOS
+  AUDIO
+  DOCUMENTS
 }
 
 model Skill {
@@ -309,6 +381,94 @@ model Analytics {
   @@map("analytics")
 }
 
+// Social Media Publishing Models
+model ScheduledPost {
+  id               String   @id @default(cuid())
+  userId           String
+  projectId        String
+  platforms        String[]
+  message          String?
+  messageByPlatform Json?
+  media            String[]      @default([])
+  scheduledAt      DateTime
+  status           String        @default("scheduled") // scheduled, processing, posted, failed
+  result           Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project         Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  publishLogs     PublishLog[]
+
+  @@map("scheduled_posts")
+}
+
+model PublishLog {
+  id              String   @id @default(cuid())
+  scheduledPostId String
+  platform        String
+  attempt         Int      @default(1)
+  status          String
+  platformResponse Json?
+  createdAt       DateTime @default(now())
+
+  scheduledPost   ScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)
+
+  @@map("publish_logs")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  projectId  String?
+  platform   String
+  metricType String
+  value      Int
+  raw        Json?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("analytics_events")
+}
+
+model UserToken {
+  id           String   @id @default(cuid())
+  userId       String
+  platform     String
+  accessToken  String   @db.Text
+  refreshToken String?  @db.Text
+  expiresAt    DateTime?
+  scope        String?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@map("user_tokens")
+}
+
+model AnalyticsAggregate {
+  id         String   @id @default(cuid())
+  userId     String
+  projectId  String?
+  platform   String?
+  period     String   // e.g., 2025-10-01 (date string) or 2025-W40 (week)
+  views      Int      @default(0)
+  likes      Int      @default(0)
+  shares     Int      @default(0)
+  comments   Int      @default(0)
+  clicks     Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, projectId, platform, period])
+  @@map("analytics_aggregates")
+}
+
 // Enums
 enum UserRole {
   USER
@@ -346,3 +506,4 @@ enum Complexity {
   INTERMEDIATE
   ADVANCED
 }
+

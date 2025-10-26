@@ -2,10 +2,10 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   theme: {
     container: {
@@ -52,21 +52,21 @@ module.exports = {
         },
         // Custom portfolio colors - Vibrant Blue Theme
         portfolio: {
-          primary: '#2563EB',
-          secondary: '#1D4ED8',
-          accent: '#3B82F6',
-          success: '#10B981',
-          warning: '#F59E0B',
-          error: '#EF4444',
-          neutral: '#6B7280'
+          primary: "#2563EB",
+          secondary: "#1D4ED8",
+          accent: "#3B82F6",
+          success: "#10B981",
+          warning: "#F59E0B",
+          error: "#EF4444",
+          neutral: "#6B7280",
         },
         // 3D theme colors
-        '3d': {
-          background: '#0F172A',
-          surface: '#1E293B',
-          text: '#FFFFFF',
-          'text-muted': '#94A3B8'
-        }
+        "3d": {
+          background: "#0F172A",
+          surface: "#1E293B",
+          text: "#FFFFFF",
+          "text-muted": "#94A3B8",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -116,22 +116,22 @@ module.exports = {
           "70%": { transform: "scale(0.9)" },
           "100%": { transform: "scale(1)", opacity: 1 },
         },
-        "pulse": {
+        pulse: {
           "0%, 100%": { opacity: 1 },
           "50%": { opacity: 0.5 },
         },
-        "glow": {
+        glow: {
           "0%, 100%": { boxShadow: "0 0 5px rgba(59, 130, 246, 0.5)" },
           "50%": { boxShadow: "0 0 20px rgba(59, 130, 246, 0.8)" },
         },
-        "typewriter": {
+        typewriter: {
           from: { width: 0 },
           to: { width: "100%" },
         },
-        "shimmer": {
+        shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
-        }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -144,55 +144,55 @@ module.exports = {
         "zoom-out": "zoom-out 0.3s ease-out",
         "rotate-in": "rotate-in 0.5s ease-out",
         "bounce-in": "bounce-in 0.6s ease-out",
-        "pulse": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "glow": "glow 2s ease-in-out infinite alternate",
-        "typewriter": "typewriter 3s steps(40) 1s 1 normal both",
-        "shimmer": "shimmer 2s linear infinite"
+        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        glow: "glow 2s ease-in-out infinite alternate",
+        typewriter: "typewriter 3s steps(40) 1s 1 normal both",
+        shimmer: "shimmer 2s linear infinite",
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Merriweather', 'serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-        display: ['Poppins', 'sans-serif']
+        sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["Merriweather", "serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        display: ["Poppins", "sans-serif"],
       },
       fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1rem' }],
-        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
-        'base': ['1rem', { lineHeight: '1.5rem' }],
-        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
-        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
-        '7xl': ['4.5rem', { lineHeight: '1' }],
-        '8xl': ['6rem', { lineHeight: '1' }],
-        '9xl': ['8rem', { lineHeight: '1' }]
+        xs: ["0.75rem", { lineHeight: "1rem" }],
+        sm: ["0.875rem", { lineHeight: "1.25rem" }],
+        base: ["1rem", { lineHeight: "1.5rem" }],
+        lg: ["1.125rem", { lineHeight: "1.75rem" }],
+        xl: ["1.25rem", { lineHeight: "1.75rem" }],
+        "2xl": ["1.5rem", { lineHeight: "2rem" }],
+        "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
+        "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
+        "5xl": ["3rem", { lineHeight: "1" }],
+        "6xl": ["3.75rem", { lineHeight: "1" }],
+        "7xl": ["4.5rem", { lineHeight: "1" }],
+        "8xl": ["6rem", { lineHeight: "1" }],
+        "9xl": ["8rem", { lineHeight: "1" }],
       },
       spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
-        '128': '32rem'
+        18: "4.5rem",
+        88: "22rem",
+        128: "32rem",
       },
       maxWidth: {
-        '8xl': '88rem',
-        '9xl': '96rem'
+        "8xl": "88rem",
+        "9xl": "96rem",
       },
       backdropBlur: {
-        xs: '2px'
+        xs: "2px",
       },
       boxShadow: {
-        'inner-lg': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)',
-        'glow': '0 0 20px rgba(59, 130, 246, 0.3)',
-        'glow-lg': '0 0 40px rgba(59, 130, 246, 0.4)'
-      }
+        "inner-lg": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)",
+        glow: "0 0 20px rgba(59, 130, 246, 0.3)",
+        "glow-lg": "0 0 40px rgba(59, 130, 246, 0.4)",
+      },
     },
   },
   plugins: [
     require("tailwindcss-animate"),
     require("@tailwindcss/typography"),
     require("@tailwindcss/forms"),
-    require("@tailwindcss/aspect-ratio")
+    require("@tailwindcss/aspect-ratio"),
   ],
-}
+};

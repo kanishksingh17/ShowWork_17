@@ -53,8 +53,8 @@ export interface EnhancedContent {
   };
   design: {
     colorPalette: string[];
-    animationStyle: 'subtle' | 'dynamic' | 'minimal';
-    layoutPreference: 'grid' | 'timeline' | 'carousel';
+    animationStyle: "subtle" | "dynamic" | "minimal";
+    layoutPreference: "grid" | "timeline" | "carousel";
   };
 }
 
@@ -65,17 +65,17 @@ export const collectUserData = async (userId: string): Promise<RawUserData> => {
     const [linkedInData, githubProjects, socialContent] = await Promise.all([
       scrapeLinkedInProfile(userId),
       fetchGitHubRepos(userId),
-      aggregateSocialMedia(userId)
+      aggregateSocialMedia(userId),
     ]);
-    
+
     return mergeAndValidateData({
       linkedin: linkedInData,
       github: githubProjects,
-      social: socialContent
+      social: socialContent,
     });
   } catch (error) {
-    console.error('Error collecting user data:', error);
-    throw new Error('Failed to collect user data');
+    console.error("Error collecting user data:", error);
+    throw new Error("Failed to collect user data");
   }
 };
 
@@ -83,25 +83,25 @@ export const collectUserData = async (userId: string): Promise<RawUserData> => {
 const scrapeLinkedInProfile = async (userId: string) => {
   // In real implementation, this would use LinkedIn API or web scraping
   return {
-    name: 'John Doe',
-    title: 'Senior Software Engineer',
-    bio: 'Experienced developer with expertise in React and Node.js',
+    name: "John Doe",
+    title: "Senior Software Engineer",
+    bio: "Experienced developer with expertise in React and Node.js",
     experience: [
       {
-        company: 'Tech Corp',
-        position: 'Senior Software Engineer',
-        duration: '2022 - Present',
-        description: 'Leading development of scalable web applications'
-      }
+        company: "Tech Corp",
+        position: "Senior Software Engineer",
+        duration: "2022 - Present",
+        description: "Leading development of scalable web applications",
+      },
     ],
-    skills: ['React', 'Node.js', 'TypeScript', 'AWS'],
+    skills: ["React", "Node.js", "TypeScript", "AWS"],
     education: [
       {
-        institution: 'University of Technology',
-        degree: 'Computer Science',
-        year: '2019'
-      }
-    ]
+        institution: "University of Technology",
+        degree: "Computer Science",
+        year: "2019",
+      },
+    ],
   };
 };
 
@@ -109,23 +109,23 @@ const fetchGitHubRepos = async (userId: string) => {
   // In real implementation, this would use GitHub API
   return [
     {
-      name: 'ecommerce-platform',
-      description: 'Full-stack e-commerce solution',
-      technologies: ['React', 'Node.js', 'MongoDB'],
+      name: "ecommerce-platform",
+      description: "Full-stack e-commerce solution",
+      technologies: ["React", "Node.js", "MongoDB"],
       stars: 45,
       forks: 12,
-      language: 'JavaScript',
-      url: 'https://github.com/johndoe/ecommerce-platform'
+      language: "JavaScript",
+      url: "https://github.com/johndoe/ecommerce-platform",
     },
     {
-      name: 'ai-chatbot',
-      description: 'AI-powered chatbot using OpenAI',
-      technologies: ['Python', 'OpenAI', 'FastAPI'],
+      name: "ai-chatbot",
+      description: "AI-powered chatbot using OpenAI",
+      technologies: ["Python", "OpenAI", "FastAPI"],
       stars: 89,
       forks: 23,
-      language: 'Python',
-      url: 'https://github.com/johndoe/ai-chatbot'
-    }
+      language: "Python",
+      url: "https://github.com/johndoe/ai-chatbot",
+    },
   ];
 };
 
@@ -135,13 +135,13 @@ const aggregateSocialMedia = async (userId: string) => {
     twitter: {
       followers: 1200,
       posts: 450,
-      engagement: 8.5
+      engagement: 8.5,
     },
     instagram: {
       followers: 800,
       posts: 120,
-      engagement: 12.3
-    }
+      engagement: 12.3,
+    },
   };
 };
 
@@ -150,18 +150,18 @@ const mergeAndValidateData = (data: any): RawUserData => {
   return {
     linkedin: data.linkedin,
     github: data.github,
-    social: data.social
+    social: data.social,
   };
 };
 
 // AI Content Generator Class
 export class AIContentGenerator {
   private apiKey: string;
-  
+
   constructor(apiKey: string) {
     this.apiKey = apiKey;
   }
-  
+
   async enhanceUserContent(rawData: RawUserData): Promise<EnhancedContent> {
     try {
       const enhanced = await Promise.all([
@@ -170,227 +170,249 @@ export class AIContentGenerator {
         this.suggestColorPalette(rawData),
         this.generateCallToActions(rawData),
         this.assessSkillLevels(rawData),
-        this.extractAchievements(rawData)
+        this.extractAchievements(rawData),
       ]);
-      
+
       return this.mergeEnhancedContent(enhanced, rawData);
     } catch (error) {
-      console.error('Error enhancing content:', error);
-      throw new Error('Failed to enhance content with AI');
+      console.error("Error enhancing content:", error);
+      throw new Error("Failed to enhance content with AI");
     }
   }
-  
-  private async generateProjectDescriptions(rawData: RawUserData): Promise<any> {
+
+  private async generateProjectDescriptions(
+    rawData: RawUserData,
+  ): Promise<any> {
     // Simulate AI project description generation
     const projects = rawData.github?.projects || [];
-    
+
     return projects.map((project: any) => ({
       ...project,
       enhancedDescription: this.generateTechnicalDescription(project),
       impact: this.generateImpactStatement(project),
-      featured: project.stars > 50 || project.forks > 20
+      featured: project.stars > 50 || project.forks > 20,
     }));
   }
-  
+
   private async createSEOOptimizedBio(rawData: RawUserData): Promise<any> {
-    const baseBio = rawData.linkedin?.bio || 'Professional developer';
-    
+    const baseBio = rawData.linkedin?.bio || "Professional developer";
+
     return {
       bio: this.generateProfessionalBio(baseBio),
       metaTitle: this.generateMetaTitle(rawData),
       metaDescription: this.generateMetaDescription(rawData),
-      keywords: this.extractKeywords(rawData)
+      keywords: this.extractKeywords(rawData),
     };
   }
-  
+
   private async suggestColorPalette(rawData: RawUserData): Promise<string[]> {
     // Analyze user's industry and preferences to suggest colors
     const industry = this.detectIndustry(rawData);
-    
+
     const colorPalettes = {
-      developer: ['#1E40AF', '#3B82F6', '#8B5CF6'],
-      creative: ['#F59E0B', '#EF4444', '#10B981'],
-      business: ['#374151', '#6B7280', '#1F2937'],
-      academic: ['#7C3AED', '#A855F7', '#C084FC'],
-      freelancer: ['#F97316', '#FB923C', '#FED7AA']
+      developer: ["#1E40AF", "#3B82F6", "#8B5CF6"],
+      creative: ["#F59E0B", "#EF4444", "#10B981"],
+      business: ["#374151", "#6B7280", "#1F2937"],
+      academic: ["#7C3AED", "#A855F7", "#C084FC"],
+      freelancer: ["#F97316", "#FB923C", "#FED7AA"],
     };
-    
+
     return colorPalettes[industry] || colorPalettes.developer;
   }
-  
+
   private async generateCallToActions(rawData: RawUserData): Promise<any> {
     return {
-      primaryCTA: 'View My Projects',
-      secondaryCTA: 'Get In Touch',
-      contactMethods: this.generateContactMethods(rawData)
+      primaryCTA: "View My Projects",
+      secondaryCTA: "Get In Touch",
+      contactMethods: this.generateContactMethods(rawData),
     };
   }
-  
+
   private async assessSkillLevels(rawData: RawUserData): Promise<any> {
     const skills = rawData.linkedin?.skills || [];
-    
+
     return skills.map((skill: string) => ({
       name: skill,
       level: this.calculateSkillLevel(skill, rawData),
-      category: this.categorizeSkill(skill)
+      category: this.categorizeSkill(skill),
     }));
   }
-  
+
   private async extractAchievements(rawData: RawUserData): Promise<any> {
     const experience = rawData.linkedin?.experience || [];
-    
+
     return experience.map((exp: any) => ({
       ...exp,
       achievements: this.generateAchievements(exp),
-      impact: this.generateImpactMetrics(exp)
+      impact: this.generateImpactMetrics(exp),
     }));
   }
-  
+
   // Helper methods for AI content generation
   private generateTechnicalDescription(project: any): string {
-    const tech = project.technologies?.join(', ') || 'various technologies';
-    return `A ${project.language?.toLowerCase() || 'web'} application built with ${tech}. ${project.description} Features include modern UI/UX design, responsive layout, and optimized performance.`;
+    const tech = project.technologies?.join(", ") || "various technologies";
+    return `A ${project.language?.toLowerCase() || "web"} application built with ${tech}. ${project.description} Features include modern UI/UX design, responsive layout, and optimized performance.`;
   }
-  
+
   private generateImpactStatement(project: any): string {
     const stars = project.stars || 0;
     const forks = project.forks || 0;
-    
-    if (stars > 100) return `Highly popular project with ${stars} stars and ${forks} forks`;
+
+    if (stars > 100)
+      return `Highly popular project with ${stars} stars and ${forks} forks`;
     if (stars > 50) return `Well-received project with ${stars} stars`;
     if (forks > 10) return `Actively forked project with ${forks} forks`;
-    return 'Personal project showcasing technical skills';
+    return "Personal project showcasing technical skills";
   }
-  
+
   private generateProfessionalBio(baseBio: string): string {
     return `${baseBio} Passionate about creating innovative solutions and staying up-to-date with the latest technologies. Experienced in building scalable applications and collaborating with cross-functional teams.`;
   }
-  
+
   private generateMetaTitle(rawData: RawUserData): string {
-    const name = rawData.linkedin?.name || 'Professional';
-    const title = rawData.linkedin?.title || 'Developer';
+    const name = rawData.linkedin?.name || "Professional";
+    const title = rawData.linkedin?.title || "Developer";
     return `${name} - ${title} | Portfolio`;
   }
-  
+
   private generateMetaDescription(rawData: RawUserData): string {
-    const skills = rawData.linkedin?.skills?.slice(0, 3).join(', ') || 'web development';
-    return `Professional ${rawData.linkedin?.title?.toLowerCase() || 'developer'} specializing in ${skills}. View my portfolio of projects and experience.`;
+    const skills =
+      rawData.linkedin?.skills?.slice(0, 3).join(", ") || "web development";
+    return `Professional ${rawData.linkedin?.title?.toLowerCase() || "developer"} specializing in ${skills}. View my portfolio of projects and experience.`;
   }
-  
+
   private extractKeywords(rawData: RawUserData): string[] {
     const skills = rawData.linkedin?.skills || [];
-    const technologies = rawData.github?.projects?.flatMap((p: any) => p.technologies) || [];
-    
+    const technologies =
+      rawData.github?.projects?.flatMap((p: any) => p.technologies) || [];
+
     return [...new Set([...skills, ...technologies])].slice(0, 10);
   }
-  
+
   private detectIndustry(rawData: RawUserData): string {
     const skills = rawData.linkedin?.skills || [];
-    const skillStr = skills.join(' ').toLowerCase();
-    
-    if (skillStr.includes('design') || skillStr.includes('figma') || skillStr.includes('photoshop')) {
-      return 'creative';
+    const skillStr = skills.join(" ").toLowerCase();
+
+    if (
+      skillStr.includes("design") ||
+      skillStr.includes("figma") ||
+      skillStr.includes("photoshop")
+    ) {
+      return "creative";
     }
-    if (skillStr.includes('manager') || skillStr.includes('director') || skillStr.includes('business')) {
-      return 'business';
+    if (
+      skillStr.includes("manager") ||
+      skillStr.includes("director") ||
+      skillStr.includes("business")
+    ) {
+      return "business";
     }
-    if (skillStr.includes('research') || skillStr.includes('phd') || skillStr.includes('academic')) {
-      return 'academic';
+    if (
+      skillStr.includes("research") ||
+      skillStr.includes("phd") ||
+      skillStr.includes("academic")
+    ) {
+      return "academic";
     }
-    if (skillStr.includes('freelance') || skillStr.includes('consultant')) {
-      return 'freelancer';
+    if (skillStr.includes("freelance") || skillStr.includes("consultant")) {
+      return "freelancer";
     }
-    
-    return 'developer';
+
+    return "developer";
   }
-  
+
   private calculateSkillLevel(skill: string, rawData: RawUserData): number {
     // Simulate skill level calculation based on experience and projects
     const experience = rawData.linkedin?.experience || [];
     const projects = rawData.github?.projects || [];
-    
+
     let level = 50; // Base level
-    
+
     // Increase based on experience duration
     experience.forEach((exp: any) => {
       if (exp.description?.toLowerCase().includes(skill.toLowerCase())) {
         level += 20;
       }
     });
-    
+
     // Increase based on project usage
     projects.forEach((project: any) => {
       if (project.technologies?.includes(skill)) {
         level += 10;
       }
     });
-    
+
     return Math.min(level, 100);
   }
-  
+
   private categorizeSkill(skill: string): string {
     const categories = {
-      'Frontend': ['React', 'Vue', 'Angular', 'HTML', 'CSS', 'JavaScript'],
-      'Backend': ['Node.js', 'Python', 'Java', 'PHP', 'Ruby'],
-      'Database': ['MongoDB', 'PostgreSQL', 'MySQL', 'Redis'],
-      'Cloud': ['AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes'],
-      'Design': ['Figma', 'Photoshop', 'Illustrator', 'Sketch'],
-      'Mobile': ['React Native', 'Flutter', 'iOS', 'Android']
+      Frontend: ["React", "Vue", "Angular", "HTML", "CSS", "JavaScript"],
+      Backend: ["Node.js", "Python", "Java", "PHP", "Ruby"],
+      Database: ["MongoDB", "PostgreSQL", "MySQL", "Redis"],
+      Cloud: ["AWS", "Azure", "Google Cloud", "Docker", "Kubernetes"],
+      Design: ["Figma", "Photoshop", "Illustrator", "Sketch"],
+      Mobile: ["React Native", "Flutter", "iOS", "Android"],
     };
-    
+
     for (const [category, skills] of Object.entries(categories)) {
-      if (skills.some(s => skill.toLowerCase().includes(s.toLowerCase()))) {
+      if (skills.some((s) => skill.toLowerCase().includes(s.toLowerCase()))) {
         return category;
       }
     }
-    
-    return 'Other';
+
+    return "Other";
   }
-  
+
   private generateAchievements(experience: any): string[] {
     // Generate achievements based on experience
     const achievements = [];
-    
-    if (experience.description?.includes('lead')) {
-      achievements.push('Led development team');
+
+    if (experience.description?.includes("lead")) {
+      achievements.push("Led development team");
     }
-    if (experience.description?.includes('scale')) {
-      achievements.push('Scaled application architecture');
+    if (experience.description?.includes("scale")) {
+      achievements.push("Scaled application architecture");
     }
-    if (experience.description?.includes('performance')) {
-      achievements.push('Improved system performance');
+    if (experience.description?.includes("performance")) {
+      achievements.push("Improved system performance");
     }
-    
-    return achievements.length > 0 ? achievements : ['Contributed to team success'];
+
+    return achievements.length > 0
+      ? achievements
+      : ["Contributed to team success"];
   }
-  
+
   private generateImpactMetrics(experience: any): string {
     // Generate impact metrics
-    if (experience.description?.includes('performance')) {
-      return 'Improved system performance by 40%';
+    if (experience.description?.includes("performance")) {
+      return "Improved system performance by 40%";
     }
-    if (experience.description?.includes('scale')) {
-      return 'Scaled application to handle 10x more users';
+    if (experience.description?.includes("scale")) {
+      return "Scaled application to handle 10x more users";
     }
-    return 'Delivered high-quality solutions';
+    return "Delivered high-quality solutions";
   }
-  
+
   private generateContactMethods(rawData: RawUserData): string[] {
     const methods = [];
-    
-    if (rawData.linkedin?.email) methods.push('Email');
-    if (rawData.linkedin?.linkedin) methods.push('LinkedIn');
-    if (rawData.github?.username) methods.push('GitHub');
-    
+
+    if (rawData.linkedin?.email) methods.push("Email");
+    if (rawData.linkedin?.linkedin) methods.push("LinkedIn");
+    if (rawData.github?.username) methods.push("GitHub");
+
     return methods;
   }
-  
-  private mergeEnhancedContent(enhanced: any[], rawData: RawUserData): EnhancedContent {
+
+  private mergeEnhancedContent(
+    enhanced: any[],
+    rawData: RawUserData,
+  ): EnhancedContent {
     const [projects, seo, colors, cta, skills, experience] = enhanced;
-    
+
     return {
-      name: rawData.linkedin?.name || 'Professional',
-      title: rawData.linkedin?.title || 'Developer',
+      name: rawData.linkedin?.name || "Professional",
+      title: rawData.linkedin?.title || "Developer",
       bio: seo.bio,
       skills,
       projects,
@@ -400,34 +422,35 @@ export class AIContentGenerator {
         metaTitle: seo.metaTitle,
         metaDescription: seo.metaDescription,
         keywords: seo.keywords,
-        structuredData: this.generateStructuredData(rawData)
+        structuredData: this.generateStructuredData(rawData),
       },
       design: {
         colorPalette: colors,
-        animationStyle: 'dynamic',
-        layoutPreference: 'grid'
-      }
+        animationStyle: "dynamic",
+        layoutPreference: "grid",
+      },
     };
   }
-  
+
   private generateStructuredData(rawData: RawUserData): any {
     return {
       "@context": "https://schema.org",
       "@type": "Person",
-      "name": rawData.linkedin?.name,
-      "jobTitle": rawData.linkedin?.title,
-      "description": rawData.linkedin?.bio,
-      "url": "https://portfolio.example.com",
-      "sameAs": [
-        rawData.linkedin?.linkedin,
-        rawData.github?.profile
-      ]
+      name: rawData.linkedin?.name,
+      jobTitle: rawData.linkedin?.title,
+      description: rawData.linkedin?.bio,
+      url: "https://portfolio.example.com",
+      sameAs: [rawData.linkedin?.linkedin, rawData.github?.profile],
     };
   }
 }
 
 // Export the main AI processing function
-export const processUserDataWithAI = async (rawData: RawUserData): Promise<EnhancedContent> => {
-  const aiGenerator = new AIContentGenerator(process.env.REACT_APP_AI_API_KEY || 'demo-key');
+export const processUserDataWithAI = async (
+  rawData: RawUserData,
+): Promise<EnhancedContent> => {
+  const aiGenerator = new AIContentGenerator(
+    process.env.REACT_APP_AI_API_KEY || "demo-key",
+  );
   return await aiGenerator.enhanceUserContent(rawData);
 };

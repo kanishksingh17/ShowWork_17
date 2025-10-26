@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useSession } from "next-auth/react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { 
-  Sparkles, 
-  Loader2, 
-  CheckCircle, 
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Sparkles,
+  Loader2,
+  CheckCircle,
   AlertCircle,
   Globe,
   Palette,
@@ -19,187 +19,192 @@ import {
   MessageSquare,
   Settings,
   Download,
-  RefreshCw
-} from "lucide-react"
-import { UserInput } from "@/lib/ai-content-generator"
+  RefreshCw,
+} from "lucide-react";
+import { UserInput } from "@/lib/ai-content-generator";
 
 interface ContentGeneratorProps {
-  onContentGenerated?: (content: any) => void
-  initialInput?: Partial<UserInput>
-  portfolioId?: string
+  onContentGenerated?: (content: any) => void;
+  initialInput?: Partial<UserInput>;
+  portfolioId?: string;
 }
 
-export default function ContentGenerator({ 
-  onContentGenerated, 
+export default function ContentGenerator({
+  onContentGenerated,
   initialInput,
-  portfolioId 
+  portfolioId,
 }: ContentGeneratorProps) {
-  const { data: session } = useSession()
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedContent, setGeneratedContent] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [generationStats, setGenerationStats] = useState<any>(null)
+  const { data: session } = useSession();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [generationStats, setGenerationStats] = useState<any>(null);
 
   // Form state
   const [input, setInput] = useState<UserInput>({
-    role: initialInput?.role || '',
-    industry: initialInput?.industry || '',
+    role: initialInput?.role || "",
+    industry: initialInput?.industry || "",
     experience: initialInput?.experience || 2,
     skills: initialInput?.skills || [],
     projects: initialInput?.projects || [],
-    style: initialInput?.style || 'modern',
+    style: initialInput?.style || "modern",
     colorPreferences: initialInput?.colorPreferences || [],
-    language: initialInput?.language || 'en',
-    tone: initialInput?.tone || 'professional',
-    targetAudience: initialInput?.targetAudience || 'employers',
+    language: initialInput?.language || "en",
+    tone: initialInput?.tone || "professional",
+    targetAudience: initialInput?.targetAudience || "employers",
     includeTestimonials: initialInput?.includeTestimonials || false,
     includeBlog: initialInput?.includeBlog || false,
     includeResume: initialInput?.includeResume || true,
-  })
+  });
 
-  const [newSkill, setNewSkill] = useState('')
+  const [newSkill, setNewSkill] = useState("");
   const [newProject, setNewProject] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     technologies: [] as string[],
-    url: '',
-    githubUrl: '',
-  })
-  const [newTech, setNewTech] = useState('')
+    url: "",
+    githubUrl: "",
+  });
+  const [newTech, setNewTech] = useState("");
 
   const handleGenerateContent = async () => {
     if (!session?.user?.id) {
-      setError('Please sign in to generate content')
-      return
+      setError("Please sign in to generate content");
+      return;
     }
 
-    setIsGenerating(true)
-    setError(null)
+    setIsGenerating(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/ai/generate-content', {
-        method: 'POST',
+      const response = await fetch("/api/ai/generate-content", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           input,
           portfolioId,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to generate content')
+        throw new Error(result.error || "Failed to generate content");
       }
 
-      setGeneratedContent(result.content)
-      setGenerationStats(result.metadata)
-      onContentGenerated?.(result.content)
-
+      setGeneratedContent(result.content);
+      setGenerationStats(result.metadata);
+      onContentGenerated?.(result.content);
     } catch (error) {
-      console.error('Content generation failed:', error)
-      setError(error instanceof Error ? error.message : 'Unknown error occurred')
+      console.error("Content generation failed:", error);
+      setError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+      );
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   const handleRegenerateContent = async () => {
     if (!session?.user?.id || !portfolioId) {
-      setError('Portfolio ID required for regeneration')
-      return
+      setError("Portfolio ID required for regeneration");
+      return;
     }
 
-    setIsGenerating(true)
-    setError(null)
+    setIsGenerating(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/ai/regenerate-content', {
-        method: 'POST',
+      const response = await fetch("/api/ai/regenerate-content", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           portfolioId,
           updates: input,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to regenerate content')
+        throw new Error(result.error || "Failed to regenerate content");
       }
 
-      setGeneratedContent(result.content)
-      setGenerationStats(result.metadata)
-      onContentGenerated?.(result.content)
-
+      setGeneratedContent(result.content);
+      setGenerationStats(result.metadata);
+      onContentGenerated?.(result.content);
     } catch (error) {
-      console.error('Content regeneration failed:', error)
-      setError(error instanceof Error ? error.message : 'Unknown error occurred')
+      console.error("Content regeneration failed:", error);
+      setError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+      );
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   const addSkill = () => {
     if (newSkill.trim() && !input.skills.includes(newSkill.trim())) {
-      setInput(prev => ({
+      setInput((prev) => ({
         ...prev,
-        skills: [...prev.skills, newSkill.trim()]
-      }))
-      setNewSkill('')
+        skills: [...prev.skills, newSkill.trim()],
+      }));
+      setNewSkill("");
     }
-  }
+  };
 
   const removeSkill = (skill: string) => {
-    setInput(prev => ({
+    setInput((prev) => ({
       ...prev,
-      skills: prev.skills.filter(s => s !== skill)
-    }))
-  }
+      skills: prev.skills.filter((s) => s !== skill),
+    }));
+  };
 
   const addProject = () => {
     if (newProject.name.trim() && newProject.description.trim()) {
-      setInput(prev => ({
+      setInput((prev) => ({
         ...prev,
-        projects: [...(prev.projects || []), {
-          name: newProject.name.trim(),
-          description: newProject.description.trim(),
-          technologies: newProject.technologies,
-          url: newProject.url || undefined,
-          githubUrl: newProject.githubUrl || undefined,
-        }]
-      }))
+        projects: [
+          ...(prev.projects || []),
+          {
+            name: newProject.name.trim(),
+            description: newProject.description.trim(),
+            technologies: newProject.technologies,
+            url: newProject.url || undefined,
+            githubUrl: newProject.githubUrl || undefined,
+          },
+        ],
+      }));
       setNewProject({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         technologies: [],
-        url: '',
-        githubUrl: '',
-      })
+        url: "",
+        githubUrl: "",
+      });
     }
-  }
+  };
 
   const addTechToProject = () => {
     if (newTech.trim() && !newProject.technologies.includes(newTech.trim())) {
-      setNewProject(prev => ({
+      setNewProject((prev) => ({
         ...prev,
-        technologies: [...prev.technologies, newTech.trim()]
-      }))
-      setNewTech('')
+        technologies: [...prev.technologies, newTech.trim()],
+      }));
+      setNewTech("");
     }
-  }
+  };
 
   const removeTechFromProject = (tech: string) => {
-    setNewProject(prev => ({
+    setNewProject((prev) => ({
       ...prev,
-      technologies: prev.technologies.filter(t => t !== tech)
-    }))
-  }
+      technologies: prev.technologies.filter((t) => t !== tech),
+    }));
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -229,7 +234,9 @@ export default function ContentGenerator({
               </label>
               <Input
                 value={input.role}
-                onChange={(e) => setInput(prev => ({ ...prev, role: e.target.value }))}
+                onChange={(e) =>
+                  setInput((prev) => ({ ...prev, role: e.target.value }))
+                }
                 placeholder="e.g., Full Stack Developer"
               />
             </div>
@@ -239,7 +246,9 @@ export default function ContentGenerator({
               </label>
               <Input
                 value={input.industry}
-                onChange={(e) => setInput(prev => ({ ...prev, industry: e.target.value }))}
+                onChange={(e) =>
+                  setInput((prev) => ({ ...prev, industry: e.target.value }))
+                }
                 placeholder="e.g., Technology"
               />
             </div>
@@ -255,7 +264,12 @@ export default function ContentGenerator({
                 min="0"
                 max="50"
                 value={input.experience}
-                onChange={(e) => setInput(prev => ({ ...prev, experience: parseInt(e.target.value) || 0 }))}
+                onChange={(e) =>
+                  setInput((prev) => ({
+                    ...prev,
+                    experience: parseInt(e.target.value) || 0,
+                  }))
+                }
               />
             </div>
             <div>
@@ -264,7 +278,12 @@ export default function ContentGenerator({
               </label>
               <select
                 value={input.style}
-                onChange={(e) => setInput(prev => ({ ...prev, style: e.target.value as any }))}
+                onChange={(e) =>
+                  setInput((prev) => ({
+                    ...prev,
+                    style: e.target.value as any,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="modern">Modern</option>
@@ -280,7 +299,12 @@ export default function ContentGenerator({
               </label>
               <select
                 value={input.language}
-                onChange={(e) => setInput(prev => ({ ...prev, language: e.target.value as any }))}
+                onChange={(e) =>
+                  setInput((prev) => ({
+                    ...prev,
+                    language: e.target.value as any,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="en">English</option>
@@ -303,7 +327,9 @@ export default function ContentGenerator({
               </label>
               <select
                 value={input.tone}
-                onChange={(e) => setInput(prev => ({ ...prev, tone: e.target.value as any }))}
+                onChange={(e) =>
+                  setInput((prev) => ({ ...prev, tone: e.target.value as any }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="professional">Professional</option>
@@ -319,7 +345,12 @@ export default function ContentGenerator({
               </label>
               <select
                 value={input.targetAudience}
-                onChange={(e) => setInput(prev => ({ ...prev, targetAudience: e.target.value as any }))}
+                onChange={(e) =>
+                  setInput((prev) => ({
+                    ...prev,
+                    targetAudience: e.target.value as any,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="employers">Employers</option>
@@ -346,7 +377,7 @@ export default function ContentGenerator({
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
               placeholder="Add a skill"
-              onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+              onKeyPress={(e) => e.key === "Enter" && addSkill()}
             />
             <Button onClick={addSkill} size="sm">
               Add
@@ -383,24 +414,38 @@ export default function ContentGenerator({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               value={newProject.name}
-              onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setNewProject((prev) => ({ ...prev, name: e.target.value }))
+              }
               placeholder="Project name"
             />
             <Input
               value={newProject.description}
-              onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setNewProject((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               placeholder="Project description"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               value={newProject.url}
-              onChange={(e) => setNewProject(prev => ({ ...prev, url: e.target.value }))}
+              onChange={(e) =>
+                setNewProject((prev) => ({ ...prev, url: e.target.value }))
+              }
               placeholder="Live URL (optional)"
             />
             <Input
               value={newProject.githubUrl}
-              onChange={(e) => setNewProject(prev => ({ ...prev, githubUrl: e.target.value }))}
+              onChange={(e) =>
+                setNewProject((prev) => ({
+                  ...prev,
+                  githubUrl: e.target.value,
+                }))
+              }
               placeholder="GitHub URL (optional)"
             />
           </div>
@@ -409,7 +454,7 @@ export default function ContentGenerator({
               value={newTech}
               onChange={(e) => setNewTech(e.target.value)}
               placeholder="Add technology"
-              onKeyPress={(e) => e.key === 'Enter' && addTechToProject()}
+              onKeyPress={(e) => e.key === "Enter" && addTechToProject()}
             />
             <Button onClick={addTechToProject} size="sm">
               Add Tech
@@ -444,7 +489,10 @@ export default function ContentGenerator({
                   {project.technologies.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {project.technologies.map((tech, techIndex) => (
-                        <span key={techIndex} className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">
+                        <span
+                          key={techIndex}
+                          className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs"
+                        >
                           {tech}
                         </span>
                       ))}
@@ -471,10 +519,18 @@ export default function ContentGenerator({
               type="checkbox"
               id="includeTestimonials"
               checked={input.includeTestimonials}
-              onChange={(e) => setInput(prev => ({ ...prev, includeTestimonials: e.target.checked }))}
+              onChange={(e) =>
+                setInput((prev) => ({
+                  ...prev,
+                  includeTestimonials: e.target.checked,
+                }))
+              }
               className="rounded"
             />
-            <label htmlFor="includeTestimonials" className="text-sm font-medium">
+            <label
+              htmlFor="includeTestimonials"
+              className="text-sm font-medium"
+            >
               Include Testimonials
             </label>
           </div>
@@ -483,7 +539,9 @@ export default function ContentGenerator({
               type="checkbox"
               id="includeBlog"
               checked={input.includeBlog}
-              onChange={(e) => setInput(prev => ({ ...prev, includeBlog: e.target.checked }))}
+              onChange={(e) =>
+                setInput((prev) => ({ ...prev, includeBlog: e.target.checked }))
+              }
               className="rounded"
             />
             <label htmlFor="includeBlog" className="text-sm font-medium">
@@ -495,7 +553,12 @@ export default function ContentGenerator({
               type="checkbox"
               id="includeResume"
               checked={input.includeResume}
-              onChange={(e) => setInput(prev => ({ ...prev, includeResume: e.target.checked }))}
+              onChange={(e) =>
+                setInput((prev) => ({
+                  ...prev,
+                  includeResume: e.target.checked,
+                }))
+              }
               className="rounded"
             />
             <label htmlFor="includeResume" className="text-sm font-medium">
@@ -528,16 +591,20 @@ export default function ContentGenerator({
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 text-sm">
               <div>
-                <span className="text-green-600">Time:</span> {generationStats.generationTime}ms
+                <span className="text-green-600">Time:</span>{" "}
+                {generationStats.generationTime}ms
               </div>
               <div>
-                <span className="text-green-600">Sections:</span> {generationStats.sectionsGenerated}
+                <span className="text-green-600">Sections:</span>{" "}
+                {generationStats.sectionsGenerated}
               </div>
               <div>
-                <span className="text-green-600">Language:</span> {generationStats.language}
+                <span className="text-green-600">Language:</span>{" "}
+                {generationStats.language}
               </div>
               <div>
-                <span className="text-green-600">Cache:</span> {generationStats.cacheHit ? 'Hit' : 'Miss'}
+                <span className="text-green-600">Cache:</span>{" "}
+                {generationStats.cacheHit ? "Hit" : "Miss"}
               </div>
             </div>
           </CardContent>
@@ -563,7 +630,7 @@ export default function ContentGenerator({
             </>
           )}
         </Button>
-        
+
         {portfolioId && (
           <Button
             onClick={handleRegenerateContent}
@@ -590,7 +657,7 @@ export default function ContentGenerator({
               {Object.entries(generatedContent).map(([section, content]) => (
                 <div key={section} className="border rounded-lg p-4">
                   <h4 className="font-medium text-lg mb-2 capitalize">
-                    {section.replace(/([A-Z])/g, ' $1').trim()}
+                    {section.replace(/([A-Z])/g, " $1").trim()}
                   </h4>
                   <pre className="text-sm text-gray-600 whitespace-pre-wrap">
                     {JSON.stringify(content, null, 2)}
@@ -602,5 +669,5 @@ export default function ContentGenerator({
         </Card>
       )}
     </div>
-  )
+  );
 }

@@ -42,7 +42,9 @@ export default function Register() {
             <div className="w-8 h-8 logo-bg rounded-lg flex items-center justify-center group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
               <Code2 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-foreground group-hover:logo-text transition-colors duration-300">ShowWork</span>
+            <span className="text-xl font-bold text-foreground group-hover:logo-text transition-colors duration-300">
+              ShowWork
+            </span>
           </div>
 
           {/* Form */}
@@ -102,7 +104,9 @@ export default function Register() {
 
               {/* Error Message */}
               {error && (
-                <p className="text-destructive text-center mt-2 font-medium animate-fade-in">{error}</p>
+                <p className="text-destructive text-center mt-2 font-medium animate-fade-in">
+                  {error}
+                </p>
               )}
 
               {/* Sign In Link */}
@@ -111,7 +115,7 @@ export default function Register() {
                 <button
                   type="button"
                   className="logo-text hover:opacity-80 font-medium transition-colors"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate("/login")}
                 >
                   Sign in
                 </button>
@@ -140,17 +144,21 @@ export default function Register() {
           <div className="absolute top-20 left-20 w-2 h-2 bg-accent rounded-full animate-pulse opacity-60"></div>
           <div className="absolute top-40 right-32 w-1 h-1 bg-accent-glow rounded-full animate-ping opacity-40"></div>
           <div className="absolute bottom-32 left-40 w-3 h-3 bg-primary-foreground rounded-full animate-bounce opacity-50"></div>
-          
+
           {/* Floating Code Elements */}
-          <div className="absolute top-1/4 right-1/2 text-blue-400/30 text-6xl font-mono animate-pulse transform rotate-12">&lt;/&gt;</div>
-          <div className="absolute bottom-1/3 left-1/2 text-purple-400/20 text-4xl font-mono animate-bounce transform -rotate-12">{ }</div>
+          <div className="absolute top-1/4 right-1/2 text-blue-400/30 text-6xl font-mono animate-pulse transform rotate-12">
+            &lt;/&gt;
+          </div>
+          <div className="absolute bottom-1/3 left-1/2 text-purple-400/20 text-4xl font-mono animate-bounce transform -rotate-12">
+            {}
+          </div>
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center text-center p-12">
           <div className="w-16 h-16 bg-gradient-to-br from-accent to-accent-glow rounded-2xl flex items-center justify-center mb-8 animate-pulse">
             <Code2 className="h-8 w-8 text-accent-foreground" />
           </div>
-          
+
           <h2 className="text-4xl font-bold text-primary-foreground mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">
               Join ShowWork
@@ -158,9 +166,10 @@ export default function Register() {
             <br />
             <span className="text-primary-foreground">today</span>
           </h2>
-          
+
           <p className="text-xl text-primary-foreground/80 max-w-md leading-relaxed mb-8">
-            Start building your professional portfolio and showcase your work to the world.
+            Start building your professional portfolio and showcase your work to
+            the world.
           </p>
         </div>
       </div>

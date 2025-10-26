@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Move,
   RotateCcw,
@@ -14,164 +14,176 @@ import {
   Navigation,
   Compass,
   Target,
-  Crosshair
-} from 'lucide-react'
-import { usePreview } from '../../lib/preview/context'
+  Crosshair,
+} from "lucide-react";
+import { usePreview } from "../../lib/preview/context";
 
 interface PanControlsProps {
-  className?: string
+  className?: string;
 }
 
-export const PanControls: React.FC<PanControlsProps> = ({ className = '' }) => {
-  const { state, actions } = usePreview()
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [isPanning, setIsPanning] = useState(false)
-  const panAreaRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+export const PanControls: React.FC<PanControlsProps> = ({ className = "" }) => {
+  const { state, actions } = usePreview();
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panAreaRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const panStep = 50
-  const maxPan = 500
+  const panStep = 50;
+  const maxPan = 500;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return // Only left mouse button
-    
-    setIsDragging(true)
-    setIsPanning(true)
-    setDragStart({ x: e.clientX, y: e.clientY })
-    
+    if (e.button !== 0) return; // Only left mouse button
+
+    setIsDragging(true);
+    setIsPanning(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+
     if (panAreaRef.current) {
-      panAreaRef.current.style.cursor = 'grabbing'
+      panAreaRef.current.style.cursor = "grabbing";
     }
-  }, [])
+  }, []);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
 
-    const deltaX = e.clientX - dragStart.x
-    const deltaY = e.clientY - dragStart.y
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
 
-    const newPan = {
-      x: Math.max(-maxPan, Math.min(maxPan, state.pan.x + deltaX)),
-      y: Math.max(-maxPan, Math.min(maxPan, state.pan.y + deltaY))
-    }
+      const newPan = {
+        x: Math.max(-maxPan, Math.min(maxPan, state.pan.x + deltaX)),
+        y: Math.max(-maxPan, Math.min(maxPan, state.pan.y + deltaY)),
+      };
 
-    actions.setPan(newPan)
-    setDragStart({ x: e.clientX, y: e.clientY })
-  }, [isDragging, dragStart, state.pan, actions, maxPan])
+      actions.setPan(newPan);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    },
+    [isDragging, dragStart, state.pan, actions, maxPan],
+  );
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-    setIsPanning(false)
-    
+    setIsDragging(false);
+    setIsPanning(false);
+
     if (panAreaRef.current) {
-      panAreaRef.current.style.cursor = 'grab'
+      panAreaRef.current.style.cursor = "grab";
     }
-  }, [])
+  }, []);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return
-    
-    const touch = e.touches[0]
-    if (!touch) return
-    setIsDragging(true)
-    setIsPanning(true)
-    setDragStart({ x: touch.clientX, y: touch.clientY })
-  }, [])
+    if (e.touches.length !== 1) return;
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging || e.touches.length !== 1) return
+    const touch = e.touches[0];
+    if (!touch) return;
+    setIsDragging(true);
+    setIsPanning(true);
+    setDragStart({ x: touch.clientX, y: touch.clientY });
+  }, []);
 
-    const touch = e.touches[0]
-    if (!touch) return
-    const deltaX = touch.clientX - dragStart.x
-    const deltaY = touch.clientY - dragStart.y
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (!isDragging || e.touches.length !== 1) return;
 
-    const newPan = {
-      x: Math.max(-maxPan, Math.min(maxPan, state.pan.x + deltaX)),
-      y: Math.max(-maxPan, Math.min(maxPan, state.pan.y + deltaY))
-    }
+      const touch = e.touches[0];
+      if (!touch) return;
+      const deltaX = touch.clientX - dragStart.x;
+      const deltaY = touch.clientY - dragStart.y;
 
-    actions.setPan(newPan)
-    setDragStart({ x: touch.clientX, y: touch.clientY })
-  }, [isDragging, dragStart, state.pan, actions, maxPan])
+      const newPan = {
+        x: Math.max(-maxPan, Math.min(maxPan, state.pan.x + deltaX)),
+        y: Math.max(-maxPan, Math.min(maxPan, state.pan.y + deltaY)),
+      };
+
+      actions.setPan(newPan);
+      setDragStart({ x: touch.clientX, y: touch.clientY });
+    },
+    [isDragging, dragStart, state.pan, actions, maxPan],
+  );
 
   const handleTouchEnd = useCallback(() => {
-    setIsDragging(false)
-    setIsPanning(false)
-  }, [])
+    setIsDragging(false);
+    setIsPanning(false);
+  }, []);
 
   const handlePanUp = () => {
     const newPan = {
       x: state.pan.x,
-      y: Math.max(-maxPan, state.pan.y - panStep)
-    }
-    actions.setPan(newPan)
-  }
+      y: Math.max(-maxPan, state.pan.y - panStep),
+    };
+    actions.setPan(newPan);
+  };
 
   const handlePanDown = () => {
     const newPan = {
       x: state.pan.x,
-      y: Math.min(maxPan, state.pan.y + panStep)
-    }
-    actions.setPan(newPan)
-  }
+      y: Math.min(maxPan, state.pan.y + panStep),
+    };
+    actions.setPan(newPan);
+  };
 
   const handlePanLeft = () => {
     const newPan = {
       x: Math.max(-maxPan, state.pan.x - panStep),
-      y: state.pan.y
-    }
-    actions.setPan(newPan)
-  }
+      y: state.pan.y,
+    };
+    actions.setPan(newPan);
+  };
 
   const handlePanRight = () => {
     const newPan = {
       x: Math.min(maxPan, state.pan.x + panStep),
-      y: state.pan.y
-    }
-    actions.setPan(newPan)
-  }
+      y: state.pan.y,
+    };
+    actions.setPan(newPan);
+  };
 
   const handleResetPan = () => {
-    actions.resetPan()
-  }
+    actions.resetPan();
+  };
 
   const handlePanAreaClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       // Click on pan area to center
-      actions.resetPan()
+      actions.resetPan();
     }
-  }
+  };
 
   // Event listeners
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      document.addEventListener('touchmove', handleTouchMove)
-      document.addEventListener('touchend', handleTouchEnd)
-      
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchend", handleTouchEnd);
+
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-        document.removeEventListener('touchmove', handleTouchMove)
-        document.removeEventListener('touchend', handleTouchEnd)
-      }
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.removeEventListener("touchmove", handleTouchMove);
+        document.removeEventListener("touchend", handleTouchEnd);
+      };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd])
+  }, [
+    isDragging,
+    handleMouseMove,
+    handleMouseUp,
+    handleTouchMove,
+    handleTouchEnd,
+  ]);
 
   // Cleanup
   useEffect(() => {
-    const timeout = timeoutRef.current
+    const timeout = timeoutRef.current;
     return () => {
       if (timeout) {
-        clearTimeout(timeout)
+        clearTimeout(timeout);
       }
-    }
-  }, [])
+    };
+  }, []);
 
-  const isAtOrigin = state.pan.x === 0 && state.pan.y === 0
+  const isAtOrigin = state.pan.x === 0 && state.pan.y === 0;
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
@@ -191,7 +203,7 @@ export const PanControls: React.FC<PanControlsProps> = ({ className = '' }) => {
               className="absolute w-2 h-2 bg-blue-500 rounded-full -translate-x-1/2 -translate-y-1/2"
               style={{
                 left: `${50 + (state.pan.x / maxPan) * 25}%`,
-                top: `${50 + (state.pan.y / maxPan) * 25}%`
+                top: `${50 + (state.pan.y / maxPan) * 25}%`,
               }}
             />
           </div>
@@ -249,11 +261,9 @@ export const PanControls: React.FC<PanControlsProps> = ({ className = '' }) => {
       <div className="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded text-sm text-gray-700 min-w-[80px] justify-center">
         <Navigation className="w-3 h-3" />
         <span className="font-mono text-xs">
-          {state.pan.x !== 0 || state.pan.y !== 0 ? (
-            `${state.pan.x > 0 ? '+' : ''}${Math.round(state.pan.x)}, ${state.pan.y > 0 ? '+' : ''}${Math.round(state.pan.y)}`
-          ) : (
-            '0, 0'
-          )}
+          {state.pan.x !== 0 || state.pan.y !== 0
+            ? `${state.pan.x > 0 ? "+" : ""}${Math.round(state.pan.x)}, ${state.pan.y > 0 ? "+" : ""}${Math.round(state.pan.y)}`
+            : "0, 0"}
         </span>
       </div>
 
@@ -278,7 +288,7 @@ export const PanControls: React.FC<PanControlsProps> = ({ className = '' }) => {
         <span>Drag to pan</span>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PanControls
+export default PanControls;

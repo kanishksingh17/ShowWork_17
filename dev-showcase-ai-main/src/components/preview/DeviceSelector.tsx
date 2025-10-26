@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Monitor,
   Tablet,
@@ -17,41 +17,46 @@ import {
   Trash2,
   Save,
   Eye,
-  EyeOff
-} from 'lucide-react'
-import { usePreview, useDevicePresets } from '../../lib/preview/context'
-import { DeviceViewport, DevicePreset } from '../../lib/preview/types'
+  EyeOff,
+} from "lucide-react";
+import { usePreview, useDevicePresets } from "../../lib/preview/context";
+import { DeviceViewport, DevicePreset } from "../../lib/preview/types";
 
 interface DeviceSelectorProps {
-  className?: string
+  className?: string;
 }
 
-export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }) => {
-  const { state, actions } = usePreview()
-  const devicePresets = useDevicePresets()
-  const [isOpen, setIsOpen] = useState(false)
-  const [showCustomForm, setShowCustomForm] = useState(false)
+export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
+  className = "",
+}) => {
+  const { state, actions } = usePreview();
+  const devicePresets = useDevicePresets();
+  const [isOpen, setIsOpen] = useState(false);
+  const [showCustomForm, setShowCustomForm] = useState(false);
   const [customViewport, setCustomViewport] = useState({
-    name: '',
+    name: "",
     width: 1200,
     height: 800,
-    orientation: 'landscape' as 'portrait' | 'landscape',
-    pixelRatio: 1
-  })
-  const dropdownRef = useRef<HTMLDivElement>(null)
+    orientation: "landscape" as "portrait" | "landscape",
+    pixelRatio: 1,
+  });
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-        setShowCustomForm(false)
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+        setShowCustomForm(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleDeviceSelect = (preset: DevicePreset) => {
     const viewport: DeviceViewport = {
@@ -60,51 +65,58 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
       height: preset.height,
       name: preset.name,
       orientation: preset.orientation,
-      pixelRatio: preset.pixelRatio
-    }
-    actions.setDeviceViewport(viewport)
-    setIsOpen(false)
-  }
+      pixelRatio: preset.pixelRatio,
+    };
+    actions.setDeviceViewport(viewport);
+    setIsOpen(false);
+  };
 
   const handleCustomViewportSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (customViewport.name && customViewport.width > 0 && customViewport.height > 0) {
-      actions.addCustomViewport(customViewport)
-      setShowCustomForm(false)
+    e.preventDefault();
+    if (
+      customViewport.name &&
+      customViewport.width > 0 &&
+      customViewport.height > 0
+    ) {
+      actions.addCustomViewport(customViewport);
+      setShowCustomForm(false);
       setCustomViewport({
-        name: '',
+        name: "",
         width: 1200,
         height: 800,
-        orientation: 'landscape',
-        pixelRatio: 1
-      })
+        orientation: "landscape",
+        pixelRatio: 1,
+      });
     }
-  }
+  };
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
-      case 'desktop':
-        return <Monitor className="w-4 h-4" />
-      case 'tablet':
-        return <Tablet className="w-4 h-4" />
-      case 'mobile':
-        return <Smartphone className="w-4 h-4" />
+      case "desktop":
+        return <Monitor className="w-4 h-4" />;
+      case "tablet":
+        return <Tablet className="w-4 h-4" />;
+      case "mobile":
+        return <Smartphone className="w-4 h-4" />;
       default:
-        return <Monitor className="w-4 h-4" />
+        return <Monitor className="w-4 h-4" />;
     }
-  }
+  };
 
   const getCurrentDeviceIcon = () => {
-    return getDeviceIcon(state.deviceViewport.type)
-  }
+    return getDeviceIcon(state.deviceViewport.type);
+  };
 
-  const groupedPresets = devicePresets.reduce((acc, preset) => {
-    if (!acc[preset.type]) {
-      acc[preset.type] = []
-    }
-    acc[preset.type].push(preset)
-    return acc
-  }, {} as Record<string, DevicePreset[]>)
+  const groupedPresets = devicePresets.reduce(
+    (acc, preset) => {
+      if (!acc[preset.type]) {
+        acc[preset.type] = [];
+      }
+      acc[preset.type].push(preset);
+      return acc;
+    },
+    {} as Record<string, DevicePreset[]>,
+  );
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -120,7 +132,11 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
         <span className="text-xs text-gray-500">
           {state.deviceViewport.width}×{state.deviceViewport.height}
         </span>
-        {isOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 text-gray-400" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-gray-400" />
+        )}
       </button>
 
       {/* Dropdown Menu */}
@@ -136,7 +152,9 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
             <div className="p-4">
               {/* Header */}
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-gray-900">Device Viewport</h3>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Device Viewport
+                </h3>
                 <button
                   onClick={() => setShowCustomForm(!showCustomForm)}
                   className="flex items-center space-x-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
@@ -151,11 +169,14 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
                 {showCustomForm && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                    animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     className="mb-4 p-3 bg-gray-50 rounded-lg"
                   >
-                    <form onSubmit={handleCustomViewportSubmit} className="space-y-3">
+                    <form
+                      onSubmit={handleCustomViewportSubmit}
+                      className="space-y-3"
+                    >
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">
                           Name
@@ -163,7 +184,12 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
                         <input
                           type="text"
                           value={customViewport.name}
-                          onChange={(e) => setCustomViewport(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) =>
+                            setCustomViewport((prev) => ({
+                              ...prev,
+                              name: e.target.value,
+                            }))
+                          }
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                           placeholder="Custom Device"
                           required
@@ -177,7 +203,12 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
                           <input
                             type="number"
                             value={customViewport.width}
-                            onChange={(e) => setCustomViewport(prev => ({ ...prev, width: parseInt(e.target.value) || 0 }))}
+                            onChange={(e) =>
+                              setCustomViewport((prev) => ({
+                                ...prev,
+                                width: parseInt(e.target.value) || 0,
+                              }))
+                            }
                             className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                             min="1"
                             required
@@ -190,7 +221,12 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
                           <input
                             type="number"
                             value={customViewport.height}
-                            onChange={(e) => setCustomViewport(prev => ({ ...prev, height: parseInt(e.target.value) || 0 }))}
+                            onChange={(e) =>
+                              setCustomViewport((prev) => ({
+                                ...prev,
+                                height: parseInt(e.target.value) || 0,
+                              }))
+                            }
                             className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                             min="1"
                             required
@@ -236,8 +272,8 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
                           onClick={() => handleDeviceSelect(preset)}
                           className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded hover:bg-gray-50 ${
                             state.deviceViewport.name === preset.name
-                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                              : 'text-gray-700'
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "text-gray-700"
                           }`}
                         >
                           <div className="flex items-center space-x-2">
@@ -248,7 +284,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
                             <span className="text-gray-500">
                               {preset.width}×{preset.height}
                             </span>
-                            {preset.orientation === 'portrait' && (
+                            {preset.orientation === "portrait" && (
                               <RotateCw className="w-3 h-3 text-gray-400" />
                             )}
                             {state.deviceViewport.name === preset.name && (
@@ -276,7 +312,9 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
                   <span>Orientation</span>
-                  <span className="capitalize">{state.deviceViewport.orientation}</span>
+                  <span className="capitalize">
+                    {state.deviceViewport.orientation}
+                  </span>
                 </div>
               </div>
             </div>
@@ -284,7 +322,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ className = '' }
         )}
       </AnimatePresence>
     </div>
-  )
-}
+  );
+};
 
-export default DeviceSelector
+export default DeviceSelector;

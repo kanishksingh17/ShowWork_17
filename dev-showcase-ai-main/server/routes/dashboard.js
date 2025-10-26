@@ -1,62 +1,64 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import Project from '../models/Project.js';
-import Reminder from '../models/Reminder.js';
-import User from '../models/User.js';
+import express from "express";
+import mongoose from "mongoose";
+import Project from "../models/Project.js";
+import Reminder from "../models/Reminder.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
 // Middleware to check authentication
 const requireAuth = (req, res, next) => {
   if (!req.isAuthenticated()) {
-    return res.status(401).json({ success: false, message: 'Authentication required' });
+    return res
+      .status(401)
+      .json({ success: false, message: "Authentication required" });
   }
   next();
 };
 
 // GET /api/dashboard/stats - Get dashboard statistics
-router.get('/stats', requireAuth, async (req, res) => {
+router.get("/stats", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Get project statistics
     const stats = await Project.getDashboardStats(userId);
-    
+
     res.json({
       success: true,
-      data: stats
+      data: stats,
     });
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    console.error("Error fetching dashboard stats:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch dashboard statistics',
-      error: error.message
+      message: "Failed to fetch dashboard statistics",
+      error: error.message,
     });
   }
 });
 
 // GET /api/dashboard/projects - Get all projects for the user
-router.get('/projects', requireAuth, async (req, res) => {
+router.get("/projects", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
     const { status, limit = 10, offset = 0 } = req.query;
-    
+
     // Build query filter
     const filter = { owner: userId };
     if (status) {
       filter.status = status;
     }
-    
+
     const projects = await Project.find(filter)
-      .populate('teamMembers', 'name email avatar')
+      .populate("teamMembers", "name email avatar")
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip(parseInt(offset))
       .exec();
-    
+
     const total = await Project.countDocuments(filter);
-    
+
     res.json({
       success: true,
       data: projects,
@@ -64,107 +66,110 @@ router.get('/projects', requireAuth, async (req, res) => {
         total,
         limit: parseInt(limit),
         offset: parseInt(offset),
-        hasMore: (parseInt(offset) + parseInt(limit)) < total
-      }
+        hasMore: parseInt(offset) + parseInt(limit) < total,
+      },
     });
   } catch (error) {
-    console.error('Error fetching projects:', error);
+    console.error("Error fetching projects:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch projects',
-      error: error.message
+      message: "Failed to fetch projects",
+      error: error.message,
     });
   }
 });
 
 // GET /api/dashboard/reminders - Get upcoming reminders
-router.get('/reminders', requireAuth, async (req, res) => {
+router.get("/reminders", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
     const { limit = 5 } = req.query;
-    
-    const reminders = await Reminder.getUpcomingReminders(userId, parseInt(limit));
-    
+
+    const reminders = await Reminder.getUpcomingReminders(
+      userId,
+      parseInt(limit),
+    );
+
     res.json({
       success: true,
-      data: reminders
+      data: reminders,
     });
   } catch (error) {
-    console.error('Error fetching reminders:', error);
+    console.error("Error fetching reminders:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch reminders',
-      error: error.message
+      message: "Failed to fetch reminders",
+      error: error.message,
     });
   }
 });
 
 // GET /api/dashboard/team - Get team members
-router.get('/team', requireAuth, async (req, res) => {
+router.get("/team", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Get unique team members from user's projects
     const projects = await Project.find({ owner: userId })
-      .populate('teamMembers', 'name email avatar')
+      .populate("teamMembers", "name email avatar")
       .exec();
-    
+
     // Extract unique team members
     const teamMembersSet = new Set();
     const teamMembers = [];
-    
-    projects.forEach(project => {
-      project.teamMembers.forEach(member => {
+
+    projects.forEach((project) => {
+      project.teamMembers.forEach((member) => {
         if (!teamMembersSet.has(member._id.toString())) {
           teamMembersSet.add(member._id.toString());
           teamMembers.push({
             _id: member._id,
             name: member.name,
             email: member.email,
-            avatar: member.avatar
+            avatar: member.avatar,
           });
         }
       });
     });
-    
+
     res.json({
       success: true,
-      data: teamMembers
+      data: teamMembers,
     });
   } catch (error) {
-    console.error('Error fetching team members:', error);
+    console.error("Error fetching team members:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch team members',
-      error: error.message
+      message: "Failed to fetch team members",
+      error: error.message,
     });
   }
 });
 
 // POST /api/dashboard/projects - Create a new project
-router.post('/projects', requireAuth, async (req, res) => {
+router.post("/projects", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
     const {
       name,
       description,
-      status = 'pending',
+      status = "pending",
       dueDate,
       totalTasks = 0,
       teamMembers = [],
-      priority = 'medium',
+      priority = "medium",
       tags = [],
-      budget = 0
+      budget = 0,
     } = req.body;
-    
+
     // Validate required fields
     if (!name || name.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Project name is required'
+        message: "Project name is required",
       });
     }
-    
+
     // Create new project
     const project = new Project({
       name: name.trim(),
@@ -176,126 +181,131 @@ router.post('/projects', requireAuth, async (req, res) => {
       owner: userId,
       priority,
       tags,
-      budget
+      budget,
     });
-    
+
     await project.save();
-    
+
     // Populate team members for response
-    await project.populate('teamMembers', 'name email avatar');
-    
+    await project.populate("teamMembers", "name email avatar");
+
     res.status(201).json({
       success: true,
       data: project,
-      message: 'Project created successfully'
+      message: "Project created successfully",
     });
   } catch (error) {
-    console.error('Error creating project:', error);
+    console.error("Error creating project:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create project',
-      error: error.message
+      message: "Failed to create project",
+      error: error.message,
     });
   }
 });
 
 // PUT /api/dashboard/projects/:id - Update a project
-router.put('/projects/:id', requireAuth, async (req, res) => {
+router.put("/projects/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
     const projectId = req.params.id;
     const updateData = req.body;
-    
+
     // Find project and verify ownership
     const project = await Project.findOne({ _id: projectId, owner: userId });
-    
+
     if (!project) {
       return res.status(404).json({
         success: false,
-        message: 'Project not found or access denied'
+        message: "Project not found or access denied",
       });
     }
-    
+
     // Update project
     Object.assign(project, updateData);
     await project.save();
-    
+
     // Populate team members for response
-    await project.populate('teamMembers', 'name email avatar');
-    
+    await project.populate("teamMembers", "name email avatar");
+
     res.json({
       success: true,
       data: project,
-      message: 'Project updated successfully'
+      message: "Project updated successfully",
     });
   } catch (error) {
-    console.error('Error updating project:', error);
+    console.error("Error updating project:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update project',
-      error: error.message
+      message: "Failed to update project",
+      error: error.message,
     });
   }
 });
 
 // DELETE /api/dashboard/projects/:id - Delete a project
-router.delete('/projects/:id', requireAuth, async (req, res) => {
+router.delete("/projects/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
     const projectId = req.params.id;
-    
+
     // Find and delete project
-    const project = await Project.findOneAndDelete({ _id: projectId, owner: userId });
-    
+    const project = await Project.findOneAndDelete({
+      _id: projectId,
+      owner: userId,
+    });
+
     if (!project) {
       return res.status(404).json({
         success: false,
-        message: 'Project not found or access denied'
+        message: "Project not found or access denied",
       });
     }
-    
+
     res.json({
       success: true,
-      message: 'Project deleted successfully'
+      message: "Project deleted successfully",
     });
   } catch (error) {
-    console.error('Error deleting project:', error);
+    console.error("Error deleting project:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete project',
-      error: error.message
+      message: "Failed to delete project",
+      error: error.message,
     });
   }
 });
 
 // GET /api/dashboard/analytics - Get project analytics data
-router.get('/analytics', requireAuth, async (req, res) => {
+router.get("/analytics", requireAuth, async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Get projects by status for analytics
     const analytics = await Project.aggregate([
       { $match: { owner: userId } },
       {
         $group: {
-          _id: '$status',
+          _id: "$status",
           count: { $sum: 1 },
-          totalTasks: { $sum: '$totalTasks' },
-          completedTasks: { $sum: '$completedTasks' },
-          totalBudget: { $sum: '$budget' }
-        }
-      }
+          totalTasks: { $sum: "$totalTasks" },
+          completedTasks: { $sum: "$completedTasks" },
+          totalBudget: { $sum: "$budget" },
+        },
+      },
     ]);
-    
+
     // Get recent project activity (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const recentActivity = await Project.find({
       owner: userId,
-      updatedAt: { $gte: thirtyDaysAgo }
-    }).sort({ updatedAt: -1 }).limit(10);
-    
+      updatedAt: { $gte: thirtyDaysAgo },
+    })
+      .sort({ updatedAt: -1 })
+      .limit(10);
+
     res.json({
       success: true,
       data: {
@@ -304,19 +314,155 @@ router.get('/analytics', requireAuth, async (req, res) => {
         summary: {
           totalProjects: analytics.reduce((sum, item) => sum + item.count, 0),
           totalTasks: analytics.reduce((sum, item) => sum + item.totalTasks, 0),
-          completedTasks: analytics.reduce((sum, item) => sum + item.completedTasks, 0),
-          totalBudget: analytics.reduce((sum, item) => sum + item.totalBudget, 0)
-        }
-      }
+          completedTasks: analytics.reduce(
+            (sum, item) => sum + item.completedTasks,
+            0,
+          ),
+          totalBudget: analytics.reduce(
+            (sum, item) => sum + item.totalBudget,
+            0,
+          ),
+        },
+      },
     });
   } catch (error) {
-    console.error('Error fetching analytics:', error);
+    console.error("Error fetching analytics:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch analytics',
-      error: error.message
+      message: "Failed to fetch analytics",
+      error: error.message,
     });
   }
 });
+
+// GET /api/dashboard/portfolio-metrics - Get portfolio metrics for analytics
+router.get("/portfolio-metrics", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Get all projects for the user
+    const projects = await Project.find({ owner: userId });
+
+    // Calculate metrics
+    const totalViews = projects.reduce(
+      (sum, project) => sum + (project.views || 0),
+      0,
+    );
+    const totalLikes = projects.reduce(
+      (sum, project) => sum + (project.likes || 0),
+      0,
+    );
+    const totalShares = projects.reduce(
+      (sum, project) => sum + (project.shares || 0),
+      0,
+    );
+    const totalEngagement = totalLikes + totalShares;
+    const engagementRate =
+      totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0;
+
+    // Extract tech stack from projects
+    const techStackMap = new Map();
+    projects.forEach((project) => {
+      if (project.technologies) {
+        project.technologies.forEach((tech) => {
+          const current = techStackMap.get(tech) || { views: 0, projects: 0 };
+          techStackMap.set(tech, {
+            views: current.views + (project.views || 0),
+            projects: current.projects + 1,
+            trend: "stable",
+            percentage: 0,
+          });
+        });
+      }
+    });
+
+    // Convert to array and calculate percentages
+    const techStackPopularity = Array.from(techStackMap.entries())
+      .map(([name, data]) => ({
+        name,
+        views: data.views,
+        projects: data.projects,
+        trend: data.trend,
+        percentage: totalViews > 0 ? (data.views / totalViews) * 100 : 0,
+      }))
+      .sort((a, b) => b.views - a.views);
+
+    res.json({
+      success: true,
+      data: {
+        totalReach: totalViews,
+        engagementRate: Math.round(engagementRate * 100) / 100,
+        profileViews: totalViews,
+        activeProjects: projects.length,
+        codeQualityScore: calculateCodeQualityScore(projects),
+        techStackPopularity,
+        totalLikes,
+        totalShares,
+        averageSessionDuration: calculateAverageSessionDuration(projects),
+        bounceRate: calculateBounceRate(projects, totalViews, totalEngagement),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching portfolio metrics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch portfolio metrics",
+      error: error.message,
+    });
+  }
+});
+
+// Helper functions for calculations
+function calculateCodeQualityScore(projects) {
+  if (projects.length === 0) return 0;
+
+  const scores = projects.map((project) => {
+    let score = 50; // Base score
+
+    // Add points for having description
+    if (project.description && project.description.length > 50) score += 10;
+
+    // Add points for having technologies
+    if (project.technologies && project.technologies.length > 0) score += 15;
+
+    // Add points for having live URL
+    if (project.liveUrl) score += 10;
+
+    // Add points for having GitHub URL
+    if (project.githubUrl) score += 10;
+
+    // Add points for having images
+    if (project.images && project.images.length > 0) score += 5;
+
+    return Math.min(score, 100);
+  });
+
+  return Math.round(
+    scores.reduce((sum, score) => sum + score, 0) / scores.length,
+  );
+}
+
+function calculateAverageSessionDuration(projects) {
+  if (projects.length === 0) return 0;
+
+  const totalDuration = projects.reduce((sum, project) => {
+    const baseDuration = 120; // 2 minutes base
+    const complexityMultiplier = project.technologies
+      ? project.technologies.length * 10
+      : 0;
+    const viewsMultiplier = Math.min((project.views || 0) / 100, 2); // Cap at 2x
+
+    return sum + (baseDuration + complexityMultiplier) * (1 + viewsMultiplier);
+  }, 0);
+
+  return Math.round(totalDuration / projects.length);
+}
+
+function calculateBounceRate(projects, totalViews, totalEngagement) {
+  if (totalViews === 0) return 100;
+
+  const engagementRate = (totalEngagement / totalViews) * 100;
+  return Math.max(0, 100 - engagementRate * 2); // Convert engagement to bounce rate
+}
 
 export default router;

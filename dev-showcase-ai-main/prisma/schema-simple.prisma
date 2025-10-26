@@ -1,0 +1,112 @@
+// Simple schema for testing without complex features
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Social Media Models
+  userTokens         UserToken[]
+  scheduledPosts     ScheduledPost[]
+  analyticsEvents    AnalyticsEvent[]
+  analyticsAggregates AnalyticsAggregate[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Social Media Models
+  scheduledPosts     ScheduledPost[]
+  analyticsEvents    AnalyticsEvent[]
+  analyticsAggregates AnalyticsAggregate[]
+}
+
+model UserToken {
+  id           String    @id @default(cuid())
+  userId       String
+  platform     String
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  scope        String?
+  createdAt    DateTime  @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ScheduledPost {
+  id                String   @id @default(cuid())
+  userId            String
+  projectId         String
+  platforms         String   // JSON string instead of array
+  message           String?
+  messageByPlatform String?  // JSON string instead of Json
+  media             String   // JSON string instead of array
+  scheduledAt       DateTime
+  status            String   @default("scheduled")
+  result            String?  // JSON string instead of Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  publishLogs PublishLog[]
+}
+
+model PublishLog {
+  id              String   @id @default(cuid())
+  scheduledPostId String
+  platform        String
+  attempt         Int      @default(1)
+  status          String
+  platformResponse String? // JSON string instead of Json
+  createdAt       DateTime @default(now())
+  
+  scheduledPost ScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String?
+  platform  String
+  metricType String
+  value     Int
+  raw       String?  // JSON string instead of Json
+  createdAt DateTime @default(now())
+  
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model AnalyticsAggregate {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String?
+  platform  String?
+  period    String
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  shares    Int      @default(0)
+  comments  Int      @default(0)
+  clicks    Int      @default(0)
+  updatedAt DateTime @updatedAt
+  
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+

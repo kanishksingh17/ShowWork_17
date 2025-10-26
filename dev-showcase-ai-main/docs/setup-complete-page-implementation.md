@@ -22,6 +22,7 @@ interface SetupCompletePageProps {
 ## Usage Examples
 
 ### Basic Usage
+
 ```tsx
 import SetupCompletePage from './pages/SetupCompletePage';
 
@@ -33,27 +34,32 @@ import SetupCompletePage from './pages/SetupCompletePage';
 ```
 
 ### Integration with React Router
+
 ```tsx
 // In your routing setup
-<Route path="/setup-complete" element={<SetupCompletePage userName={user?.name} />} />
+<Route
+  path="/setup-complete"
+  element={<SetupCompletePage userName={user?.name} />}
+/>
 ```
 
 ### Programmatic Navigation
+
 ```tsx
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const navigate = useNavigate();
 
 // After profile setup completion
 const handleProfileComplete = () => {
-  navigate('/setup-complete');
+  navigate("/setup-complete");
 };
 ```
 
 ## Animation Timeline
 
 - **0.25s**: Main heading "All Set, {userName}!" fades in
-- **0.50s**: Subheading "We're personalizing your dashboard..." fades in  
+- **0.50s**: Subheading "We're personalizing your dashboard..." fades in
 - **0.75s**: Loading spinner appears
 - **4.0s**: Automatic redirect to dashboard
 

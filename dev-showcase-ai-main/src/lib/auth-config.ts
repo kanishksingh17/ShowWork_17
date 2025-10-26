@@ -1,10 +1,10 @@
-import { NextAuthOptions } from "next-auth"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import GoogleProvider from "next-auth/providers/google"
-import GitHubProvider from "next-auth/providers/github"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { prisma } from "./prisma"
-import bcrypt from "bcryptjs"
+import { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "./prisma";
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -21,30 +21,30 @@ export const authOptions: NextAuthOptions = {
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          return null;
         }
 
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email
-          }
-        })
+            email: credentials.email,
+          },
+        });
 
         if (!user || !user.password) {
-          return null
+          return null;
         }
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
-          user.password
-        )
+          user.password,
+        );
 
         if (!isPasswordValid) {
-          return null
+          return null;
         }
 
         return {
@@ -52,9 +52,9 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
-        }
-      }
-    })
+        };
+      },
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -67,35 +67,35 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       // Persist the OAuth account info to the token right after signin
       if (account) {
-        token.accessToken = account.access_token
+        token.accessToken = account.access_token;
       }
-      
+
       if (user) {
-        token.id = user.id
-        token.role = user.role
+        token.id = user.id;
+        token.role = user.role;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       // Send properties to the client
       if (token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.accessToken = token.accessToken as string
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.accessToken = token.accessToken as string;
       }
-      return session
+      return session;
     },
     async signIn({ user, account, profile }) {
       // Allow sign in
-      return true
+      return true;
     },
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
       // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
-    }
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
   },
   pages: {
     signIn: "/auth/signin",
@@ -104,20 +104,20 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      console.log("User signed in:", { user, account, isNewUser })
+      console.log("User signed in:", { user, account, isNewUser });
     },
     async signOut({ session, token }) {
-      console.log("User signed out")
+      console.log("User signed out");
     },
     async createUser({ user }) {
-      console.log("New user created:", user)
+      console.log("New user created:", user);
     },
     async linkAccount({ user, account, profile }) {
-      console.log("Account linked:", { user, account })
+      console.log("Account linked:", { user, account });
     },
     async session({ session, token }) {
       // You can add session logging here if needed
-    }
+    },
   },
   debug: process.env.NODE_ENV === "development",
-}
+};

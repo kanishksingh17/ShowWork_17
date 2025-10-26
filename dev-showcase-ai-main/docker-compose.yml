@@ -1,0 +1,144 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: showwork-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: showwork
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - showwork-network
+
+  # Redis for Queue System
+  redis:
+    image: redis:7.2
+    container_name: showwork-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - showwork-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: showwork-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      # General Configuration
+      - NODE_ENV=development
+      - PORT=5001
+      - DEBUG=true
+      - LOG_LEVEL=debug
+      
+      # Database Configuration
+      - MONGO_URI=mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      - MONGO_URL=mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      
+      # Security Keys (Change these in production!)
+      - SESSION_SECRET=showwork_super_secret_session_key_2024_change_this_in_production
+      - JWT_SECRET=showwork_jwt_secret_key_2024_change_this_in_production
+      
+      # OAuth Credentials (Set these in your environment or .env file)
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your_google_client_id_here}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your_google_client_secret_here}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-your_github_client_id_here}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-your_github_client_secret_here}
+      
+      # Application URLs
+      - FRONTEND_URL=http://localhost:3000
+      - BACKEND_URL=http://localhost:5001
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      - mongodb
+    networks:
+      - showwork-network
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: showwork-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:5001
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - backend
+    networks:
+      - showwork-network
+
+  # Publish Worker (Background Publishing)
+  publish-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: showwork-publish-worker
+    restart: unless-stopped
+    command: node src/lib/workers/publish-worker.js
+    depends_on:
+      - redis
+      - backend
+      - mongodb
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - MONGO_URI=mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      - MONGO_URL=mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      - SESSION_SECRET=showwork_super_secret_session_key_2024_change_this_in_production
+      - JWT_SECRET=showwork_jwt_secret_key_2024_change_this_in_production
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your_google_client_id_here}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your_google_client_secret_here}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-your_github_client_id_here}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-your_github_client_secret_here}
+    networks:
+      - showwork-network
+
+  # Analytics Worker (Background Analytics Processing)
+  analytics-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: showwork-analytics-worker
+    restart: unless-stopped
+    command: node src/lib/workers/analytics-worker.js
+    depends_on:
+      - redis
+      - backend
+      - mongodb
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - MONGO_URI=mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      - MONGO_URL=mongodb://admin:password123@mongodb:27017/showwork?authSource=admin
+      - SESSION_SECRET=showwork_super_secret_session_key_2024_change_this_in_production
+      - JWT_SECRET=showwork_jwt_secret_key_2024_change_this_in_production
+    networks:
+      - showwork-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  showwork-network:
+    driver: bridge

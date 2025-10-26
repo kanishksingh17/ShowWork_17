@@ -4,7 +4,7 @@ export interface DeploymentConfig {
   templateId: string;
   content: any;
   customDomain?: string;
-  cdnProvider: 'aws' | 'cloudflare' | 'vercel';
+  cdnProvider: "aws" | "cloudflare" | "vercel";
   optimization: {
     enableWebP: boolean;
     enableCompression: boolean;
@@ -16,7 +16,7 @@ export interface DeploymentConfig {
 export interface DeploymentResult {
   url: string;
   customUrl?: string;
-  status: 'deploying' | 'completed' | 'failed';
+  status: "deploying" | "completed" | "failed";
   performance: {
     pageSpeed: number;
     loadTime: number;
@@ -32,147 +32,162 @@ export interface DeploymentResult {
 export class DeploymentService {
   private apiKey: string;
   private baseUrl: string;
-  
-  constructor(apiKey: string, baseUrl: string = 'https://api.showwork.com') {
+
+  constructor(apiKey: string, baseUrl: string = "https://api.showwork.com") {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
   }
-  
+
   async deployPortfolio(config: DeploymentConfig): Promise<DeploymentResult> {
     try {
-      console.log('Starting portfolio deployment...');
-      
+      console.log("Starting portfolio deployment...");
+
       // 1. Build optimized static files
       const buildResult = await this.buildPortfolio(config);
-      
+
       // 2. Optimize assets (WebP, compression)
-      const optimizedAssets = await this.optimizeAssets(buildResult.assets, config.optimization);
-      
+      const optimizedAssets = await this.optimizeAssets(
+        buildResult.assets,
+        config.optimization,
+      );
+
       // 3. Deploy to CDN
       const deploymentUrl = await this.deployToCDN(optimizedAssets, config);
-      
+
       // 4. Setup custom domain (optional)
       let customUrl: string | undefined;
       if (config.customDomain) {
-        customUrl = await this.configureDomain(config.customDomain, deploymentUrl);
+        customUrl = await this.configureDomain(
+          config.customDomain,
+          deploymentUrl,
+        );
       }
-      
+
       // 5. Setup analytics
       const analytics = await this.setupAnalytics(config.portfolioId);
-      
+
       // 6. Performance testing
       const performance = await this.testPerformance(deploymentUrl);
-      
-      console.log('Portfolio deployed successfully!');
-      
+
+      console.log("Portfolio deployed successfully!");
+
       return {
         url: deploymentUrl,
         customUrl,
-        status: 'completed',
+        status: "completed",
         performance,
-        analytics
+        analytics,
       };
     } catch (error) {
-      console.error('Deployment failed:', error);
+      console.error("Deployment failed:", error);
       throw new Error(`Deployment failed: ${error.message}`);
     }
   }
-  
+
   private async buildPortfolio(config: DeploymentConfig): Promise<any> {
-    console.log('Building portfolio...');
-    
+    console.log("Building portfolio...");
+
     // Simulate build process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     return {
       assets: {
         html: this.generateHTML(config),
         css: this.generateCSS(config),
         js: this.generateJS(config),
         images: this.generateImages(config),
-        fonts: this.generateFonts(config)
+        fonts: this.generateFonts(config),
       },
       metadata: {
         buildTime: Date.now(),
-        version: '1.0.0',
-        template: config.templateId
-      }
+        version: "1.0.0",
+        template: config.templateId,
+      },
     };
   }
-  
-  private async optimizeAssets(assets: any, optimization: DeploymentConfig['optimization']): Promise<any> {
-    console.log('Optimizing assets...');
-    
+
+  private async optimizeAssets(
+    assets: any,
+    optimization: DeploymentConfig["optimization"],
+  ): Promise<any> {
+    console.log("Optimizing assets...");
+
     const optimized = { ...assets };
-    
+
     if (optimization.enableWebP) {
       optimized.images = await this.convertToWebP(assets.images);
     }
-    
+
     if (optimization.enableCompression) {
       optimized.css = await this.compressCSS(assets.css);
       optimized.js = await this.compressJS(assets.js);
     }
-    
+
     if (optimization.enableMinification) {
       optimized.html = await this.minifyHTML(assets.html);
       optimized.css = await this.minifyCSS(assets.css);
       optimized.js = await this.minifyJS(assets.js);
     }
-    
+
     return optimized;
   }
-  
-  private async deployToCDN(assets: any, config: DeploymentConfig): Promise<string> {
+
+  private async deployToCDN(
+    assets: any,
+    config: DeploymentConfig,
+  ): Promise<string> {
     console.log(`Deploying to ${config.cdnProvider} CDN...`);
-    
+
     // Simulate CDN deployment
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     const portfolioId = config.portfolioId;
     const baseUrl = this.getCDNBaseUrl(config.cdnProvider);
-    
+
     return `${baseUrl}/portfolios/${portfolioId}`;
   }
-  
-  private async configureDomain(customDomain: string, deploymentUrl: string): Promise<string> {
+
+  private async configureDomain(
+    customDomain: string,
+    deploymentUrl: string,
+  ): Promise<string> {
     console.log(`Configuring custom domain: ${customDomain}`);
-    
+
     // Simulate domain configuration
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     return `https://${customDomain}`;
   }
-  
+
   private async setupAnalytics(portfolioId: string): Promise<any> {
-    console.log('Setting up analytics...');
-    
+    console.log("Setting up analytics...");
+
     const trackingId = `sw_${portfolioId}_${Date.now()}`;
-    
+
     return {
       trackingId,
       customEvents: [
-        'portfolio_view',
-        'project_click',
-        'contact_form_submit',
-        'download_cv'
-      ]
+        "portfolio_view",
+        "project_click",
+        "contact_form_submit",
+        "download_cv",
+      ],
     };
   }
-  
+
   private async testPerformance(url: string): Promise<any> {
-    console.log('Testing performance...');
-    
+    console.log("Testing performance...");
+
     // Simulate performance testing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     return {
       pageSpeed: 95 + Math.floor(Math.random() * 5), // 95-100
       loadTime: 1.2 + Math.random() * 0.8, // 1.2-2.0 seconds
-      bundleSize: 250 + Math.floor(Math.random() * 100) // 250-350 KB
+      bundleSize: 250 + Math.floor(Math.random() * 100), // 250-350 KB
     };
   }
-  
+
   // Asset generation methods
   private generateHTML(config: DeploymentConfig): string {
     return `
@@ -183,14 +198,14 @@ export class DeploymentService {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${config.content.name} - Portfolio</title>
     <meta name="description" content="${config.content.seo.metaDescription}">
-    <meta name="keywords" content="${config.content.seo.keywords.join(', ')}">
-    <link rel="canonical" href="${config.customDomain || 'https://portfolio.showwork.com'}">
+    <meta name="keywords" content="${config.content.seo.keywords.join(", ")}">
+    <link rel="canonical" href="${config.customDomain || "https://portfolio.showwork.com"}">
     
     <!-- Open Graph -->
     <meta property="og:title" content="${config.content.name} - Portfolio">
     <meta property="og:description" content="${config.content.seo.metaDescription}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="${config.customDomain || 'https://portfolio.showwork.com'}">
+    <meta property="og:url" content="${config.customDomain || "https://portfolio.showwork.com"}">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -217,10 +232,10 @@ export class DeploymentService {
 </body>
 </html>`;
   }
-  
+
   private generateCSS(config: DeploymentConfig): string {
     const colors = config.content.design.colorPalette;
-    
+
     return `
 :root {
   --primary: ${colors[0]};
@@ -323,7 +338,7 @@ body {
   }
 }`;
   }
-  
+
   private generateJS(config: DeploymentConfig): string {
     return `
 // Portfolio JavaScript
@@ -385,22 +400,20 @@ document.addEventListener('DOMContentLoaded', () => {
   new PortfolioApp();
 });`;
   }
-  
+
   private generateImages(config: DeploymentConfig): any[] {
     // Generate placeholder images or use user uploaded images
     return [
-      { name: 'avatar.jpg', size: 1024, format: 'jpeg' },
-      { name: 'project-1.jpg', size: 2048, format: 'jpeg' },
-      { name: 'project-2.jpg', size: 2048, format: 'jpeg' }
+      { name: "avatar.jpg", size: 1024, format: "jpeg" },
+      { name: "project-1.jpg", size: 2048, format: "jpeg" },
+      { name: "project-2.jpg", size: 2048, format: "jpeg" },
     ];
   }
-  
+
   private generateFonts(config: DeploymentConfig): any[] {
-    return [
-      { name: 'inter.woff2', size: 256, format: 'woff2' }
-    ];
+    return [{ name: "inter.woff2", size: 256, format: "woff2" }];
   }
-  
+
   private generateCriticalCSS(config: DeploymentConfig): string {
     return `
 body { font-family: 'Inter', sans-serif; }
@@ -408,45 +421,49 @@ body { font-family: 'Inter', sans-serif; }
 .hero h1 { font-size: 4rem; font-weight: 700; }
 @media (max-width: 768px) { .hero h1 { font-size: 2.5rem; } }`;
   }
-  
+
   // Optimization methods
   private async convertToWebP(images: any[]): Promise<any[]> {
-    console.log('Converting images to WebP...');
-    return images.map(img => ({ ...img, format: 'webp', size: Math.floor(img.size * 0.7) }));
+    console.log("Converting images to WebP...");
+    return images.map((img) => ({
+      ...img,
+      format: "webp",
+      size: Math.floor(img.size * 0.7),
+    }));
   }
-  
+
   private async compressCSS(css: string): Promise<string> {
-    console.log('Compressing CSS...');
-    return css.replace(/\s+/g, ' ').trim();
+    console.log("Compressing CSS...");
+    return css.replace(/\s+/g, " ").trim();
   }
-  
+
   private async compressJS(js: string): Promise<string> {
-    console.log('Compressing JavaScript...');
-    return js.replace(/\s+/g, ' ').trim();
+    console.log("Compressing JavaScript...");
+    return js.replace(/\s+/g, " ").trim();
   }
-  
+
   private async minifyHTML(html: string): Promise<string> {
-    console.log('Minifying HTML...');
-    return html.replace(/\s+/g, ' ').trim();
+    console.log("Minifying HTML...");
+    return html.replace(/\s+/g, " ").trim();
   }
-  
+
   private async minifyCSS(css: string): Promise<string> {
-    console.log('Minifying CSS...');
-    return css.replace(/\s+/g, ' ').trim();
+    console.log("Minifying CSS...");
+    return css.replace(/\s+/g, " ").trim();
   }
-  
+
   private async minifyJS(js: string): Promise<string> {
-    console.log('Minifying JavaScript...');
-    return js.replace(/\s+/g, ' ').trim();
+    console.log("Minifying JavaScript...");
+    return js.replace(/\s+/g, " ").trim();
   }
-  
+
   private getCDNBaseUrl(provider: string): string {
     const urls = {
-      aws: 'https://d1234567890.cloudfront.net',
-      cloudflare: 'https://portfolio.showwork.com',
-      vercel: 'https://portfolio-showwork.vercel.app'
+      aws: "https://d1234567890.cloudfront.net",
+      cloudflare: "https://portfolio.showwork.com",
+      vercel: "https://portfolio-showwork.vercel.app",
     };
-    
+
     return urls[provider] || urls.cloudflare;
   }
 }
@@ -455,32 +472,32 @@ body { font-family: 'Inter', sans-serif; }
 export class DeploymentTracker {
   private ws: WebSocket | null = null;
   private callbacks: Map<string, Function[]> = new Map();
-  
+
   connect(portfolioId: string) {
     this.ws = new WebSocket(`wss://api.showwork.com/deploy/${portfolioId}`);
-    
+
     this.ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       this.emit(data.type, data);
     };
-    
+
     this.ws.onclose = () => {
-      console.log('Deployment tracking disconnected');
+      console.log("Deployment tracking disconnected");
     };
   }
-  
+
   on(event: string, callback: Function) {
     if (!this.callbacks.has(event)) {
       this.callbacks.set(event, []);
     }
     this.callbacks.get(event)!.push(callback);
   }
-  
+
   private emit(event: string, data: any) {
     const callbacks = this.callbacks.get(event) || [];
-    callbacks.forEach(callback => callback(data));
+    callbacks.forEach((callback) => callback(data));
   }
-  
+
   disconnect() {
     if (this.ws) {
       this.ws.close();
@@ -489,7 +506,11 @@ export class DeploymentTracker {
 }
 
 // Export the main deployment function
-export const deployPortfolio = async (config: DeploymentConfig): Promise<DeploymentResult> => {
-  const deploymentService = new DeploymentService(process.env.REACT_APP_DEPLOY_API_KEY || 'demo-key');
+export const deployPortfolio = async (
+  config: DeploymentConfig,
+): Promise<DeploymentResult> => {
+  const deploymentService = new DeploymentService(
+    process.env.REACT_APP_DEPLOY_API_KEY || "demo-key",
+  );
   return await deploymentService.deployPortfolio(config);
 };

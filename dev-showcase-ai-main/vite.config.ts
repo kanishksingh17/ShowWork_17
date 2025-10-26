@@ -9,32 +9,34 @@ export default defineConfig(({ mode }) => ({
     strictPort: true,
     host: "localhost",
     force: true,
-    hmr: {
-      port: 3001,
-      host: "localhost",
-      clientPort: 3001,
-    },
+    hmr: false, // Disabled HMR to avoid WebSocket conflicts
+    open: false,
+    cors: true,
     proxy: {
       "/api": {
-        target: "http://localhost:5001",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('proxy error', err);
+          proxy.on("error", (err, _req, _res) => {
+            console.log("proxy error", err);
           });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
+          proxy.on("proxyReq", (proxyReq, req, _res) => {
+            console.log("Sending Request to the Target:", req.method, req.url);
           });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+          proxy.on("proxyRes", (proxyRes, req, _res) => {
+            console.log(
+              "Received Response from the Target:",
+              proxyRes.statusCode,
+              req.url,
+            );
           });
         },
       },
     },
   },
   define: {
-    'process.env': {}
+    "process.env": {},
   },
   plugins: [
     react({
@@ -51,16 +53,20 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: true,
+    minify: "terser",
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['framer-motion', 'lucide-react'],
+          vendor: ["react", "react-dom"],
+          ui: ["framer-motion", "lucide-react"],
+          router: ["react-router-dom"],
+          auth: ["passport", "express-session"],
         },
       },
     },
+    chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion', 'lucide-react'],
+    include: ["react", "react-dom", "framer-motion", "lucide-react"],
   },
 }));

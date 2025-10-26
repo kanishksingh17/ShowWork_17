@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, User, Github, ArrowLeft, Code2, Sparkles, Zap, Star, Layers, Terminal, Rocket } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  Github,
+  ArrowLeft,
+  Code2,
+  Sparkles,
+  Zap,
+  Star,
+  Layers,
+  Terminal,
+  Rocket,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,6 +25,7 @@ export default function Login() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const [socialLoading, setSocialLoading] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -34,8 +50,10 @@ export default function Login() {
       if (isSignup) {
         // Registration logic
         const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
-        const userExists = existingUsers.find((user: any) => user.email === form.email);
-        
+        const userExists = existingUsers.find(
+          (user: any) => user.email === form.email,
+        );
+
         if (userExists) {
           throw new Error("User with this email already exists");
         }
@@ -49,30 +67,37 @@ export default function Login() {
           name: form.name,
           email: form.email,
           password: form.password, // In a real app, this would be hashed
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
 
         existingUsers.push(newUser);
         localStorage.setItem("users", JSON.stringify(existingUsers));
-        
+
         setIsSignup(false);
         setSuccess("Account created successfully! Please log in.");
         setForm({ email: "", password: "", name: "" });
       } else {
         // Login logic
         const users = JSON.parse(localStorage.getItem("users") || "[]");
-        const user = users.find((u: any) => u.email === form.email && u.password === form.password);
-        
+        const user = users.find(
+          (u: any) => u.email === form.email && u.password === form.password,
+        );
+
         if (!user) {
           throw new Error("Invalid email or password");
         }
 
         // Create a simple token (in a real app, this would be a JWT)
-        const token = btoa(JSON.stringify({ userId: user.id, email: user.email }));
+        const token = btoa(
+          JSON.stringify({ userId: user.id, email: user.email }),
+        );
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
-        
-        navigate("/dashboard");
+
+        setSuccess("Login successful!");
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
       }
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message);
@@ -82,28 +107,22 @@ export default function Login() {
 
   const handleSocialLogin = (provider: "google" | "github") => {
     setSocialLoading(provider);
-    
-    // Simulate social login with a demo user
-    setTimeout(() => {
-      const demoUser = {
-        id: Date.now().toString(),
-        name: provider === "google" ? "Demo Google User" : "Demo GitHub User",
-        email: provider === "google" ? "demo@gmail.com" : "demo@github.com",
-        provider: provider,
-        createdAt: new Date().toISOString()
-      };
+    console.log(`${provider} OAuth login initiated`);
 
-      // Create a simple token
-      const token = btoa(JSON.stringify({ userId: demoUser.id, email: demoUser.email }));
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(demoUser));
-      
-      setSocialLoading("");
-      navigate("/dashboard");
-    }, 1500); // Simulate loading time
+    // Redirect to backend OAuth endpoints (port 5000)
+    if (provider === "google") {
+      window.location.href = "http://localhost:5000/api/auth/google";
+    } else if (provider === "github") {
+      window.location.href = "http://localhost:5000/api/auth/github";
+    }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -115,7 +134,9 @@ export default function Login() {
             <div className="w-8 h-8 logo-bg rounded-lg flex items-center justify-center group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
               <Code2 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-foreground group-hover:logo-text transition-colors duration-300">ShowWork</span>
+            <span className="text-xl font-bold text-foreground group-hover:logo-text transition-colors duration-300">
+              ShowWork
+            </span>
           </div>
 
           {/* Form */}
@@ -125,7 +146,9 @@ export default function Login() {
                 {isSignup ? "Create your account" : "Log in to your account"}
               </h1>
               <p className="text-foreground-muted mb-8">
-                {isSignup ? "Join thousands of developers showcasing their work" : "Welcome back to ShowWork"}
+                {isSignup
+                  ? "Join thousands of developers showcasing their work"
+                  : "Welcome back to ShowWork"}
               </p>
 
               {/* Divider */}
@@ -134,28 +157,44 @@ export default function Login() {
                   <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-surface text-foreground-muted">or continue with</span>
+                  <span className="px-3 bg-surface text-foreground-muted">
+                    or continue with
+                  </span>
                 </div>
               </div>
 
               {/* Social Login Buttons */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="grid grid-cols-2 gap-3 mb-4">
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("google")}
                   disabled={socialLoading !== ""}
                   className={`flex items-center justify-center py-3 px-4 border border-input-border rounded-lg bg-input text-foreground font-medium hover:scale-105 hover:shadow-lg hover:bg-gradient-to-r hover:from-accent/10 hover:to-primary/10 transition-all duration-300 ${
-                    socialLoading === "google" ? "opacity-60 cursor-not-allowed" : ""
+                    socialLoading === "google"
+                      ? "opacity-60 cursor-not-allowed"
+                      : ""
                   }`}
                 >
                   {socialLoading === "google" ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                   ) : (
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      />
                     </svg>
                   )}
                 </button>
@@ -165,7 +204,9 @@ export default function Login() {
                   onClick={() => handleSocialLogin("github")}
                   disabled={socialLoading !== ""}
                   className={`flex items-center justify-center py-3 px-4 border border-input-border rounded-lg bg-input text-foreground font-medium hover:scale-105 hover:shadow-lg hover:bg-gradient-to-r hover:from-accent/10 hover:to-primary/10 transition-all duration-300 ${
-                    socialLoading === "github" ? "opacity-60 cursor-not-allowed" : ""
+                    socialLoading === "github"
+                      ? "opacity-60 cursor-not-allowed"
+                      : ""
                   }`}
                 >
                   {socialLoading === "github" ? (
@@ -204,15 +245,32 @@ export default function Login() {
               </div>
 
               <div className="mb-6">
-                <input
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  className="w-full px-4 py-3 border border-input-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 bg-input text-foreground placeholder:text-foreground-muted"
-                  required
-                  value={form.password}
-                  onChange={handleChange}
-                />
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    className="w-full px-4 py-3 pr-12 border border-input-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 bg-input text-foreground placeholder:text-foreground-muted"
+                    required
+                    value={form.password}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 rounded"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <Eye className="w-5 h-5" />
+                    ) : (
+                      <EyeOff className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Submit Button */}
@@ -229,7 +287,9 @@ export default function Login() {
                   <button
                     type="button"
                     className="text-primary hover:text-primary-glow text-sm transition-colors"
-                    onClick={() => {/* Handle forgot password */}}
+                    onClick={() => {
+                      /* Handle forgot password */
+                    }}
                   >
                     Forgot password?
                   </button>
@@ -238,10 +298,14 @@ export default function Login() {
 
               {/* Error/Success Messages */}
               {error && (
-                <p className="text-destructive text-center mt-2 font-medium animate-fade-in">{error}</p>
+                <p className="text-destructive text-center mt-2 font-medium animate-fade-in">
+                  {error}
+                </p>
               )}
               {success && (
-                <p className="text-success text-center mt-2 font-medium animate-fade-in">{success}</p>
+                <p className="text-success text-center mt-2 font-medium animate-fade-in">
+                  {success}
+                </p>
               )}
 
               {/* Toggle Sign Up/Sign In */}
@@ -296,23 +360,29 @@ export default function Login() {
           <div className="absolute bottom-32 left-40 w-3 h-3 bg-primary-foreground rounded-full animate-bounce opacity-50"></div>
           <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-accent-glow rounded-full animate-pulse opacity-30"></div>
           <div className="absolute bottom-1/4 left-1/3 w-1 h-1 bg-primary-foreground rounded-full animate-ping opacity-50"></div>
-          
+
           {/* Gradient Orbs */}
           <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse"></div>
           <div className="absolute bottom-1/4 right-1/3 w-24 h-24 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-full blur-lg animate-bounce"></div>
           <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-lg animate-pulse"></div>
 
           {/* Floating Code Elements */}
-          <div className="absolute top-1/4 right-1/2 text-blue-400/30 text-6xl font-mono animate-pulse transform rotate-12">&lt;/&gt;</div>
-          <div className="absolute bottom-1/3 left-1/2 text-purple-400/20 text-4xl font-mono animate-bounce transform -rotate-12">{ }</div>
-          <div className="absolute top-2/3 right-1/3 text-cyan-400/30 text-3xl font-mono animate-pulse">=&gt;</div>
+          <div className="absolute top-1/4 right-1/2 text-blue-400/30 text-6xl font-mono animate-pulse transform rotate-12">
+            &lt;/&gt;
+          </div>
+          <div className="absolute bottom-1/3 left-1/2 text-purple-400/20 text-4xl font-mono animate-bounce transform -rotate-12">
+            {}
+          </div>
+          <div className="absolute top-2/3 right-1/3 text-cyan-400/30 text-3xl font-mono animate-pulse">
+            =&gt;
+          </div>
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center text-center p-12">
           <div className="w-16 h-16 bg-gradient-to-br from-accent to-accent-glow rounded-2xl flex items-center justify-center mb-8 animate-pulse">
             <Sparkles className="h-8 w-8 text-accent-foreground" />
           </div>
-          
+
           <h2 className="text-4xl font-bold text-primary-foreground mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">
               Idea to app,
@@ -320,9 +390,10 @@ export default function Login() {
             <br />
             <span className="text-primary-foreground">fast</span>
           </h2>
-          
+
           <p className="text-xl text-primary-foreground/80 max-w-md leading-relaxed mb-8">
-            Build a stunning portfolio, connect with opportunities, and let your code tell your story.
+            Build a stunning portfolio, connect with opportunities, and let your
+            code tell your story.
           </p>
 
           {/* Feature Highlights */}
@@ -333,14 +404,16 @@ export default function Login() {
               </div>
               <span className="text-sm">Lightning-fast portfolio creation</span>
             </div>
-            
+
             <div className="flex items-center gap-3 text-gray-300">
               <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
                 <Star className="w-4 h-4 text-purple-400" />
               </div>
-              <span className="text-sm">AI-powered project recommendations</span>
+              <span className="text-sm">
+                AI-powered project recommendations
+              </span>
             </div>
-            
+
             <div className="flex items-center gap-3 text-gray-300">
               <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center">
                 <Layers className="w-4 h-4 text-cyan-400" />

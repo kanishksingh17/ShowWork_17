@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ZoomIn,
   ZoomOut,
@@ -14,88 +14,90 @@ import {
   Target,
   Move,
   Hand,
-  MousePointer
-} from 'lucide-react'
-import { usePreview } from '../../lib/preview/context'
+  MousePointer,
+} from "lucide-react";
+import { usePreview } from "../../lib/preview/context";
 
 interface ZoomControlsProps {
-  className?: string
+  className?: string;
 }
 
-export const ZoomControls: React.FC<ZoomControlsProps> = ({ className = '' }) => {
-  const { state, actions } = usePreview()
-  const [isDragging, setIsDragging] = useState(false)
-  const [showZoomLevel, setShowZoomLevel] = useState(false)
-  const sliderRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+export const ZoomControls: React.FC<ZoomControlsProps> = ({
+  className = "",
+}) => {
+  const { state, actions } = usePreview();
+  const [isDragging, setIsDragging] = useState(false);
+  const [showZoomLevel, setShowZoomLevel] = useState(false);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const zoomLevels = [
-    { label: '25%', value: 0.25 },
-    { label: '50%', value: 0.5 },
-    { label: '75%', value: 0.75 },
-    { label: '100%', value: 1 },
-    { label: '125%', value: 1.25 },
-    { label: '150%', value: 1.5 },
-    { label: '200%', value: 2 },
-    { label: '300%', value: 3 }
-  ]
+    { label: "25%", value: 0.25 },
+    { label: "50%", value: 0.5 },
+    { label: "75%", value: 0.75 },
+    { label: "100%", value: 1 },
+    { label: "125%", value: 1.25 },
+    { label: "150%", value: 1.5 },
+    { label: "200%", value: 2 },
+    { label: "300%", value: 3 },
+  ];
 
   const handleZoomIn = () => {
-    actions.zoomIn()
-    showZoomLevelTemporarily()
-  }
+    actions.zoomIn();
+    showZoomLevelTemporarily();
+  };
 
   const handleZoomOut = () => {
-    actions.zoomOut()
-    showZoomLevelTemporarily()
-  }
+    actions.zoomOut();
+    showZoomLevelTemporarily();
+  };
 
   const handleResetZoom = () => {
-    actions.resetZoom()
-    showZoomLevelTemporarily()
-  }
+    actions.resetZoom();
+    showZoomLevelTemporarily();
+  };
 
   const handleFitToScreen = () => {
-    actions.fitToScreen()
-    showZoomLevelTemporarily()
-  }
+    actions.fitToScreen();
+    showZoomLevelTemporarily();
+  };
 
   const showZoomLevelTemporarily = () => {
-    setShowZoomLevel(true)
+    setShowZoomLevel(true);
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
+      clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
-      setShowZoomLevel(false)
-    }, 2000)
-  }
+      setShowZoomLevel(false);
+    }, 2000);
+  };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value)
-    actions.setZoom(value)
-    showZoomLevelTemporarily()
-  }
+    const value = parseFloat(e.target.value);
+    actions.setZoom(value);
+    showZoomLevelTemporarily();
+  };
 
   const handleSliderMouseDown = () => {
-    setIsDragging(true)
-  }
+    setIsDragging(true);
+  };
 
   const handleSliderMouseUp = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   const getCurrentZoomLabel = () => {
-    const level = zoomLevels.find(level => level.value === state.zoom)
-    return level ? level.label : `${Math.round(state.zoom * 100)}%`
-  }
+    const level = zoomLevels.find((level) => level.value === state.zoom);
+    return level ? level.label : `${Math.round(state.zoom * 100)}%`;
+  };
 
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+        clearTimeout(timeoutRef.current);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
@@ -123,7 +125,7 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({ className = '' }) =>
             onMouseUp={handleSliderMouseUp}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
             style={{
-              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(state.zoom - 0.1) / (3 - 0.1) * 100}%, #e5e7eb ${(state.zoom - 0.1) / (3 - 0.1) * 100}%, #e5e7eb 100%)`
+              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((state.zoom - 0.1) / (3 - 0.1)) * 100}%, #e5e7eb ${((state.zoom - 0.1) / (3 - 0.1)) * 100}%, #e5e7eb 100%)`,
             }}
           />
           <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
@@ -188,11 +190,13 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({ className = '' }) =>
               <button
                 key={level.value}
                 onClick={() => {
-                  actions.setZoom(level.value)
-                  showZoomLevelTemporarily()
+                  actions.setZoom(level.value);
+                  showZoomLevelTemporarily();
                 }}
                 className={`w-full text-left px-2 py-1 text-xs rounded hover:bg-gray-100 ${
-                  state.zoom === level.value ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                  state.zoom === level.value
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-700"
                 }`}
               >
                 {level.label}
@@ -233,7 +237,7 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({ className = '' }) =>
         }
       `}</style>
     </div>
-  )
-}
+  );
+};
 
-export default ZoomControls
+export default ZoomControls;

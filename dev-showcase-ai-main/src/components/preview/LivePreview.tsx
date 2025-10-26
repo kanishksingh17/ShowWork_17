@@ -1,139 +1,147 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { usePreview } from '../../lib/preview/context'
-import { DeviceSelector } from './DeviceSelector'
-import { ZoomControls } from './ZoomControls'
-import { PanControls } from './PanControls'
-import { FullscreenPreview } from './FullscreenPreview'
-import { PerformanceOverlay } from './PerformanceOverlay'
-import { ErrorBoundary } from './ErrorBoundary'
-import { LoadingIndicator } from './LoadingIndicator'
-import { ExportPanel } from './ExportPanel'
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePreview } from "../../lib/preview/context";
+import { DeviceSelector } from "./DeviceSelector";
+import { ZoomControls } from "./ZoomControls";
+import { PanControls } from "./PanControls";
+import { FullscreenPreview } from "./FullscreenPreview";
+import { PerformanceOverlay } from "./PerformanceOverlay";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { LoadingIndicator } from "./LoadingIndicator";
+import { ExportPanel } from "./ExportPanel";
 
 interface LivePreviewProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }
 
-export const LivePreview: React.FC<LivePreviewProps> = ({ 
-  children, 
-  className = '' 
+export const LivePreview: React.FC<LivePreviewProps> = ({
+  children,
+  className = "",
 }) => {
-  const { state, actions } = usePreview()
-  const [showExportPanel, setShowExportPanel] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const previewRef = useRef<HTMLDivElement>(null)
+  const { state, actions } = usePreview();
+  const [showExportPanel, setShowExportPanel] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const previewRef = useRef<HTMLDivElement>(null);
 
   // Handle mouse wheel zoom
-  const handleWheel = useCallback((e: WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault()
-      const delta = e.deltaY > 0 ? 0.9 : 1.1
-      const newZoom = Math.max(0.1, Math.min(3, state.zoom * delta))
-      actions.setZoom(newZoom)
-    }
-  }, [state.zoom, actions])
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        const newZoom = Math.max(0.1, Math.min(3, state.zoom * delta));
+        actions.setZoom(newZoom);
+      }
+    },
+    [state.zoom, actions],
+  );
 
   // Handle mouse drag for panning
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return // Only left mouse button
-    
-    setIsDragging(true)
-    setDragStart({ x: e.clientX, y: e.clientY })
-    
+    if (e.button !== 0) return; // Only left mouse button
+
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+
     if (previewRef.current) {
-      previewRef.current.style.cursor = 'grabbing'
+      previewRef.current.style.cursor = "grabbing";
     }
-  }, [])
+  }, []);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
 
-    const deltaX = e.clientX - dragStart.x
-    const deltaY = e.clientY - dragStart.y
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
 
-    const newPan = {
-      x: state.pan.x + deltaX,
-      y: state.pan.y + deltaY
-    }
+      const newPan = {
+        x: state.pan.x + deltaX,
+        y: state.pan.y + deltaY,
+      };
 
-    actions.setPan(newPan)
-    setDragStart({ x: e.clientX, y: e.clientY })
-  }, [isDragging, dragStart, state.pan, actions])
+      actions.setPan(newPan);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    },
+    [isDragging, dragStart, state.pan, actions],
+  );
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-    
+    setIsDragging(false);
+
     if (previewRef.current) {
-      previewRef.current.style.cursor = 'grab'
+      previewRef.current.style.cursor = "grab";
     }
-  }, [])
+  }, []);
 
   // Event listeners
   useEffect(() => {
-    const previewElement = previewRef.current
+    const previewElement = previewRef.current;
     if (previewElement) {
-      previewElement.addEventListener('wheel', handleWheel, { passive: false })
+      previewElement.addEventListener("wheel", handleWheel, { passive: false });
     }
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     }
 
     return () => {
       if (previewElement) {
-        previewElement.removeEventListener('wheel', handleWheel)
+        previewElement.removeEventListener("wheel", handleWheel);
       }
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [handleWheel, isDragging, handleMouseMove, handleMouseUp])
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleWheel, isDragging, handleMouseMove, handleMouseUp]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case '0':
-            e.preventDefault()
-            actions.fitToScreen()
-            break
-          case '=':
-          case '+':
-            e.preventDefault()
-            actions.zoomIn()
-            break
-          case '-':
-            e.preventDefault()
-            actions.zoomOut()
-            break
+          case "0":
+            e.preventDefault();
+            actions.fitToScreen();
+            break;
+          case "=":
+          case "+":
+            e.preventDefault();
+            actions.zoomIn();
+            break;
+          case "-":
+            e.preventDefault();
+            actions.zoomOut();
+            break;
         }
-      } else if (e.key === 'Escape') {
-        actions.resetPan()
-        actions.resetZoom()
+      } else if (e.key === "Escape") {
+        actions.resetPan();
+        actions.resetZoom();
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [actions])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [actions]);
 
   return (
     <ErrorBoundary>
       <div className={`relative h-full ${className}`}>
         {/* Loading Indicator */}
-        <LoadingIndicator loading={{
-          isLoading: state.isLoading,
-          loadingType: 'update',
-          progress: 0,
-          message: 'Loading preview...',
-          startTime: null,
-          estimatedDuration: null
-        }} />
+        <LoadingIndicator
+          loading={{
+            isLoading: state.isLoading,
+            loadingType: "update",
+            progress: 0,
+            message: "Loading preview...",
+            startTime: null,
+            estimatedDuration: null,
+          }}
+        />
 
         {/* Toolbar */}
         {!state.isFullscreen && (
@@ -151,19 +159,39 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
                 onClick={() => setShowExportPanel(true)}
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
                 <span>Export</span>
               </button>
-              
+
               <button
                 onClick={actions.toggleFullscreen}
                 className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
                 title="Enter Fullscreen"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                  />
                 </svg>
               </button>
             </div>
@@ -186,7 +214,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
                   width: state.deviceViewport.width * state.zoom,
                   height: state.deviceViewport.height * state.zoom,
                   transform: `translate(${state.pan.x}px, ${state.pan.y}px)`,
-                  transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+                  transition: isDragging ? "none" : "transform 0.2s ease-out",
                 }}
               >
                 {/* Device Frame */}
@@ -200,9 +228,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
 
                 {/* Preview Content */}
                 <div className="w-full h-full overflow-auto">
-                  <ErrorBoundary>
-                    {children}
-                  </ErrorBoundary>
+                  <ErrorBoundary>{children}</ErrorBoundary>
                 </div>
 
                 {/* Zoom Indicator */}
@@ -221,15 +247,19 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
 
                 {/* Connection Status */}
                 <div className="absolute bottom-2 left-2">
-                  <div className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
-                    state.isConnected 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      state.isConnected ? 'bg-green-500' : 'bg-red-500'
-                    }`} />
-                    <span>{state.isConnected ? 'Live' : 'Offline'}</span>
+                  <div
+                    className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
+                      state.isConnected
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        state.isConnected ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    />
+                    <span>{state.isConnected ? "Live" : "Offline"}</span>
                   </div>
                 </div>
               </div>
@@ -243,7 +273,8 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
                     exit={{ opacity: 0 }}
                     className="absolute top-4 left-4 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded"
                   >
-                    Panning: {Math.round(state.pan.x)}, {Math.round(state.pan.y)}
+                    Panning: {Math.round(state.pan.x)},{" "}
+                    {Math.round(state.pan.y)}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -272,20 +303,38 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    <svg
+                      className="w-3 h-3 text-red-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-sm font-medium text-red-800">Preview Error</h3>
+                    <h3 className="text-sm font-medium text-red-800">
+                      Preview Error
+                    </h3>
                     <p className="text-sm text-red-700 mt-1">{state.error}</p>
                   </div>
                   <button
                     onClick={actions.clearError}
                     className="text-red-400 hover:text-red-600"
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -295,7 +344,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
         </AnimatePresence>
       </div>
     </ErrorBoundary>
-  )
-}
+  );
+};
 
-export default LivePreview
+export default LivePreview;

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { motion } from 'framer-motion'
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { motion } from "framer-motion";
 import {
   AlertTriangle,
   RefreshCw,
@@ -18,25 +18,31 @@ import {
   Info,
   Zap,
   Shield,
-  AlertCircle
-} from 'lucide-react'
-import { ErrorBoundaryState, ErrorBoundaryProps } from '../../lib/preview/types'
+  AlertCircle,
+} from "lucide-react";
+import {
+  ErrorBoundaryState,
+  ErrorBoundaryProps,
+} from "../../lib/preview/types";
 
 interface ErrorBoundaryComponentState {
-  hasError: boolean
-  error: Error | null
-  errorInfo: ErrorInfo | null
-  retryCount: number
-  lastError: Date | null
-  showDetails: boolean
-  errorId: string
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+  retryCount: number;
+  lastError: Date | null;
+  showDetails: boolean;
+  errorId: string;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryComponentState> {
-  private retryTimeout: NodeJS.Timeout | null = null
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryComponentState
+> {
+  private retryTimeout: NodeJS.Timeout | null = null;
 
   constructor(props: ErrorBoundaryProps) {
-    super(props)
+    super(props);
     this.state = {
       hasError: false,
       error: null,
@@ -44,35 +50,37 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryCo
       retryCount: 0,
       lastError: null,
       showDetails: false,
-      errorId: ''
-    }
+      errorId: "",
+    };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryComponentState> {
+  static getDerivedStateFromError(
+    error: Error,
+  ): Partial<ErrorBoundaryComponentState> {
     return {
       hasError: true,
       error,
       lastError: new Date(),
-      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    }
+      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({
       errorInfo,
-      retryCount: this.state.retryCount + 1
-    })
+      retryCount: this.state.retryCount + 1,
+    });
 
     // Call the onError callback if provided
-    this.props.onError?.(error, errorInfo)
+    this.props.onError?.(error, errorInfo);
 
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo)
+    if (process.env.NODE_ENV === "development") {
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
     // In production, you might want to send this to an error reporting service
-    this.reportError(error, errorInfo)
+    this.reportError(error, errorInfo);
   }
 
   private reportError = (error: Error, errorInfo: ErrorInfo) => {
@@ -84,43 +92,43 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryCo
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href,
-      retryCount: this.state.retryCount
-    }
+      retryCount: this.state.retryCount,
+    };
 
     // In a real app, you would send this to your error reporting service
-    console.log('Error Report:', errorReport)
-  }
+    console.log("Error Report:", errorReport);
+  };
 
   private handleRetry = () => {
     if (this.retryTimeout) {
-      clearTimeout(this.retryTimeout)
+      clearTimeout(this.retryTimeout);
     }
 
     // Clear the error state
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: null
-    })
+      errorInfo: null,
+    });
 
     // Force a re-render of the component tree
-    this.forceUpdate()
-  }
+    this.forceUpdate();
+  };
 
   private handleDismiss = () => {
     this.setState({
       hasError: false,
       error: null,
       errorInfo: null,
-      showDetails: false
-    })
-  }
+      showDetails: false,
+    });
+  };
 
   private handleToggleDetails = () => {
-    this.setState(prevState => ({
-      showDetails: !prevState.showDetails
-    }))
-  }
+    this.setState((prevState) => ({
+      showDetails: !prevState.showDetails,
+    }));
+  };
 
   private handleCopyError = () => {
     const errorText = `
@@ -129,15 +137,18 @@ Stack: ${this.state.error?.stack}
 Component Stack: ${this.state.errorInfo?.componentStack}
 Timestamp: ${this.state.lastError?.toISOString()}
 Retry Count: ${this.state.retryCount}
-    `.trim()
+    `.trim();
 
-    navigator.clipboard.writeText(errorText).then(() => {
-      // Show a brief success message
-      console.log('Error details copied to clipboard')
-    }).catch(() => {
-      console.error('Failed to copy error details')
-    })
-  }
+    navigator.clipboard
+      .writeText(errorText)
+      .then(() => {
+        // Show a brief success message
+        console.log("Error details copied to clipboard");
+      })
+      .catch(() => {
+        console.error("Failed to copy error details");
+      });
+  };
 
   private handleDownloadError = () => {
     const errorData = {
@@ -148,27 +159,29 @@ Retry Count: ${this.state.retryCount}
       timestamp: this.state.lastError?.toISOString(),
       retryCount: this.state.retryCount,
       userAgent: navigator.userAgent,
-      url: window.location.href
-    }
+      url: window.location.href,
+    };
 
-    const blob = new Blob([JSON.stringify(errorData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `error-report-${this.state.errorId}.json`
-    link.click()
-    URL.revokeObjectURL(url)
-  }
+    const blob = new Blob([JSON.stringify(errorData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `error-report-${this.state.errorId}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   componentWillUnmount() {
     if (this.retryTimeout) {
-      clearTimeout(this.retryTimeout)
+      clearTimeout(this.retryTimeout);
     }
   }
 
   render() {
     if (this.state.hasError) {
-      const FallbackComponent = this.props.fallback || DefaultErrorFallback
+      const FallbackComponent = this.props.fallback || DefaultErrorFallback;
 
       return (
         <FallbackComponent
@@ -184,25 +197,25 @@ Retry Count: ${this.state.retryCount}
           onDownloadError={this.handleDownloadError}
           errorId={this.state.errorId}
         />
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 
 interface DefaultErrorFallbackProps {
-  error: Error
-  retry: () => void
-  errorInfo?: ErrorInfo | null
-  retryCount: number
-  lastError: Date | null
-  showDetails: boolean
-  onToggleDetails: () => void
-  onDismiss: () => void
-  onCopyError: () => void
-  onDownloadError: () => void
-  errorId: string
+  error: Error;
+  retry: () => void;
+  errorInfo?: ErrorInfo | null;
+  retryCount: number;
+  lastError: Date | null;
+  showDetails: boolean;
+  onToggleDetails: () => void;
+  onDismiss: () => void;
+  onCopyError: () => void;
+  onDownloadError: () => void;
+  errorId: string;
 }
 
 const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
@@ -216,7 +229,7 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
   onDismiss,
   onCopyError,
   onDownloadError,
-  errorId
+  errorId,
 }) => {
   return (
     <motion.div
@@ -232,8 +245,12 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Preview Error</h1>
-              <p className="text-sm text-gray-600">Something went wrong while rendering the preview</p>
+              <h1 className="text-lg font-semibold text-gray-900">
+                Preview Error
+              </h1>
+              <p className="text-sm text-gray-600">
+                Something went wrong while rendering the preview
+              </p>
             </div>
           </div>
           <button
@@ -250,7 +267,9 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
             <div className="flex items-start space-x-3">
               <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-red-800">Error Message</h3>
+                <h3 className="text-sm font-medium text-red-800">
+                  Error Message
+                </h3>
                 <p className="text-sm text-red-700 mt-1">{error.message}</p>
               </div>
             </div>
@@ -265,7 +284,9 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
               </div>
               <div>
                 <span className="text-gray-600">Retry Count:</span>
-                <span className="ml-2 font-medium text-gray-900">{retryCount}</span>
+                <span className="ml-2 font-medium text-gray-900">
+                  {retryCount}
+                </span>
               </div>
               <div>
                 <span className="text-gray-600">Time:</span>
@@ -288,14 +309,18 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
                 <RefreshCw className="w-4 h-4" />
                 <span>Retry</span>
               </button>
-              
+
               <button
                 onClick={onToggleDetails}
                 className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 <Bug className="w-4 h-4" />
-                <span>{showDetails ? 'Hide' : 'Show'} Details</span>
-                {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                <span>{showDetails ? "Hide" : "Show"} Details</span>
+                {showDetails ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
               </button>
             </div>
 
@@ -303,13 +328,15 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
             {showDetails && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="border border-gray-200 rounded-lg overflow-hidden"
               >
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium text-gray-900">Error Details</h4>
+                    <h4 className="text-sm font-medium text-gray-900">
+                      Error Details
+                    </h4>
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={onCopyError}
@@ -328,11 +355,13 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-4 space-y-4">
                   {/* Stack Trace */}
                   <div>
-                    <h5 className="text-sm font-medium text-gray-900 mb-2">Stack Trace</h5>
+                    <h5 className="text-sm font-medium text-gray-900 mb-2">
+                      Stack Trace
+                    </h5>
                     <pre className="text-xs text-gray-700 bg-gray-50 p-3 rounded border overflow-x-auto">
                       {error.stack}
                     </pre>
@@ -341,7 +370,9 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
                   {/* Component Stack */}
                   {errorInfo?.componentStack && (
                     <div>
-                      <h5 className="text-sm font-medium text-gray-900 mb-2">Component Stack</h5>
+                      <h5 className="text-sm font-medium text-gray-900 mb-2">
+                        Component Stack
+                      </h5>
                       <pre className="text-xs text-gray-700 bg-gray-50 p-3 rounded border overflow-x-auto">
                         {errorInfo.componentStack}
                       </pre>
@@ -374,28 +405,28 @@ const DefaultErrorFallback: React.FC<DefaultErrorFallbackProps> = ({
         </div>
       </div>
     </motion.div>
-  )
-}
+  );
+};
 
 // Hook for functional components
 export const useErrorBoundary = () => {
-  const [error, setError] = React.useState<Error | null>(null)
+  const [error, setError] = React.useState<Error | null>(null);
 
   const resetError = React.useCallback(() => {
-    setError(null)
-  }, [])
+    setError(null);
+  }, []);
 
   const captureError = React.useCallback((error: Error) => {
-    setError(error)
-  }, [])
+    setError(error);
+  }, []);
 
   React.useEffect(() => {
     if (error) {
-      throw error
+      throw error;
     }
-  }, [error])
+  }, [error]);
 
-  return { captureError, resetError }
-}
+  return { captureError, resetError };
+};
 
-export default ErrorBoundary
+export default ErrorBoundary;

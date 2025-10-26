@@ -18,14 +18,19 @@ const nextStep = useCallback(() => {
     if (currentStep === 1) {
       // Quiz initialization logic...
     }
-    
+
     // Generic step advancement for other steps
     progressTracker.trackStepTransition(currentStep, currentStep + 1);
     setCurrentStep(currentStep + 1);
-    setFocusedField('');
+    setFocusedField("");
   }
   // ❌ Missing: No logic for when currentStep === totalSteps - 1 (completion)
-}, [currentStep, profileState.totalSteps, selectedTechStacks, profileState.userProfile.techStack?.manualTechStacks]);
+}, [
+  currentStep,
+  profileState.totalSteps,
+  selectedTechStacks,
+  profileState.userProfile.techStack?.manualTechStacks,
+]);
 ```
 
 ## Solution Implemented
@@ -39,29 +44,39 @@ const nextStep = useCallback(() => {
   } else {
     // ✅ NEW: Handle completion when we're at the last step (step 3 → completion)
     if (currentStep === profileState.totalSteps - 1) {
-      console.log('🎉 Profile setup complete! Moving to completion step...');
-      const allTechStacks = [...selectedTechStacks, ...(profileState.userProfile.techStack?.manualTechStacks || [])];
+      console.log("🎉 Profile setup complete! Moving to completion step...");
+      const allTechStacks = [
+        ...selectedTechStacks,
+        ...(profileState.userProfile.techStack?.manualTechStacks || []),
+      ];
       const legacyData: OnboardingData = {
-        profilePicture: profileState.userProfile.basicInfo?.profilePicture || '',
-        name: profileState.userProfile.basicInfo?.fullName || '',
-        username: profileState.userProfile.basicInfo?.username || '',
-        role: '', // Role field removed from setup
-        bio: profileState.userProfile.basicInfo?.professionalBio || '',
-        skills: allTechStacks.map(techId => {
-          const tech = TECH_STACKS.find(t => t.id === techId);
+        profilePicture:
+          profileState.userProfile.basicInfo?.profilePicture || "",
+        name: profileState.userProfile.basicInfo?.fullName || "",
+        username: profileState.userProfile.basicInfo?.username || "",
+        role: "", // Role field removed from setup
+        bio: profileState.userProfile.basicInfo?.professionalBio || "",
+        skills: allTechStacks.map((techId) => {
+          const tech = TECH_STACKS.find((t) => t.id === techId);
           return {
             name: tech?.name || techId,
-            percentage: Math.floor(Math.random() * 40) + 60
+            percentage: Math.floor(Math.random() * 40) + 60,
           };
-        })
+        }),
       };
-      
+
       // Store completion data and show transition page
       setCompletionData(legacyData);
       setShowTransition(true);
     }
   }
-}, [currentStep, profileState.totalSteps, selectedTechStacks, profileState.userProfile.techStack?.manualTechStacks, profileState.userProfile.basicInfo]);
+}, [
+  currentStep,
+  profileState.totalSteps,
+  selectedTechStacks,
+  profileState.userProfile.techStack?.manualTechStacks,
+  profileState.userProfile.basicInfo,
+]);
 ```
 
 ## What the Fix Does
@@ -75,6 +90,7 @@ const nextStep = useCallback(() => {
 ## Testing the Fix
 
 ### Method 1: Direct Testing
+
 1. Navigate to `/test-onboarding` in your browser
 2. Complete the 4-step onboarding process:
    - Step 1: Fill in basic info (name, username)
@@ -85,6 +101,7 @@ const nextStep = useCallback(() => {
 4. Verify the transition page appears and then redirects to dashboard
 
 ### Method 2: Integration Testing
+
 1. Go through the normal onboarding flow in the app
 2. On Step 4 (platforms), select your preferred platforms
 3. Click the "Continue" button
@@ -107,6 +124,7 @@ const nextStep = useCallback(() => {
 ## Future Improvements
 
 Consider adding:
+
 - Loading states during completion processing
 - Error handling for profile data validation
 - Better user feedback during the transition

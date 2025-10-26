@@ -1,207 +1,350 @@
-"use client"
-
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { 
-  Rocket, 
-  Palette, 
-  Code, 
-  Smartphone, 
-  Monitor, 
-  Sparkles,
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Progress } from "../ui/progress";
+import {
+  ArrowLeft,
   ArrowRight,
+  CheckCircle,
+  Wand2,
   Eye,
-  Download
-} from "lucide-react"
+  Download,
+  Share,
+  Settings,
+} from "lucide-react";
+import {
+  PortfolioTemplate,
+  UserPortfolio,
+  JobRole,
+} from "../../types/portfolio";
+import { PortfolioSelector } from "./PortfolioSelector";
+import { PortfolioCustomizer } from "./PortfolioCustomizer";
+import { PortfolioPreview } from "./PortfolioPreview";
 
-const templates = [
-  {
-    id: "modern-developer",
-    name: "Modern Developer",
-    category: "Developer",
-    description: "Clean, professional layout perfect for developers",
-    preview: "/templates/modern-developer.jpg",
-    features: ["GitHub Integration", "Code Highlighting", "Project Showcase"]
-  },
-  {
-    id: "creative-designer",
-    name: "Creative Designer",
-    category: "Designer",
-    description: "Bold, artistic design for creative professionals",
-    preview: "/templates/creative-designer.jpg",
-    features: ["Portfolio Gallery", "Interactive Elements", "Visual Showcase"]
-  },
-  {
-    id: "business-professional",
-    name: "Business Professional",
-    category: "Business",
-    description: "Corporate layout for business professionals",
-    preview: "/templates/business-professional.jpg",
-    features: ["Resume Integration", "Achievement Timeline", "Contact Forms"]
-  }
-]
+interface PortfolioBuilderProps {
+  userData: any;
+  projects: any[];
+  onPortfolioComplete: (portfolio: UserPortfolio) => void;
+}
 
-export default function PortfolioBuilder() {
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
+type BuilderStep = "select" | "customize" | "preview" | "complete";
 
-  const handleGeneratePortfolio = async () => {
-    if (!selectedTemplate) return
+export const PortfolioBuilder: React.FC<PortfolioBuilderProps> = ({
+  userData,
+  projects,
+  onPortfolioComplete,
+}) => {
+  const [currentStep, setCurrentStep] = useState<BuilderStep>("select");
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<PortfolioTemplate | null>(null);
+  const [detectedJobRole, setDetectedJobRole] = useState<JobRole | null>(null);
+  const [portfolio, setPortfolio] = useState<UserPortfolio | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-    setIsGenerating(true)
-    
-    try {
-      // Simulate portfolio generation
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      // Navigate to portfolio editor
-      window.location.href = `/portfolio/editor/${selectedTemplate}`
-    } catch (error) {
-      console.error("Error generating portfolio:", error)
-    } finally {
-      setIsGenerating(false)
+  const steps = [
+    {
+      id: "select",
+      title: "Choose Template",
+      description: "Select your portfolio template",
+    },
+    {
+      id: "customize",
+      title: "Customize",
+      description: "AI-powered content generation",
+    },
+    { id: "preview", title: "Preview", description: "Review your portfolio" },
+    {
+      id: "complete",
+      title: "Complete",
+      description: "Your portfolio is ready!",
+    },
+  ];
+
+  const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
+  const progress = ((currentStepIndex + 1) / steps.length) * 100;
+
+  const handleTemplateSelect = (template: PortfolioTemplate) => {
+    setSelectedTemplate(template);
+    setCurrentStep("customize");
+  };
+
+  const handleJobRoleDetected = (jobRole: JobRole) => {
+    setDetectedJobRole(jobRole);
+  };
+
+  const handlePortfolioSave = (savedPortfolio: UserPortfolio) => {
+    setPortfolio(savedPortfolio);
+    setCurrentStep("preview");
+  };
+
+  const handlePortfolioPreview = (previewPortfolio: UserPortfolio) => {
+    setPortfolio(previewPortfolio);
+    setCurrentStep("preview");
+  };
+
+  const handlePortfolioComplete = () => {
+    if (portfolio) {
+      onPortfolioComplete(portfolio);
+      setCurrentStep("complete");
     }
-  }
+  };
+
+  const handleShare = (url: string) => {
+    // Implement sharing functionality
+    if (navigator.share) {
+      navigator.share({
+        title: "My Portfolio",
+        text: "Check out my portfolio!",
+        url: url,
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      // Show toast notification
+    }
+  };
+
+  const handleExport = () => {
+    // Implement export functionality (PDF, HTML, etc.)
+    console.log("Exporting portfolio...");
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case "select":
+        return (
+          <PortfolioSelector
+            userData={userData}
+            projects={projects}
+            onTemplateSelect={handleTemplateSelect}
+            onJobRoleDetected={handleJobRoleDetected}
+          />
+        );
+
+      case "customize":
+        return selectedTemplate && detectedJobRole ? (
+          <PortfolioCustomizer
+            template={selectedTemplate}
+            userData={userData}
+            projects={projects}
+            jobRole={detectedJobRole}
+            onSave={handlePortfolioSave}
+            onPreview={handlePortfolioPreview}
+          />
+        ) : (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-muted-foreground">
+              Loading customization options...
+            </p>
+          </div>
+        );
+
+      case "preview":
+        return portfolio ? (
+          <PortfolioPreview
+            portfolio={portfolio}
+            projects={projects}
+            onEdit={() => setCurrentStep("customize")}
+            onShare={handleShare}
+          />
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No portfolio to preview</p>
+          </div>
+        );
+
+      case "complete":
+        return (
+          <div className="text-center py-12 space-y-6">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-3xl font-bold">Portfolio Complete!</h2>
+              <p className="text-muted-foreground text-lg">
+                Your AI-optimized portfolio is ready to help you land your dream
+                job.
+              </p>
+            </div>
+            <div className="flex justify-center gap-4">
+              <Button size="lg" onClick={() => setCurrentStep("preview")}>
+                <Eye className="h-5 w-5 mr-2" />
+                View Portfolio
+              </Button>
+              <Button size="lg" variant="outline" onClick={handleExport}>
+                <Download className="h-5 w-5 mr-2" />
+                Export
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => handleShare(portfolio?.id || "")}
+              >
+                <Share className="h-5 w-5 mr-2" />
+                Share
+              </Button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Create Your Perfect Portfolio
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose from our professionally designed templates and generate your portfolio in minutes
-          </p>
-        </motion.div>
+    <div className="portfolio-builder min-h-screen bg-gray-50">
+      {/* Progress Header */}
+      <div className="sticky top-0 z-50 bg-white border-b">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">Portfolio Builder</h1>
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Wand2 className="h-3 w-3" />
+                AI-Powered
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              {currentStep !== "select" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const stepIndex = steps.findIndex(
+                      (step) => step.id === currentStep,
+                    );
+                    if (stepIndex > 0) {
+                      setCurrentStep(steps[stepIndex - 1].id as BuilderStep);
+                    }
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              )}
+              {currentStep === "preview" && (
+                <Button size="sm" onClick={handlePortfolioComplete}>
+                  Complete
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+            </div>
+          </div>
 
-        {/* Template Gallery */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {templates.map((template, index) => (
-            <motion.div
-              key={template.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card 
-                className={`cursor-pointer transition-all duration-300 hover:shadow-xl ${
-                  selectedTemplate === template.id 
-                    ? "ring-2 ring-blue-500 shadow-lg" 
-                    : "hover:shadow-lg"
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>
+                Step {currentStepIndex + 1} of {steps.length}
+              </span>
+              <span>{Math.round(progress)}% Complete</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+
+          {/* Step Indicators */}
+          <div className="flex justify-between mt-4">
+            {steps.map((step, index) => (
+              <div
+                key={step.id}
+                className={`flex items-center gap-2 text-sm ${
+                  index <= currentStepIndex
+                    ? "text-primary font-medium"
+                    : "text-muted-foreground"
                 }`}
-                onClick={() => setSelectedTemplate(template.id)}
               >
-                <CardHeader>
-                  <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg mb-4 flex items-center justify-center">
-                    <div className="text-center">
-                      <Monitor className="w-12 h-12 text-blue-600 mx-auto mb-2" />
-                      <span className="text-sm text-gray-600">Template Preview</span>
-                    </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                    index < currentStepIndex
+                      ? "bg-primary text-white"
+                      : index === currentStepIndex
+                        ? "bg-primary text-white"
+                        : "bg-gray-200 text-gray-500"
+                  }`}
+                >
+                  {index < currentStepIndex ? (
+                    <CheckCircle className="h-3 w-3" />
+                  ) : (
+                    index + 1
+                  )}
+                </div>
+                <div className="hidden sm:block">
+                  <div className="font-medium">{step.title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {step.description}
                   </div>
-                  <CardTitle className="text-xl">{template.name}</CardTitle>
-                  <p className="text-gray-600">{template.description}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {template.features.map((feature) => (
-                      <span
-                        key={feature}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                      >
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      {template.category}
-                    </span>
-                    <Button
-                      variant={selectedTemplate === template.id ? "default" : "outline"}
-                      size="sm"
-                    >
-                      {selectedTemplate === template.id ? "Selected" : "Select"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-
-        {/* Generate Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-center"
-        >
-          <Button
-            onClick={handleGeneratePortfolio}
-            disabled={!selectedTemplate || isGenerating}
-            size="lg"
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg"
-          >
-            {isGenerating ? (
-              <>
-                <Rocket className="w-5 h-5 mr-2 animate-bounce" />
-                Generating Portfolio...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5 mr-2" />
-                Generate Portfolio
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </>
-            )}
-          </Button>
-        </motion.div>
-
-        {/* Features */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
-        >
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Code className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">AI-Powered</h3>
-            <p className="text-gray-600">
-              Our AI automatically generates content and optimizes your portfolio
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Smartphone className="w-8 h-8 text-purple-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Mobile Ready</h3>
-            <p className="text-gray-600">
-              All templates are fully responsive and mobile-optimized
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Rocket className="w-8 h-8 text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Instant Deploy</h3>
-            <p className="text-gray-600">
-              Deploy your portfolio instantly with custom domains
-            </p>
-          </div>
-        </motion.div>
       </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-6 py-8">{renderStepContent()}</div>
+
+      {/* AI Insights Sidebar */}
+      {detectedJobRole && currentStep !== "complete" && (
+        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40">
+          <Card className="w-80 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Wand2 className="h-5 w-5 text-primary" />
+                AI Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                  Detected Role
+                </h4>
+                <p className="text-sm font-medium">{detectedJobRole.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  {detectedJobRole.industry} • {detectedJobRole.experienceLevel}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                  Key Skills
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {detectedJobRole.skills.slice(0, 4).map((skill) => (
+                    <Badge key={skill} variant="secondary" className="text-xs">
+                      {skill}
+                    </Badge>
+                  ))}
+                  {detectedJobRole.skills.length > 4 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{detectedJobRole.skills.length - 4}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                  Optimization Tips
+                </h4>
+                <ul className="text-xs space-y-1 text-muted-foreground">
+                  <li>• Highlight {detectedJobRole.skills[0]} experience</li>
+                  <li>• Showcase relevant projects</li>
+                  <li>• Use industry keywords</li>
+                  <li>• Quantify your achievements</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};

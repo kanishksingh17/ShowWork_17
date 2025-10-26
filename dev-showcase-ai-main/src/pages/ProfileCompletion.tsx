@@ -1,6 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Code2, Upload, Sparkles, Zap, Star, Users, Globe, Rocket, CheckCircle, XCircle, Loader } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Code2,
+  Upload,
+  Sparkles,
+  Zap,
+  Star,
+  Users,
+  Globe,
+  Rocket,
+  CheckCircle,
+  XCircle,
+  Loader,
+} from "lucide-react";
 
 interface ProfileCompletionProps {
   user?: any;
@@ -14,17 +26,20 @@ interface ProfileData {
   profilePicture: string;
 }
 
-export default function ProfileCompletion({ user, onComplete }: ProfileCompletionProps) {
-  console.log('🔍 ProfileCompletion rendering with user:', user);
-  console.log('🔍 ProfileCompletion component loaded successfully!');
+export default function ProfileCompletion({
+  user,
+  onComplete,
+}: ProfileCompletionProps) {
+  console.log("🔍 ProfileCompletion rendering with user:", user);
+  console.log("🔍 ProfileCompletion component loaded successfully!");
   const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [originalUsername, setOriginalUsername] = useState('');
+  const [originalUsername, setOriginalUsername] = useState("");
   const [profileData, setProfileData] = useState<ProfileData>({
-    username: '',
-    fullName: user?.name || '',
-    bio: '',
-    profilePicture: ''
+    username: "",
+    fullName: user?.name || "",
+    bio: "",
+    profilePicture: "",
   });
   const [loading, setLoading] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
@@ -35,7 +50,7 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
   }>({
     isChecking: false,
     isValid: null,
-    message: ''
+    message: "",
   });
 
   // Initialize profile data when component mounts
@@ -43,84 +58,112 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
     if (user) {
       const isEditing = !!(user.username || user.bio || user.avatar);
       setIsEditMode(isEditing);
-      
+
       if (isEditing) {
-        setOriginalUsername(user.username || '');
+        setOriginalUsername(user.username || "");
         setProfileData({
-          username: user.username || '',
-          fullName: user.name || '',
-          bio: user.bio || '',
-          profilePicture: user.avatar || ''
+          username: user.username || "",
+          fullName: user.name || "",
+          bio: user.bio || "",
+          profilePicture: user.avatar || "",
         });
       }
     }
   }, [user]);
 
   // Username validation function
-  const validateUsername = useCallback((username: string): { isValid: boolean; message: string } => {
-    if (!username) {
-      return { isValid: false, message: 'Username is required' };
-    }
-    if (username.length < 3) {
-      return { isValid: false, message: 'Username must be at least 3 characters' };
-    }
-    if (username.length > 20) {
-      return { isValid: false, message: 'Username must be less than 20 characters' };
-    }
-    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-      return { isValid: false, message: 'Username can only contain letters, numbers, underscore and dash' };
-    }
-    if (/^[0-9]/.test(username)) {
-      return { isValid: false, message: 'Username cannot start with a number' };
-    }
-    return { isValid: true, message: 'Username format is valid' };
-  }, []);
+  const validateUsername = useCallback(
+    (username: string): { isValid: boolean; message: string } => {
+      if (!username) {
+        return { isValid: false, message: "Username is required" };
+      }
+      if (username.length < 3) {
+        return {
+          isValid: false,
+          message: "Username must be at least 3 characters",
+        };
+      }
+      if (username.length > 20) {
+        return {
+          isValid: false,
+          message: "Username must be less than 20 characters",
+        };
+      }
+      if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+        return {
+          isValid: false,
+          message:
+            "Username can only contain letters, numbers, underscore and dash",
+        };
+      }
+      if (/^[0-9]/.test(username)) {
+        return {
+          isValid: false,
+          message: "Username cannot start with a number",
+        };
+      }
+      return { isValid: true, message: "Username format is valid" };
+    },
+    [],
+  );
 
   // Check username availability
-  const checkUsernameAvailability = useCallback(async (username: string): Promise<boolean> => {
-    try {
-      // Don't check availability if it's the user's current username
-      if (isEditMode && username === originalUsername) {
+  const checkUsernameAvailability = useCallback(
+    async (username: string): Promise<boolean> => {
+      try {
+        // Don't check availability if it's the user's current username
+        if (isEditMode && username === originalUsername) {
+          return true;
+        }
+
+        // API call to check username availability
+        const response = await fetch("/api/check-username", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return data.available;
+        }
+
+        // Fallback: simulate check with some common usernames being taken
+        const takenUsernames = [
+          "admin",
+          "user",
+          "test",
+          "demo",
+          "john",
+          "jane",
+          "developer",
+          "coder",
+        ];
+        return !takenUsernames.includes(username.toLowerCase());
+      } catch (error) {
+        console.error("Username check failed:", error);
+        // Fallback: assume available if API fails
         return true;
       }
-      
-      // API call to check username availability
-      const response = await fetch('/api/check-username', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        return data.available;
-      }
-      
-      // Fallback: simulate check with some common usernames being taken
-      const takenUsernames = ['admin', 'user', 'test', 'demo', 'john', 'jane', 'developer', 'coder'];
-      return !takenUsernames.includes(username.toLowerCase());
-    } catch (error) {
-      console.error('Username check failed:', error);
-      // Fallback: assume available if API fails
-      return true;
-    }
-  }, [isEditMode, originalUsername]);
+    },
+    [isEditMode, originalUsername],
+  );
 
   // Debounced username validation
   useEffect(() => {
     if (!profileData.username) {
-      setUsernameValidation({ isChecking: false, isValid: null, message: '' });
+      setUsernameValidation({ isChecking: false, isValid: null, message: "" });
       return;
     }
 
     const formatValidation = validateUsername(profileData.username);
     if (!formatValidation.isValid) {
-      setUsernameValidation({ 
-        isChecking: false, 
-        isValid: false, 
-        message: formatValidation.message 
+      setUsernameValidation({
+        isChecking: false,
+        isValid: false,
+        message: formatValidation.message,
       });
       return;
     }
@@ -130,35 +173,52 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
       setUsernameValidation({
         isChecking: false,
         isValid: true,
-        message: 'Current username'
+        message: "Current username",
       });
       return;
     }
 
-    setUsernameValidation({ isChecking: true, isValid: null, message: 'Checking availability...' });
-    
+    setUsernameValidation({
+      isChecking: true,
+      isValid: null,
+      message: "Checking availability...",
+    });
+
     const timeoutId = setTimeout(async () => {
       const isAvailable = await checkUsernameAvailability(profileData.username);
       setUsernameValidation({
         isChecking: false,
         isValid: isAvailable,
-        message: isAvailable ? 'Username is available!' : 'Username is already taken'
+        message: isAvailable
+          ? "Username is available!"
+          : "Username is already taken",
       });
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [profileData.username, isEditMode, originalUsername, validateUsername, checkUsernameAvailability]);
+  }, [
+    profileData.username,
+    isEditMode,
+    originalUsername,
+    validateUsername,
+    checkUsernameAvailability,
+  ]);
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfileData(prev => ({ ...prev, profilePicture: e.target?.result as string }));
+        setProfileData((prev) => ({
+          ...prev,
+          profilePicture: e.target?.result as string,
+        }));
       };
       reader.readAsDataURL(file);
     }
@@ -166,17 +226,17 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate username before submission
     if (!profileData.username) {
-      setUsernameValidation({ 
-        isChecking: false, 
-        isValid: false, 
-        message: 'Username is required' 
+      setUsernameValidation({
+        isChecking: false,
+        isValid: false,
+        message: "Username is required",
       });
       return;
     }
-    
+
     if (usernameValidation.isValid !== true) {
       // Wait for validation to complete or show error
       if (usernameValidation.isChecking) {
@@ -185,52 +245,51 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
         return; // Invalid username, don't submit
       }
     }
-    
+
     setLoading(true);
-    
+
     try {
       // Save profile to backend
-      const response = await fetch('/api/profile/update', {
-        method: 'POST',
+      const response = await fetch("/api/profile/update", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include', // Include cookies for authentication
+        credentials: "include", // Include cookies for authentication
         body: JSON.stringify({
           username: profileData.username,
           fullName: profileData.fullName,
           bio: profileData.bio,
-          profilePicture: profileData.profilePicture
+          profilePicture: profileData.profilePicture,
         }),
       });
-      
+
       const result = await response.json();
-      
+
       if (response.ok && result.success) {
-        console.log('Profile saved successfully:', result.user);
-        
+        console.log("Profile saved successfully:", result.user);
+
         if (onComplete) {
           onComplete(profileData);
         } else {
           // For existing users editing profile, go back to dashboard
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
       } else {
         // Handle specific error cases
-        if (result.message && result.message.includes('username')) {
+        if (result.message && result.message.includes("username")) {
           setUsernameValidation({
             isChecking: false,
             isValid: false,
-            message: result.message
+            message: result.message,
           });
         }
-        throw new Error(result.message || 'Failed to save profile');
+        throw new Error(result.message || "Failed to save profile");
       }
-      
     } catch (error: any) {
-      console.error('Profile completion failed:', error);
-      const errorMessage = error.message.includes('username') 
-        ? `Username error: ${error.message}` 
+      console.error("Profile completion failed:", error);
+      const errorMessage = error.message.includes("username")
+        ? `Username error: ${error.message}`
         : `Error saving profile: ${error.message}. Please try again.`;
       alert(errorMessage);
     } finally {
@@ -239,17 +298,17 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
   };
 
   const handleSkip = () => {
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   // Add a simple render check
-  if (typeof window !== 'undefined') {
-    console.log('🖥️ ProfileCompletion is rendering in browser');
+  if (typeof window !== "undefined") {
+    console.log("🖥️ ProfileCompletion is rendering in browser");
   }
 
   // Go directly to dashboard after successful profile completion
   if (showTransition) {
-    navigate('/dashboard');
+    navigate("/dashboard");
     return null;
   }
 
@@ -263,25 +322,23 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
           <div className="absolute bottom-20 right-10 w-24 h-24 bg-white rounded-full"></div>
           <div className="absolute top-1/2 right-20 w-16 h-16 bg-white rounded-full"></div>
         </div>
-        
+
         {/* Header */}
         <div className="relative z-10">
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate("/dashboard")}
             className="flex items-center space-x-2 text-white/80 hover:text-white transition-colors mb-8"
           >
             <Code2 className="w-4 h-4" />
             <span className="text-sm">Back to Dashboard</span>
           </button>
-          
+
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-white">
-                Edit Profile
-              </h1>
+              <h1 className="text-2xl font-bold text-white">Edit Profile</h1>
             </div>
             <p className="text-white/80 text-lg leading-relaxed">
               Update your information and username for your portfolio.
@@ -296,21 +353,21 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-bold overflow-hidden">
                 {profileData.profilePicture ? (
-                  <img 
-                    src={profileData.profilePicture} 
-                    alt="Profile" 
+                  <img
+                    src={profileData.profilePicture}
+                    alt="Profile"
                     className="w-full h-full object-cover rounded-full"
                   />
                 ) : (
-                  <span>{profileData.fullName?.charAt(0) || 'U'}</span>
+                  <span>{profileData.fullName?.charAt(0) || "U"}</span>
                 )}
               </div>
               <div>
                 <p className="text-white font-medium">
-                  {profileData.fullName || 'Your Name'}
+                  {profileData.fullName || "Your Name"}
                 </p>
                 <p className="text-white/60 text-sm">
-                  @{profileData.username || 'username'}
+                  @{profileData.username || "username"}
                 </p>
               </div>
             </div>
@@ -352,7 +409,10 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm space-y-6">
+              <form
+                onSubmit={handleSubmit}
+                className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm space-y-6"
+              >
                 {/* Profile Picture Upload */}
                 <div className="text-center space-y-4">
                   <label className="block text-sm font-semibold text-gray-700 text-left">
@@ -361,13 +421,13 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
                   <div className="flex flex-col items-center space-y-4">
                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden border-4 border-gray-200">
                       {profileData.profilePicture ? (
-                        <img 
-                          src={profileData.profilePicture} 
-                          alt="Profile" 
+                        <img
+                          src={profileData.profilePicture}
+                          alt="Profile"
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span>{profileData.fullName?.charAt(0) || 'U'}</span>
+                        <span>{profileData.fullName?.charAt(0) || "U"}</span>
                       )}
                     </div>
                     <input
@@ -382,7 +442,9 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
                       className="inline-flex items-center px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      {profileData.profilePicture ? 'Change Photo' : 'Add Photo'}
+                      {profileData.profilePicture
+                        ? "Change Photo"
+                        : "Add Photo"}
                     </label>
                   </div>
                   <p className="text-sm text-gray-500">
@@ -400,51 +462,64 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
                       type="text"
                       placeholder="Choose a unique username"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400 pr-10 ${
-                        usernameValidation.isValid === false 
-                          ? 'border-red-300 focus:border-red-500' 
-                          : usernameValidation.isValid === true 
-                          ? 'border-green-300 focus:border-green-500'
-                          : 'border-gray-300'
+                        usernameValidation.isValid === false
+                          ? "border-red-300 focus:border-red-500"
+                          : usernameValidation.isValid === true
+                            ? "border-green-300 focus:border-green-500"
+                            : "border-gray-300"
                       }`}
                       required
                       value={profileData.username}
                       onChange={(e) => {
-                        const value = e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, '');
-                        handleInputChange('username', value);
+                        const value = e.target.value
+                          .toLowerCase()
+                          .replace(/[^a-zA-Z0-9_-]/g, "");
+                        handleInputChange("username", value);
                       }}
                     />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                       {usernameValidation.isChecking && (
                         <Loader className="h-4 w-4 text-gray-400 animate-spin" />
                       )}
-                      {!usernameValidation.isChecking && usernameValidation.isValid === true && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      )}
-                      {!usernameValidation.isChecking && usernameValidation.isValid === false && profileData.username && (
-                        <XCircle className="h-4 w-4 text-red-500" />
-                      )}
+                      {!usernameValidation.isChecking &&
+                        usernameValidation.isValid === true && (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        )}
+                      {!usernameValidation.isChecking &&
+                        usernameValidation.isValid === false &&
+                        profileData.username && (
+                          <XCircle className="h-4 w-4 text-red-500" />
+                        )}
                     </div>
                   </div>
                   {usernameValidation.message && (
-                    <p className={`text-sm ${
-                      usernameValidation.isValid === false ? 'text-red-600' : 
-                      usernameValidation.isValid === true ? 'text-green-600' : 
-                      'text-blue-600'
-                    }`}>
+                    <p
+                      className={`text-sm ${
+                        usernameValidation.isValid === false
+                          ? "text-red-600"
+                          : usernameValidation.isValid === true
+                            ? "text-green-600"
+                            : "text-blue-600"
+                      }`}
+                    >
                       {usernameValidation.message}
                     </p>
                   )}
                   <p className="text-sm text-gray-500">
-                    Your username will be displayed in your public profile and must be unique.
+                    Your username will be displayed in your public profile and
+                    must be unique.
                   </p>
-                  {profileData.username && usernameValidation.isValid === true && (
-                    <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-xl">
-                      <p className="text-sm text-gray-600 mb-1">Your profile will be available at:</p>
-                      <p className="text-base font-mono text-green-700 break-all">
-                        showwork.com/<strong>{profileData.username}</strong>
-                      </p>
-                    </div>
-                  )}
+                  {profileData.username &&
+                    usernameValidation.isValid === true && (
+                      <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-1">
+                          Your profile will be available at:
+                        </p>
+                        <p className="text-base font-mono text-green-700 break-all">
+                          showwork.com/<strong>{profileData.username}</strong>
+                        </p>
+                      </div>
+                    )}
                 </div>
 
                 {/* Full Name */}
@@ -458,7 +533,9 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
                     required
                     value={profileData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("fullName", e.target.value)
+                    }
                   />
                 </div>
 
@@ -472,7 +549,7 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 resize-none text-gray-900 placeholder-gray-400"
                     value={profileData.bio}
-                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                    onChange={(e) => handleInputChange("bio", e.target.value)}
                   />
                 </div>
               </form>
@@ -494,20 +571,30 @@ export default function ProfileCompletion({ user, onComplete }: ProfileCompletio
               type="submit"
               form="profile-form"
               onClick={handleSubmit}
-              disabled={loading || usernameValidation.isChecking || usernameValidation.isValid !== true || !profileData.username}
+              disabled={
+                loading ||
+                usernameValidation.isChecking ||
+                usernameValidation.isValid !== true ||
+                !profileData.username
+              }
               className={`px-8 py-3 rounded-lg font-medium transition-all duration-300 ${
-                loading || usernameValidation.isChecking || usernameValidation.isValid !== true || !profileData.username
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                  : 'bg-green-600 text-white hover:bg-green-700'
+                loading ||
+                usernameValidation.isChecking ||
+                usernameValidation.isValid !== true ||
+                !profileData.username
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
               }`}
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  {isEditMode ? 'Updating...' : 'Saving...'}
+                  {isEditMode ? "Updating..." : "Saving..."}
                 </div>
+              ) : isEditMode ? (
+                "Update Profile"
               ) : (
-                isEditMode ? 'Update Profile' : 'Continue'
+                "Continue"
               )}
             </button>
           </div>

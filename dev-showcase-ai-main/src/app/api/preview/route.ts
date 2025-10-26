@@ -1,88 +1,105 @@
 // Real-time Preview Generation API Route
 
-import { NextRequest, NextResponse } from 'next/server'
-import { withAuth, createErrorResponse, createSuccessResponse, trackUsage } from '../../../lib/api/middleware'
-import { PreviewRequestSchema } from '../../../lib/api/schemas'
-import { Portfolio, AuthUser, PreviewRequest, PreviewResponse } from '../../../lib/api/types'
+import { NextRequest, NextResponse } from "next/server";
+import {
+  withAuth,
+  createErrorResponse,
+  createSuccessResponse,
+  trackUsage,
+} from "../../../lib/api/middleware";
+import { PreviewRequestSchema } from "../../../lib/api/schemas";
+import {
+  Portfolio,
+  AuthUser,
+  PreviewRequest,
+  PreviewResponse,
+} from "../../../lib/api/types";
 
 // Mock database (in production, use a real database)
-const portfolios = new Map<string, Portfolio>()
-const previewCache = new Map<string, PreviewResponse>()
+const portfolios = new Map<string, Portfolio>();
+const previewCache = new Map<string, PreviewResponse>();
 
 // Initialize with sample data
 if (portfolios.size === 0) {
   const samplePortfolio: Portfolio = {
-    id: '1',
-    userId: 'user-1',
-    title: 'Sample Portfolio',
-    description: 'A sample portfolio for demonstration',
-    template: 'modern',
+    id: "1",
+    userId: "user-1",
+    title: "Sample Portfolio",
+    description: "A sample portfolio for demonstration",
+    template: "modern",
     content: {
       hero: {
-        title: 'John Doe',
-        subtitle: 'Full Stack Developer',
-        description: 'Building amazing web experiences',
-        cta: 'View My Work'
+        title: "John Doe",
+        subtitle: "Full Stack Developer",
+        description: "Building amazing web experiences",
+        cta: "View My Work",
       },
       about: {
-        text: 'Passionate developer with 5+ years of experience in creating scalable web applications. I love turning complex problems into simple, beautiful solutions.',
-        image: 'https://via.placeholder.com/400x300'
+        text: "Passionate developer with 5+ years of experience in creating scalable web applications. I love turning complex problems into simple, beautiful solutions.",
+        image: "https://via.placeholder.com/400x300",
       },
       skills: [
-        { name: 'React', level: 90 },
-        { name: 'Node.js', level: 85 },
-        { name: 'TypeScript', level: 80 },
-        { name: 'Python', level: 75 }
+        { name: "React", level: 90 },
+        { name: "Node.js", level: 85 },
+        { name: "TypeScript", level: 80 },
+        { name: "Python", level: 75 },
       ],
       projects: [
         {
-          title: 'E-commerce Platform',
-          description: 'Full-stack e-commerce solution with React and Node.js',
-          image: 'https://via.placeholder.com/300x200',
-          technologies: ['React', 'Node.js', 'MongoDB'],
-          url: 'https://example.com'
+          title: "E-commerce Platform",
+          description: "Full-stack e-commerce solution with React and Node.js",
+          image: "https://via.placeholder.com/300x200",
+          technologies: ["React", "Node.js", "MongoDB"],
+          url: "https://example.com",
         },
         {
-          title: 'Task Management App',
-          description: 'Collaborative task management with real-time updates',
-          image: 'https://via.placeholder.com/300x200',
-          technologies: ['Vue.js', 'Express', 'Socket.io'],
-          url: 'https://example.com'
-        }
+          title: "Task Management App",
+          description: "Collaborative task management with real-time updates",
+          image: "https://via.placeholder.com/300x200",
+          technologies: ["Vue.js", "Express", "Socket.io"],
+          url: "https://example.com",
+        },
       ],
       contact: {
-        email: 'john@example.com',
-        phone: '+1 (555) 123-4567',
-        location: 'San Francisco, CA',
+        email: "john@example.com",
+        phone: "+1 (555) 123-4567",
+        location: "San Francisco, CA",
         social: {
-          linkedin: 'https://linkedin.com/in/johndoe',
-          github: 'https://github.com/johndoe',
-          twitter: 'https://twitter.com/johndoe'
-        }
-      }
+          linkedin: "https://linkedin.com/in/johndoe",
+          github: "https://github.com/johndoe",
+          twitter: "https://twitter.com/johndoe",
+        },
+      },
     },
     settings: {
-      theme: 'light',
-      colors: ['#3B82F6', '#1E40AF', '#F59E0B'],
-      fonts: ['Inter', 'Roboto'],
+      theme: "light",
+      colors: ["#3B82F6", "#1E40AF", "#F59E0B"],
+      fonts: ["Inter", "Roboto"],
       animations: true,
-      responsive: true
+      responsive: true,
     },
-    status: 'published',
-    visibility: 'public',
+    status: "published",
+    visibility: "public",
     seo: {
-      title: 'John Doe - Full Stack Developer',
-      description: 'Portfolio of John Doe, a full stack developer specializing in React and Node.js',
-      keywords: ['developer', 'portfolio', 'web development', 'react', 'node.js']
+      title: "John Doe - Full Stack Developer",
+      description:
+        "Portfolio of John Doe, a full stack developer specializing in React and Node.js",
+      keywords: [
+        "developer",
+        "portfolio",
+        "web development",
+        "react",
+        "node.js",
+      ],
     },
     analytics: {
       views: 0,
       uniqueViews: 0,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  }
-  portfolios.set('1', samplePortfolio)
+      updatedAt: new Date().toISOString(),
+    },
+  };
+  portfolios.set("1", samplePortfolio);
 }
 
 // Template renderers
@@ -91,30 +108,34 @@ const templateRenderers = {
     return {
       html: generateModernHTML(portfolio, device, options),
       css: generateModernCSS(portfolio, device, options),
-      js: generateModernJS(portfolio, device, options)
-    }
+      js: generateModernJS(portfolio, device, options),
+    };
   },
   creative: (portfolio: Portfolio, device: any, options: any) => {
     return {
       html: generateCreativeHTML(portfolio, device, options),
       css: generateCreativeCSS(portfolio, device, options),
-      js: generateCreativeJS(portfolio, device, options)
-    }
+      js: generateCreativeJS(portfolio, device, options),
+    };
   },
   minimalist: (portfolio: Portfolio, device: any, options: any) => {
     return {
       html: generateMinimalistHTML(portfolio, device, options),
       css: generateMinimalistCSS(portfolio, device, options),
-      js: generateMinimalistJS(portfolio, device, options)
-    }
-  }
-}
+      js: generateMinimalistJS(portfolio, device, options),
+    };
+  },
+};
 
 // Generate modern template HTML
-function generateModernHTML(portfolio: Portfolio, device: any, options: any): string {
-  const { content, seo } = portfolio
-  const { hero, about, skills, projects, contact } = content
-  
+function generateModernHTML(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
+  const { content, seo } = portfolio;
+  const { hero, about, skills, projects, contact } = content;
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -123,9 +144,9 @@ function generateModernHTML(portfolio: Portfolio, device: any, options: any): st
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${seo.title}</title>
     <meta name="description" content="${seo.description}">
-    <meta name="keywords" content="${seo.keywords.join(', ')}">
-    ${options.seoOptimized ? generateSEOTags(seo) : ''}
-    ${options.analytics ? generateAnalytics() : ''}
+    <meta name="keywords" content="${seo.keywords.join(", ")}">
+    ${options.seoOptimized ? generateSEOTags(seo) : ""}
+    ${options.analytics ? generateAnalytics() : ""}
     <style>
         ${generateModernCSS(portfolio, device, options)}
     </style>
@@ -147,7 +168,7 @@ function generateModernHTML(portfolio: Portfolio, device: any, options: any): st
             <div class="about-content">
                 <h2>About Me</h2>
                 <p>${about.text}</p>
-                ${about.image ? `<img src="${about.image}" alt="About" class="about-image">` : ''}
+                ${about.image ? `<img src="${about.image}" alt="About" class="about-image">` : ""}
             </div>
         </section>
 
@@ -155,7 +176,9 @@ function generateModernHTML(portfolio: Portfolio, device: any, options: any): st
         <section class="skills">
             <h2>Skills</h2>
             <div class="skills-grid">
-                ${skills.map(skill => `
+                ${skills
+                  .map(
+                    (skill) => `
                     <div class="skill-item">
                         <span class="skill-name">${skill.name}</span>
                         <div class="skill-bar">
@@ -163,7 +186,9 @@ function generateModernHTML(portfolio: Portfolio, device: any, options: any): st
                         </div>
                         <span class="skill-level">${skill.level}%</span>
                     </div>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
             </div>
         </section>
 
@@ -171,19 +196,23 @@ function generateModernHTML(portfolio: Portfolio, device: any, options: any): st
         <section class="projects">
             <h2>Projects</h2>
             <div class="projects-grid">
-                ${projects.map(project => `
+                ${projects
+                  .map(
+                    (project) => `
                     <div class="project-card">
                         <img src="${project.image}" alt="${project.title}" class="project-image">
                         <div class="project-content">
                             <h3>${project.title}</h3>
                             <p>${project.description}</p>
                             <div class="project-tech">
-                                ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                                ${project.technologies.map((tech) => `<span class="tech-tag">${tech}</span>`).join("")}
                             </div>
-                            ${project.url ? `<a href="${project.url}" class="project-link" target="_blank">View Project</a>` : ''}
+                            ${project.url ? `<a href="${project.url}" class="project-link" target="_blank">View Project</a>` : ""}
                         </div>
                     </div>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
             </div>
         </section>
 
@@ -201,9 +230,12 @@ function generateModernHTML(portfolio: Portfolio, device: any, options: any): st
                     <strong>Location:</strong> ${contact.location}
                 </div>
                 <div class="social-links">
-                    ${Object.entries(contact.social).map(([platform, url]) => 
-                        `<a href="${url}" class="social-link" target="_blank">${platform}</a>`
-                    ).join('')}
+                    ${Object.entries(contact.social)
+                      .map(
+                        ([platform, url]) =>
+                          `<a href="${url}" class="social-link" target="_blank">${platform}</a>`,
+                      )
+                      .join("")}
                 </div>
             </div>
         </section>
@@ -214,14 +246,18 @@ function generateModernHTML(portfolio: Portfolio, device: any, options: any): st
     </script>
 </body>
 </html>
-  `.trim()
+  `.trim();
 }
 
 // Generate modern template CSS
-function generateModernCSS(portfolio: Portfolio, device: any, options: any): string {
-  const { settings } = portfolio
-  const [primaryColor, secondaryColor, accentColor] = settings.colors
-  
+function generateModernCSS(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
+  const { settings } = portfolio;
+  const [primaryColor, secondaryColor, accentColor] = settings.colors;
+
   return `
     * {
         margin: 0;
@@ -258,21 +294,21 @@ function generateModernCSS(portfolio: Portfolio, device: any, options: any): str
         font-size: 3rem;
         font-weight: bold;
         margin-bottom: 10px;
-        ${settings.animations ? 'animation: fadeInUp 1s ease-out;' : ''}
+        ${settings.animations ? "animation: fadeInUp 1s ease-out;" : ""}
     }
 
     .hero-subtitle {
         font-size: 1.5rem;
         margin-bottom: 20px;
         opacity: 0.9;
-        ${settings.animations ? 'animation: fadeInUp 1s ease-out 0.2s both;' : ''}
+        ${settings.animations ? "animation: fadeInUp 1s ease-out 0.2s both;" : ""}
     }
 
     .hero-description {
         font-size: 1.1rem;
         margin-bottom: 30px;
         opacity: 0.8;
-        ${settings.animations ? 'animation: fadeInUp 1s ease-out 0.4s both;' : ''}
+        ${settings.animations ? "animation: fadeInUp 1s ease-out 0.4s both;" : ""}
     }
 
     .cta-button {
@@ -284,7 +320,7 @@ function generateModernCSS(portfolio: Portfolio, device: any, options: any): str
         font-size: 1.1rem;
         cursor: pointer;
         transition: transform 0.3s ease;
-        ${settings.animations ? 'animation: fadeInUp 1s ease-out 0.6s both;' : ''}
+        ${settings.animations ? "animation: fadeInUp 1s ease-out 0.6s both;" : ""}
     }
 
     .cta-button:hover {
@@ -421,7 +457,9 @@ function generateModernCSS(portfolio: Portfolio, device: any, options: any): str
         font-weight: bold;
     }
 
-    ${settings.animations ? `
+    ${
+      settings.animations
+        ? `
     @keyframes fadeInUp {
         from {
             opacity: 0;
@@ -432,21 +470,31 @@ function generateModernCSS(portfolio: Portfolio, device: any, options: any): str
             transform: translateY(0);
         }
     }
-    ` : ''}
+    `
+        : ""
+    }
 
-    ${options.responsive ? `
+    ${
+      options.responsive
+        ? `
     @media (max-width: 768px) {
         .hero-title { font-size: 2rem; }
         .hero-subtitle { font-size: 1.2rem; }
         .portfolio-container { padding: 10px; }
         .skills-grid, .projects-grid { grid-template-columns: 1fr; }
     }
-    ` : ''}
-  `.trim()
+    `
+        : ""
+    }
+  `.trim();
 }
 
 // Generate modern template JavaScript
-function generateModernJS(portfolio: Portfolio, device: any, options: any): string {
+function generateModernJS(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
   return `
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -485,7 +533,9 @@ function generateModernJS(portfolio: Portfolio, device: any, options: any): stri
     });
 
     // Add click tracking for analytics
-    ${options.analytics ? `
+    ${
+      options.analytics
+        ? `
     document.addEventListener('click', function(e) {
         if (e.target.tagName === 'A') {
             gtag('event', 'click', {
@@ -494,49 +544,75 @@ function generateModernJS(portfolio: Portfolio, device: any, options: any): stri
             });
         }
     });
-    ` : ''}
+    `
+        : ""
+    }
 
     // Add loading animation
     window.addEventListener('load', function() {
         document.body.classList.add('loaded');
     });
-  `.trim()
+  `.trim();
 }
 
 // Generate creative template HTML
-function generateCreativeHTML(portfolio: Portfolio, device: any, options: any): string {
+function generateCreativeHTML(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
   // Simplified creative template
-  return generateModernHTML(portfolio, device, options)
+  return generateModernHTML(portfolio, device, options);
 }
 
 // Generate creative template CSS
-function generateCreativeCSS(portfolio: Portfolio, device: any, options: any): string {
+function generateCreativeCSS(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
   // Simplified creative template
-  return generateModernCSS(portfolio, device, options)
+  return generateModernCSS(portfolio, device, options);
 }
 
 // Generate creative template JavaScript
-function generateCreativeJS(portfolio: Portfolio, device: any, options: any): string {
+function generateCreativeJS(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
   // Simplified creative template
-  return generateModernJS(portfolio, device, options)
+  return generateModernJS(portfolio, device, options);
 }
 
 // Generate minimalist template HTML
-function generateMinimalistHTML(portfolio: Portfolio, device: any, options: any): string {
+function generateMinimalistHTML(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
   // Simplified minimalist template
-  return generateModernHTML(portfolio, device, options)
+  return generateModernHTML(portfolio, device, options);
 }
 
 // Generate minimalist template CSS
-function generateMinimalistCSS(portfolio: Portfolio, device: any, options: any): string {
+function generateMinimalistCSS(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
   // Simplified minimalist template
-  return generateModernCSS(portfolio, device, options)
+  return generateModernCSS(portfolio, device, options);
 }
 
 // Generate minimalist template JavaScript
-function generateMinimalistJS(portfolio: Portfolio, device: any, options: any): string {
+function generateMinimalistJS(
+  portfolio: Portfolio,
+  device: any,
+  options: any,
+): string {
   // Simplified minimalist template
-  return generateModernJS(portfolio, device, options)
+  return generateModernJS(portfolio, device, options);
 }
 
 // Generate SEO tags
@@ -549,7 +625,7 @@ function generateSEOTags(seo: any): string {
     <meta name="twitter:title" content="${seo.title}">
     <meta name="twitter:description" content="${seo.description}">
     <link rel="canonical" href="https://example.com">
-  `.trim()
+  `.trim();
 }
 
 // Generate analytics code
@@ -562,149 +638,172 @@ function generateAnalytics(): string {
       gtag('js', new Date());
       gtag('config', 'GA_MEASUREMENT_ID');
     </script>
-  `.trim()
+  `.trim();
 }
 
 // Generate preview assets
-function generateAssets(portfolio: Portfolio, options: any): Array<{type: string, url: string, size: number, optimized: boolean}> {
-  const assets = []
-  
+function generateAssets(
+  portfolio: Portfolio,
+  options: any,
+): Array<{ type: string; url: string; size: number; optimized: boolean }> {
+  const assets = [];
+
   // Add images from content
   if (portfolio.content.about?.image) {
     assets.push({
-      type: 'image',
+      type: "image",
       url: portfolio.content.about.image,
       size: 1024 * 1024, // 1MB estimate
-      optimized: options.optimizeImages
-    })
+      optimized: options.optimizeImages,
+    });
   }
-  
+
   if (portfolio.content.projects) {
     portfolio.content.projects.forEach((project: any) => {
       if (project.image) {
         assets.push({
-          type: 'image',
+          type: "image",
           url: project.image,
           size: 512 * 1024, // 512KB estimate
-          optimized: options.optimizeImages
-        })
+          optimized: options.optimizeImages,
+        });
       }
-    })
+    });
   }
-  
-  return assets
+
+  return assets;
 }
 
 // Calculate performance metrics
-function calculatePerformanceMetrics(html: string, css: string, js: string): any {
-  const renderTime = Math.random() * 50 + 10 // 10-60ms
-  const bundleSize = html.length + css.length + js.length
-  const componentCount = (html.match(/<[^>]+>/g) || []).length
-  const performanceScore = Math.min(100, Math.max(60, 100 - (bundleSize / 10000)))
-  
+function calculatePerformanceMetrics(
+  html: string,
+  css: string,
+  js: string,
+): any {
+  const renderTime = Math.random() * 50 + 10; // 10-60ms
+  const bundleSize = html.length + css.length + js.length;
+  const componentCount = (html.match(/<[^>]+>/g) || []).length;
+  const performanceScore = Math.min(
+    100,
+    Math.max(60, 100 - bundleSize / 10000),
+  );
+
   return {
     renderTime,
     bundleSize,
     componentCount,
-    performanceScore
-  }
+    performanceScore,
+  };
 }
 
 // Main API handler
 async function handlePreviewGeneration(
   request: NextRequest,
-  user: AuthUser
+  user: AuthUser,
 ): Promise<NextResponse> {
-  const startTime = Date.now()
-  const requestId = request.headers.get('x-request-id') || crypto.randomUUID()
-  
+  const startTime = Date.now();
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
+
   try {
     // Parse and validate request body
-    const body = await request.json()
-    const validationResult = PreviewRequestSchema.safeParse(body)
-    
+    const body = await request.json();
+    const validationResult = PreviewRequestSchema.safeParse(body);
+
     if (!validationResult.success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Validation failed',
-          code: 'VALIDATION_ERROR',
+          error: "Validation failed",
+          code: "VALIDATION_ERROR",
           details: validationResult.error.errors,
           timestamp: new Date().toISOString(),
-          requestId
+          requestId,
         },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
-    const { portfolioId, device, zoom, pan, options } = validationResult.data
+    const { portfolioId, device, zoom, pan, options } = validationResult.data;
 
     // Find portfolio
-    const portfolio = portfolios.get(portfolioId)
-    
+    const portfolio = portfolios.get(portfolioId);
+
     if (!portfolio) {
-      return createErrorResponse({
-        code: 'PORTFOLIO_NOT_FOUND',
-        message: 'Portfolio not found',
-        timestamp: new Date().toISOString(),
-        requestId,
-        userId: user.id
-      }, 404)
+      return createErrorResponse(
+        {
+          code: "PORTFOLIO_NOT_FOUND",
+          message: "Portfolio not found",
+          timestamp: new Date().toISOString(),
+          requestId,
+          userId: user.id,
+        },
+        404,
+      );
     }
-    
+
     // Check access
-    if (portfolio.userId !== user.id && portfolio.visibility !== 'public') {
-      return createErrorResponse({
-        code: 'ACCESS_DENIED',
-        message: 'Access denied',
-        timestamp: new Date().toISOString(),
-        requestId,
-        userId: user.id
-      }, 403)
+    if (portfolio.userId !== user.id && portfolio.visibility !== "public") {
+      return createErrorResponse(
+        {
+          code: "ACCESS_DENIED",
+          message: "Access denied",
+          timestamp: new Date().toISOString(),
+          requestId,
+          userId: user.id,
+        },
+        403,
+      );
     }
 
     // Check cache
-    const cacheKey = `${portfolioId}-${device.type}-${device.width}-${device.height}-${JSON.stringify(options)}`
-    const cachedPreview = previewCache.get(cacheKey)
-    
+    const cacheKey = `${portfolioId}-${device.type}-${device.width}-${device.height}-${JSON.stringify(options)}`;
+    const cachedPreview = previewCache.get(cacheKey);
+
     if (cachedPreview && new Date(cachedPreview.expiresAt) > new Date()) {
       // Track usage
-      const duration = Date.now() - startTime
+      const duration = Date.now() - startTime;
       trackUsage(
         user.id,
-        '/api/preview',
-        'POST',
+        "/api/preview",
+        "POST",
         duration,
         200,
         JSON.stringify(body).length,
         JSON.stringify(cachedPreview).length,
-        request.headers.get('user-agent') || 'unknown',
-        request.ip || 'unknown',
-        ['preview_generation', 'cached']
-      )
-      
-      return createSuccessResponse(cachedPreview, 'Preview generated successfully (cached)')
+        request.headers.get("user-agent") || "unknown",
+        request.ip || "unknown",
+        ["preview_generation", "cached"],
+      );
+
+      return createSuccessResponse(
+        cachedPreview,
+        "Preview generated successfully (cached)",
+      );
     }
 
     // Generate preview
-    const renderer = templateRenderers[portfolio.template as keyof typeof templateRenderers]
+    const renderer =
+      templateRenderers[portfolio.template as keyof typeof templateRenderers];
     if (!renderer) {
-      return createErrorResponse({
-        code: 'INVALID_TEMPLATE',
-        message: 'Invalid template type',
-        timestamp: new Date().toISOString(),
-        requestId,
-        userId: user.id
-      }, 400)
+      return createErrorResponse(
+        {
+          code: "INVALID_TEMPLATE",
+          message: "Invalid template type",
+          timestamp: new Date().toISOString(),
+          requestId,
+          userId: user.id,
+        },
+        400,
+      );
     }
 
-    const { html, css, js } = renderer(portfolio, device, options)
-    const assets = generateAssets(portfolio, options)
-    const metadata = calculatePerformanceMetrics(html, css, js)
-    
+    const { html, css, js } = renderer(portfolio, device, options);
+    const assets = generateAssets(portfolio, options);
+    const metadata = calculatePerformanceMetrics(html, css, js);
+
     // Generate preview URL
-    const previewUrl = `https://preview.example.com/${portfolioId}?device=${device.type}&width=${device.width}&height=${device.height}`
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+    const previewUrl = `https://preview.example.com/${portfolioId}?device=${device.type}&width=${device.width}&height=${device.height}`;
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
 
     const previewResponse: PreviewResponse = {
       html,
@@ -713,74 +812,80 @@ async function handlePreviewGeneration(
       assets,
       metadata,
       previewUrl,
-      expiresAt
-    }
+      expiresAt,
+    };
 
     // Cache the preview
-    previewCache.set(cacheKey, previewResponse)
+    previewCache.set(cacheKey, previewResponse);
 
     // Track usage
-    const duration = Date.now() - startTime
+    const duration = Date.now() - startTime;
     trackUsage(
       user.id,
-      '/api/preview',
-      'POST',
+      "/api/preview",
+      "POST",
       duration,
       200,
       JSON.stringify(body).length,
       JSON.stringify(previewResponse).length,
-      request.headers.get('user-agent') || 'unknown',
-      request.ip || 'unknown',
-      ['preview_generation', portfolio.template]
-    )
+      request.headers.get("user-agent") || "unknown",
+      request.ip || "unknown",
+      ["preview_generation", portfolio.template],
+    );
 
-    return createSuccessResponse(previewResponse, 'Preview generated successfully')
-    
+    return createSuccessResponse(
+      previewResponse,
+      "Preview generated successfully",
+    );
   } catch (error) {
-    console.error('Preview generation error:', error)
-    
-    const duration = Date.now() - startTime
+    console.error("Preview generation error:", error);
+
+    const duration = Date.now() - startTime;
     trackUsage(
       user.id,
-      '/api/preview',
-      'POST',
+      "/api/preview",
+      "POST",
       duration,
       500,
       0,
       0,
-      request.headers.get('user-agent') || 'unknown',
-      request.ip || 'unknown',
-      ['preview_generation']
-    )
+      request.headers.get("user-agent") || "unknown",
+      request.ip || "unknown",
+      ["preview_generation"],
+    );
 
-    return createErrorResponse({
-      code: 'PREVIEW_FAILED',
-      message: 'Failed to generate preview',
-      timestamp: new Date().toISOString(),
-      requestId,
-      userId: user.id
-    }, 500)
+    return createErrorResponse(
+      {
+        code: "PREVIEW_FAILED",
+        message: "Failed to generate preview",
+        timestamp: new Date().toISOString(),
+        requestId,
+        userId: user.id,
+      },
+      500,
+    );
   }
 }
 
 // Export the handler with authentication and rate limiting
 export const POST = withAuth(handlePreviewGeneration, {
-  requiredRole: 'user',
+  requiredRole: "user",
   rateLimit: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // 100 requests per 15 minutes
-  }
-})
+    max: 100, // 100 requests per 15 minutes
+  },
+});
 
 // Handle OPTIONS for CORS
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID',
-      'Access-Control-Max-Age': '86400'
-    }
-  })
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Request-ID",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
 }

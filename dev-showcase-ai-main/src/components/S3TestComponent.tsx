@@ -1,29 +1,29 @@
 // AWS S3 Test Component - Test your S3 credentials integration
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { S3Client, PortfolioAssetManager } from '../services/s3Service';
-import { getAWSConfig } from '../config/apiConfig';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
-  Cloud, 
-  Upload, 
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { S3Client, PortfolioAssetManager } from "../services/s3Service";
+import { getAWSConfig } from "../config/apiConfig";
+import {
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Cloud,
+  Upload,
   Download,
   Folder,
   File,
   Database,
-  Settings
-} from 'lucide-react';
+  Settings,
+} from "lucide-react";
 
 const S3TestComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [testResults, setTestResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [bucketName, setBucketName] = useState('showwork-portfolios');
+  const [bucketName, setBucketName] = useState("showwork-portfolios");
 
   const runS3Tests = async () => {
     setIsLoading(true);
@@ -32,79 +32,82 @@ const S3TestComponent = () => {
 
     try {
       const config = getAWSConfig();
-      console.log('Using AWS S3 Config:', {
-        accessKeyId: config.accessKeyId.substring(0, 10) + '...',
+      console.log("Using AWS S3 Config:", {
+        accessKeyId: config.accessKeyId.substring(0, 10) + "...",
         region: config.region,
-        bucketName: config.bucketName
+        bucketName: config.bucketName,
       });
 
       const s3Client = new S3Client(config);
       const assetManager = new PortfolioAssetManager(config);
-      
+
       // Test 1: Create Bucket
-      console.log('Testing S3 Bucket Creation...');
+      console.log("Testing S3 Bucket Creation...");
       try {
         await s3Client.createBucket();
-        console.log('Bucket created successfully');
+        console.log("Bucket created successfully");
       } catch (bucketError) {
-        console.log('Bucket might already exist:', bucketError.message);
+        console.log("Bucket might already exist:", bucketError.message);
       }
 
       // Test 2: Upload Test Object
-      console.log('Testing S3 Object Upload...');
+      console.log("Testing S3 Object Upload...");
       const testObject = {
-        Key: 'test/portfolio-test.txt',
-        Body: 'This is a test file for ShowWork portfolio generation system.',
-        ContentType: 'text/plain',
-        CacheControl: 'public, max-age=3600'
+        Key: "test/portfolio-test.txt",
+        Body: "This is a test file for ShowWork portfolio generation system.",
+        ContentType: "text/plain",
+        CacheControl: "public, max-age=3600",
       };
-      
+
       const uploadResult = await s3Client.putObject(testObject);
-      console.log('Object uploaded successfully:', uploadResult.Location);
+      console.log("Object uploaded successfully:", uploadResult.Location);
 
       // Test 3: Configure Static Website
-      console.log('Testing Static Website Configuration...');
+      console.log("Testing Static Website Configuration...");
       try {
         const websiteUrl = await assetManager.configureStaticWebsite();
-        console.log('Website configured:', websiteUrl);
+        console.log("Website configured:", websiteUrl);
       } catch (websiteError) {
-        console.log('Website configuration error:', websiteError.message);
+        console.log("Website configuration error:", websiteError.message);
       }
 
       // Test 4: Upload Portfolio Assets
-      console.log('Testing Portfolio Asset Upload...');
+      console.log("Testing Portfolio Asset Upload...");
       const testAssets = {
-        html: '<html><body><h1>Test Portfolio</h1></body></html>',
-        css: 'body { font-family: Arial; }',
+        html: "<html><body><h1>Test Portfolio</h1></body></html>",
+        css: "body { font-family: Arial; }",
         js: 'console.log("Test portfolio loaded");',
         images: [
           {
-            name: 'test-image.jpg',
-            data: Buffer.from('test-image-data'),
-            type: 'image/jpeg'
-          }
+            name: "test-image.jpg",
+            data: Buffer.from("test-image-data"),
+            type: "image/jpeg",
+          },
         ],
         fonts: [
           {
-            name: 'test-font.woff2',
-            data: Buffer.from('test-font-data'),
-            type: 'font/woff2'
-          }
-        ]
+            name: "test-font.woff2",
+            data: Buffer.from("test-font-data"),
+            type: "font/woff2",
+          },
+        ],
       };
 
-      const assetResult = await assetManager.uploadPortfolioAssets('test-portfolio-123', testAssets);
-      console.log('Assets uploaded successfully:', assetResult);
+      const assetResult = await assetManager.uploadPortfolioAssets(
+        "test-portfolio-123",
+        testAssets,
+      );
+      console.log("Assets uploaded successfully:", assetResult);
 
       // Test 5: Get Asset URLs
-      console.log('Testing Asset URL Generation...');
-      const assetUrls = assetManager.getAssetUrls('test-portfolio-123');
-      console.log('Asset URLs generated:', assetUrls);
+      console.log("Testing Asset URL Generation...");
+      const assetUrls = assetManager.getAssetUrls("test-portfolio-123");
+      console.log("Asset URLs generated:", assetUrls);
 
       // Test 6: List Objects
-      console.log('Testing Object Listing...');
-      const objects = await s3Client.listObjects('test/');
-      console.log('Objects listed:', objects);
+      console.log("Testing Object Listing...");
+      const objects = await s3Client.listObjects("test/");
+      console.log("Objects listed:", objects);
 
       setTestResults({
         bucketCreated: true,
@@ -113,13 +116,12 @@ const S3TestComponent = () => {
         assetsUploaded: assetResult,
         assetUrls,
         objectsListed: objects,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
-      console.log('All S3 tests completed successfully!');
-
+      console.log("All S3 tests completed successfully!");
     } catch (error) {
-      console.error('S3 API test failed:', error);
+      console.error("S3 API test failed:", error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -128,39 +130,38 @@ const S3TestComponent = () => {
 
   const testCustomBucket = async () => {
     if (!bucketName.trim()) return;
-    
+
     setIsLoading(true);
     setError(null);
 
     try {
       const config = {
         ...getAWSConfig(),
-        bucketName: bucketName.trim()
+        bucketName: bucketName.trim(),
       };
-      
+
       const s3Client = new S3Client(config);
-      
+
       // Test bucket creation
       await s3Client.createBucket();
-      
+
       // Test object upload
       const testObject = {
-        Key: 'custom-test.txt',
+        Key: "custom-test.txt",
         Body: `Test file for custom bucket: ${bucketName}`,
-        ContentType: 'text/plain'
+        ContentType: "text/plain",
       };
-      
+
       const result = await s3Client.putObject(testObject);
 
       setTestResults({
         customBucketTest: {
           bucketName,
           uploadResult: result,
-          success: true
+          success: true,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       setError(error.message);
     } finally {
@@ -177,7 +178,8 @@ const S3TestComponent = () => {
             AWS S3 Integration Test
           </h1>
           <p className="text-[#94A3B8] text-lg">
-            Test your AWS S3 credentials integration with the portfolio generation system
+            Test your AWS S3 credentials integration with the portfolio
+            generation system
           </p>
         </div>
 
@@ -193,30 +195,36 @@ const S3TestComponent = () => {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <p className="text-[#94A3B8]">
-                  Access Key ID: <code className="bg-black/20 px-2 py-1 rounded">
+                  Access Key ID:{" "}
+                  <code className="bg-black/20 px-2 py-1 rounded">
                     {getAWSConfig().accessKeyId.substring(0, 10)}...
                   </code>
                 </p>
                 <p className="text-[#94A3B8]">
-                  Region: <code className="bg-black/20 px-2 py-1 rounded">
+                  Region:{" "}
+                  <code className="bg-black/20 px-2 py-1 rounded">
                     {getAWSConfig().region}
                   </code>
                 </p>
               </div>
               <div>
                 <p className="text-[#94A3B8]">
-                  Bucket Name: <code className="bg-black/20 px-2 py-1 rounded">
+                  Bucket Name:{" "}
+                  <code className="bg-black/20 px-2 py-1 rounded">
                     {getAWSConfig().bucketName}
                   </code>
                 </p>
                 <p className="text-sm text-[#94A3B8] mt-1">
-                  Status: {getAWSConfig().accessKeyId ? 'Configured' : 'Not Found'}
+                  Status:{" "}
+                  {getAWSConfig().accessKeyId ? "Configured" : "Not Found"}
                 </p>
               </div>
             </div>
             <div className="mt-4">
-              <Badge variant={getAWSConfig().accessKeyId ? 'default' : 'destructive'}>
-                {getAWSConfig().accessKeyId ? 'Ready' : 'Error'}
+              <Badge
+                variant={getAWSConfig().accessKeyId ? "default" : "destructive"}
+              >
+                {getAWSConfig().accessKeyId ? "Ready" : "Error"}
               </Badge>
             </div>
           </CardContent>
@@ -233,9 +241,10 @@ const S3TestComponent = () => {
             </CardHeader>
             <CardContent>
               <p className="text-[#94A3B8] mb-4">
-                Run comprehensive tests for all S3 operations used in portfolio generation.
+                Run comprehensive tests for all S3 operations used in portfolio
+                generation.
               </p>
-              <Button 
+              <Button
                 onClick={runS3Tests}
                 disabled={isLoading}
                 className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/80"
@@ -272,7 +281,7 @@ const S3TestComponent = () => {
                 placeholder="Enter bucket name..."
                 className="mb-4 bg-white/10 border-white/20 text-white"
               />
-              <Button 
+              <Button
                 onClick={testCustomBucket}
                 disabled={isLoading || !bucketName.trim()}
                 className="w-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/80"
@@ -309,9 +318,7 @@ const S3TestComponent = () => {
         {/* Test Results */}
         {testResults && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Test Results
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Test Results</h2>
 
             {/* Bucket Creation */}
             {testResults.bucketCreated && (
@@ -323,7 +330,9 @@ const S3TestComponent = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-[#94A3B8]">Bucket created successfully or already exists</p>
+                  <p className="text-[#94A3B8]">
+                    Bucket created successfully or already exists
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -340,13 +349,16 @@ const S3TestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Location:</strong> {testResults.objectUploaded.Location}
+                      <strong className="text-white">Location:</strong>{" "}
+                      {testResults.objectUploaded.Location}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">ETag:</strong> {testResults.objectUploaded.ETag}
+                      <strong className="text-white">ETag:</strong>{" "}
+                      {testResults.objectUploaded.ETag}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Bucket:</strong> {testResults.objectUploaded.Bucket}
+                      <strong className="text-white">Bucket:</strong>{" "}
+                      {testResults.objectUploaded.Bucket}
                     </p>
                   </div>
                 </CardContent>
@@ -363,7 +375,9 @@ const S3TestComponent = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-[#94A3B8]">Static website hosting configured successfully</p>
+                  <p className="text-[#94A3B8]">
+                    Static website hosting configured successfully
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -380,19 +394,24 @@ const S3TestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">HTML URL:</strong> {testResults.assetsUploaded.htmlUrl}
+                      <strong className="text-white">HTML URL:</strong>{" "}
+                      {testResults.assetsUploaded.htmlUrl}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">CSS URL:</strong> {testResults.assetsUploaded.cssUrl}
+                      <strong className="text-white">CSS URL:</strong>{" "}
+                      {testResults.assetsUploaded.cssUrl}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">JS URL:</strong> {testResults.assetsUploaded.jsUrl}
+                      <strong className="text-white">JS URL:</strong>{" "}
+                      {testResults.assetsUploaded.jsUrl}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Images:</strong> {testResults.assetsUploaded.imageUrls.length} uploaded
+                      <strong className="text-white">Images:</strong>{" "}
+                      {testResults.assetsUploaded.imageUrls.length} uploaded
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Fonts:</strong> {testResults.assetsUploaded.fontUrls.length} uploaded
+                      <strong className="text-white">Fonts:</strong>{" "}
+                      {testResults.assetsUploaded.fontUrls.length} uploaded
                     </p>
                   </div>
                 </CardContent>
@@ -411,16 +430,20 @@ const S3TestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">HTML:</strong> {testResults.assetUrls.html}
+                      <strong className="text-white">HTML:</strong>{" "}
+                      {testResults.assetUrls.html}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">CSS:</strong> {testResults.assetUrls.css}
+                      <strong className="text-white">CSS:</strong>{" "}
+                      {testResults.assetUrls.css}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">JS:</strong> {testResults.assetUrls.js}
+                      <strong className="text-white">JS:</strong>{" "}
+                      {testResults.assetUrls.js}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Images:</strong> {testResults.assetUrls.images.length} URLs generated
+                      <strong className="text-white">Images:</strong>{" "}
+                      {testResults.assetUrls.images.length} URLs generated
                     </p>
                   </div>
                 </CardContent>
@@ -438,14 +461,20 @@ const S3TestComponent = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-[#94A3B8]">
-                    <strong className="text-white">Objects Found:</strong> {testResults.objectsListed.length}
+                    <strong className="text-white">Objects Found:</strong>{" "}
+                    {testResults.objectsListed.length}
                   </p>
                   <div className="mt-2 space-y-1">
-                    {testResults.objectsListed.map((object: string, index: number) => (
-                      <p key={index} className="text-sm text-[#94A3B8] font-mono">
-                        {object}
-                      </p>
-                    ))}
+                    {testResults.objectsListed.map(
+                      (object: string, index: number) => (
+                        <p
+                          key={index}
+                          className="text-sm text-[#94A3B8] font-mono"
+                        >
+                          {object}
+                        </p>
+                      ),
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -463,13 +492,15 @@ const S3TestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Bucket:</strong> {testResults.customBucketTest.bucketName}
+                      <strong className="text-white">Bucket:</strong>{" "}
+                      {testResults.customBucketTest.bucketName}
                     </p>
                     <p className="text-[#94A3B8]">
                       <strong className="text-white">Status:</strong> Success
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Upload URL:</strong> {testResults.customBucketTest.uploadResult.Location}
+                      <strong className="text-white">Upload URL:</strong>{" "}
+                      {testResults.customBucketTest.uploadResult.Location}
                     </p>
                   </div>
                 </CardContent>
@@ -481,13 +512,17 @@ const S3TestComponent = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center text-green-400">
                   <CheckCircle className="w-5 h-5 mr-2" />
-                  <span className="font-medium">All S3 tests completed successfully!</span>
+                  <span className="font-medium">
+                    All S3 tests completed successfully!
+                  </span>
                 </div>
                 <p className="text-green-300 mt-2">
-                  Your AWS S3 credentials are working correctly. Portfolio asset storage is ready to use.
+                  Your AWS S3 credentials are working correctly. Portfolio asset
+                  storage is ready to use.
                 </p>
                 <p className="text-green-300 text-sm mt-1">
-                  Test completed at: {new Date(testResults.timestamp).toLocaleString()}
+                  Test completed at:{" "}
+                  {new Date(testResults.timestamp).toLocaleString()}
                 </p>
               </CardContent>
             </Card>

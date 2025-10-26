@@ -1,31 +1,34 @@
 // Vercel API Test Component - Test your Vercel token integration
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { VercelClient, PortfolioDeploymentManager } from '../services/vercelService';
-import { getVercelConfig } from '../config/apiConfig';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
-  Rocket, 
-  Globe, 
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  VercelClient,
+  PortfolioDeploymentManager,
+} from "../services/vercelService";
+import { getVercelConfig } from "../config/apiConfig";
+import {
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Rocket,
+  Globe,
   Settings,
   Upload,
   Download,
   Activity,
   Zap,
   Shield,
-  Clock
-} from 'lucide-react';
+  Clock,
+} from "lucide-react";
 
 const VercelTestComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [testResults, setTestResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [projectName, setProjectName] = useState('showwork-test-portfolio');
+  const [projectName, setProjectName] = useState("showwork-test-portfolio");
 
   const runVercelTests = async () => {
     setIsLoading(true);
@@ -34,25 +37,25 @@ const VercelTestComponent = () => {
 
     try {
       const config = getVercelConfig();
-      console.log('Using Vercel Config:', {
-        token: config.token.substring(0, 10) + '...',
-        teamId: config.teamId || 'Not configured',
-        baseUrl: config.baseUrl
+      console.log("Using Vercel Config:", {
+        token: config.token.substring(0, 10) + "...",
+        teamId: config.teamId || "Not configured",
+        baseUrl: config.baseUrl,
       });
 
       const vercelClient = new VercelClient(config);
       const deploymentManager = new PortfolioDeploymentManager(config);
-      
+
       // Test 1: List Projects
-      console.log('Testing Vercel Projects List...');
+      console.log("Testing Vercel Projects List...");
       const projects = await vercelClient.listProjects();
-      console.log('Projects listed:', projects.length);
+      console.log("Projects listed:", projects.length);
 
       // Test 2: Create Test Deployment
-      console.log('Testing Vercel Deployment Creation...');
+      console.log("Testing Vercel Deployment Creation...");
       const testFiles = [
         {
-          file: 'index.html',
+          file: "index.html",
           data: `
 <!DOCTYPE html>
 <html lang="en">
@@ -100,57 +103,59 @@ const VercelTestComponent = () => {
         </p>
     </div>
 </body>
-</html>`
+</html>`,
         },
         {
-          file: 'package.json',
+          file: "package.json",
           data: JSON.stringify({
-            name: 'showwork-test-portfolio',
-            version: '1.0.0',
-            description: 'Test portfolio for ShowWork Vercel integration',
+            name: "showwork-test-portfolio",
+            version: "1.0.0",
+            description: "Test portfolio for ShowWork Vercel integration",
             scripts: {
-              build: 'echo "Build complete"'
-            }
-          })
-        }
+              build: 'echo "Build complete"',
+            },
+          }),
+        },
       ];
 
       const deployment = await vercelClient.createDeployment({
         name: projectName,
         files: testFiles,
         projectSettings: {
-          framework: 'static',
+          framework: "static",
           buildCommand: undefined,
-          outputDirectory: '.',
-          installCommand: undefined
+          outputDirectory: ".",
+          installCommand: undefined,
         },
-        target: 'preview',
-        regions: ['iad1', 'sfo1']
+        target: "preview",
+        regions: ["iad1", "sfo1"],
       });
 
-      console.log('Deployment created:', deployment.id);
+      console.log("Deployment created:", deployment.id);
 
       // Test 3: Wait for Deployment
-      console.log('Waiting for deployment to complete...');
-      const completedDeployment = await deploymentManager.waitForDeployment(deployment.id);
-      console.log('Deployment completed:', completedDeployment.state);
+      console.log("Waiting for deployment to complete...");
+      const completedDeployment = await deploymentManager.waitForDeployment(
+        deployment.id,
+      );
+      console.log("Deployment completed:", completedDeployment.state);
 
       // Test 4: Get Deployment Status
-      console.log('Getting deployment status...');
+      console.log("Getting deployment status...");
       const status = await vercelClient.getDeploymentStatus(deployment.id);
-      console.log('Deployment status:', status.state);
+      console.log("Deployment status:", status.state);
 
       // Test 5: Test Custom Domain (if provided)
       let domainResult = null;
-      if (projectName.includes('custom')) {
+      if (projectName.includes("custom")) {
         try {
-          console.log('Testing custom domain configuration...');
+          console.log("Testing custom domain configuration...");
           domainResult = await deploymentManager.configureCustomDomain(
             completedDeployment.projectId,
-            `${projectName}.vercel.app`
+            `${projectName}.vercel.app`,
           );
         } catch (domainError) {
-          console.log('Custom domain test failed:', domainError.message);
+          console.log("Custom domain test failed:", domainError.message);
         }
       }
 
@@ -160,13 +165,12 @@ const VercelTestComponent = () => {
         deploymentCompleted: completedDeployment,
         deploymentStatus: status,
         domainConfigured: domainResult,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
-      console.log('All Vercel tests completed successfully!');
-
+      console.log("All Vercel tests completed successfully!");
     } catch (error) {
-      console.error('Vercel API test failed:', error);
+      console.error("Vercel API test failed:", error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -175,18 +179,18 @@ const VercelTestComponent = () => {
 
   const testCustomProject = async () => {
     if (!projectName.trim()) return;
-    
+
     setIsLoading(true);
     setError(null);
 
     try {
       const config = getVercelConfig();
       const vercelClient = new VercelClient(config);
-      
+
       // Create deployment with custom project name
       const testFiles = [
         {
-          file: 'index.html',
+          file: "index.html",
           data: `
 <!DOCTYPE html>
 <html lang="en">
@@ -232,28 +236,27 @@ const VercelTestComponent = () => {
         </p>
     </div>
 </body>
-</html>`
-        }
+</html>`,
+        },
       ];
 
       const deployment = await vercelClient.createDeployment({
         name: projectName,
         files: testFiles,
         projectSettings: {
-          framework: 'static'
+          framework: "static",
         },
-        target: 'preview'
+        target: "preview",
       });
 
       setTestResults({
         customProjectTest: {
           projectName,
           deployment,
-          success: true
+          success: true,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       setError(error.message);
     } finally {
@@ -270,7 +273,8 @@ const VercelTestComponent = () => {
             Vercel API Integration Test
           </h1>
           <p className="text-[#94A3B8] text-lg">
-            Test your Vercel token integration with the portfolio generation system
+            Test your Vercel token integration with the portfolio generation
+            system
           </p>
         </div>
 
@@ -286,30 +290,35 @@ const VercelTestComponent = () => {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <p className="text-[#94A3B8]">
-                  Token: <code className="bg-black/20 px-2 py-1 rounded">
+                  Token:{" "}
+                  <code className="bg-black/20 px-2 py-1 rounded">
                     {getVercelConfig().token.substring(0, 10)}...
                   </code>
                 </p>
                 <p className="text-[#94A3B8]">
-                  Team ID: <code className="bg-black/20 px-2 py-1 rounded">
-                    {getVercelConfig().teamId || 'Not configured'}
+                  Team ID:{" "}
+                  <code className="bg-black/20 px-2 py-1 rounded">
+                    {getVercelConfig().teamId || "Not configured"}
                   </code>
                 </p>
               </div>
               <div>
                 <p className="text-[#94A3B8]">
-                  Base URL: <code className="bg-black/20 px-2 py-1 rounded">
+                  Base URL:{" "}
+                  <code className="bg-black/20 px-2 py-1 rounded">
                     {getVercelConfig().baseUrl}
                   </code>
                 </p>
                 <p className="text-sm text-[#94A3B8] mt-1">
-                  Status: {getVercelConfig().token ? 'Configured' : 'Not Found'}
+                  Status: {getVercelConfig().token ? "Configured" : "Not Found"}
                 </p>
               </div>
             </div>
             <div className="mt-4">
-              <Badge variant={getVercelConfig().token ? 'default' : 'destructive'}>
-                {getVercelConfig().token ? 'Ready' : 'Error'}
+              <Badge
+                variant={getVercelConfig().token ? "default" : "destructive"}
+              >
+                {getVercelConfig().token ? "Ready" : "Error"}
               </Badge>
             </div>
           </CardContent>
@@ -326,9 +335,10 @@ const VercelTestComponent = () => {
             </CardHeader>
             <CardContent>
               <p className="text-[#94A3B8] mb-4">
-                Run comprehensive tests for all Vercel operations used in portfolio deployment.
+                Run comprehensive tests for all Vercel operations used in
+                portfolio deployment.
               </p>
-              <Button 
+              <Button
                 onClick={runVercelTests}
                 disabled={isLoading}
                 className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/80"
@@ -365,7 +375,7 @@ const VercelTestComponent = () => {
                 placeholder="Enter project name..."
                 className="mb-4 bg-white/10 border-white/20 text-white"
               />
-              <Button 
+              <Button
                 onClick={testCustomProject}
                 disabled={isLoading || !projectName.trim()}
                 className="w-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/80"
@@ -402,9 +412,7 @@ const VercelTestComponent = () => {
         {/* Test Results */}
         {testResults && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Test Results
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Test Results</h2>
 
             {/* Projects Listed */}
             {testResults.projectsListed !== undefined && (
@@ -417,7 +425,8 @@ const VercelTestComponent = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-[#94A3B8]">
-                    <strong className="text-white">Projects Found:</strong> {testResults.projectsListed}
+                    <strong className="text-white">Projects Found:</strong>{" "}
+                    {testResults.projectsListed}
                   </p>
                 </CardContent>
               </Card>
@@ -435,19 +444,27 @@ const VercelTestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Deployment ID:</strong> {testResults.deploymentCreated.id}
+                      <strong className="text-white">Deployment ID:</strong>{" "}
+                      {testResults.deploymentCreated.id}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">URL:</strong> 
-                      <a href={testResults.deploymentCreated.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 ml-2">
+                      <strong className="text-white">URL:</strong>
+                      <a
+                        href={testResults.deploymentCreated.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 ml-2"
+                      >
                         {testResults.deploymentCreated.url}
                       </a>
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Name:</strong> {testResults.deploymentCreated.name}
+                      <strong className="text-white">Name:</strong>{" "}
+                      {testResults.deploymentCreated.name}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Target:</strong> {testResults.deploymentCreated.target}
+                      <strong className="text-white">Target:</strong>{" "}
+                      {testResults.deploymentCreated.target}
                     </p>
                   </div>
                 </CardContent>
@@ -466,16 +483,20 @@ const VercelTestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Status:</strong> 
+                      <strong className="text-white">Status:</strong>
                       <Badge variant="default" className="ml-2">
                         {testResults.deploymentCompleted.state}
                       </Badge>
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Ready At:</strong> {new Date(testResults.deploymentCompleted.readyAt).toLocaleString()}
+                      <strong className="text-white">Ready At:</strong>{" "}
+                      {new Date(
+                        testResults.deploymentCompleted.readyAt,
+                      ).toLocaleString()}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Project ID:</strong> {testResults.deploymentCompleted.projectId}
+                      <strong className="text-white">Project ID:</strong>{" "}
+                      {testResults.deploymentCompleted.projectId}
                     </p>
                   </div>
                 </CardContent>
@@ -494,16 +515,18 @@ const VercelTestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">State:</strong> 
+                      <strong className="text-white">State:</strong>
                       <Badge variant="default" className="ml-2">
                         {testResults.deploymentStatus.state}
                       </Badge>
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Type:</strong> {testResults.deploymentStatus.type}
+                      <strong className="text-white">Type:</strong>{" "}
+                      {testResults.deploymentStatus.type}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Regions:</strong> {testResults.deploymentStatus.regions.join(', ')}
+                      <strong className="text-white">Regions:</strong>{" "}
+                      {testResults.deploymentStatus.regions.join(", ")}
                     </p>
                   </div>
                 </CardContent>
@@ -522,13 +545,16 @@ const VercelTestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Domain:</strong> {testResults.domainConfigured.name}
+                      <strong className="text-white">Domain:</strong>{" "}
+                      {testResults.domainConfigured.name}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Verified:</strong> {testResults.domainConfigured.verified ? 'Yes' : 'No'}
+                      <strong className="text-white">Verified:</strong>{" "}
+                      {testResults.domainConfigured.verified ? "Yes" : "No"}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Project ID:</strong> {testResults.domainConfigured.projectId}
+                      <strong className="text-white">Project ID:</strong>{" "}
+                      {testResults.domainConfigured.projectId}
                     </p>
                   </div>
                 </CardContent>
@@ -547,17 +573,24 @@ const VercelTestComponent = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Project:</strong> {testResults.customProjectTest.projectName}
+                      <strong className="text-white">Project:</strong>{" "}
+                      {testResults.customProjectTest.projectName}
                     </p>
                     <p className="text-[#94A3B8]">
                       <strong className="text-white">Status:</strong> Success
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">Deployment ID:</strong> {testResults.customProjectTest.deployment.id}
+                      <strong className="text-white">Deployment ID:</strong>{" "}
+                      {testResults.customProjectTest.deployment.id}
                     </p>
                     <p className="text-[#94A3B8]">
-                      <strong className="text-white">URL:</strong> 
-                      <a href={testResults.customProjectTest.deployment.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 ml-2">
+                      <strong className="text-white">URL:</strong>
+                      <a
+                        href={testResults.customProjectTest.deployment.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 ml-2"
+                      >
                         {testResults.customProjectTest.deployment.url}
                       </a>
                     </p>
@@ -571,13 +604,17 @@ const VercelTestComponent = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center text-green-400">
                   <CheckCircle className="w-5 h-5 mr-2" />
-                  <span className="font-medium">All Vercel tests completed successfully!</span>
+                  <span className="font-medium">
+                    All Vercel tests completed successfully!
+                  </span>
                 </div>
                 <p className="text-green-300 mt-2">
-                  Your Vercel token is working correctly. Portfolio deployment is ready to use.
+                  Your Vercel token is working correctly. Portfolio deployment
+                  is ready to use.
                 </p>
                 <p className="text-green-300 text-sm mt-1">
-                  Test completed at: {new Date(testResults.timestamp).toLocaleString()}
+                  Test completed at:{" "}
+                  {new Date(testResults.timestamp).toLocaleString()}
                 </p>
               </CardContent>
             </Card>

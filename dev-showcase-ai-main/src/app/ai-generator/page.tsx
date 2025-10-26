@@ -1,5 +1,5 @@
-import ContentGenerator from "@/components/ai/ContentGenerator"
+import ContentGenerator from "@/components/ai/ContentGenerator";
 
 export default function AIGeneratorPage() {
-  return <ContentGenerator />
+  return <ContentGenerator />;
 }

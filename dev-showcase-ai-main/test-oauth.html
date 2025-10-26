@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OAuth Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+      }
+      .info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .url-display {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔧 Google OAuth Debug Test</h1>
+
+    <div class="test-section info">
+      <h3>📋 Test Steps</h3>
+      <ol>
+        <li>Click "Test Backend Health" to verify your server is running</li>
+        <li>
+          Click "Test OAuth Endpoint" to check if the OAuth redirect works
+        </li>
+        <li>
+          Click "Test Direct Google URL" to test the Google OAuth URL directly
+        </li>
+        <li>Check the results below</li>
+      </ol>
+    </div>
+
+    <div class="test-section">
+      <h3>1. Backend Health Check</h3>
+      <button onclick="testBackendHealth()">Test Backend Health</button>
+      <div id="health-result"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>2. OAuth Endpoint Test</h3>
+      <button onclick="testOAuthEndpoint()">Test OAuth Endpoint</button>
+      <div id="oauth-result"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>3. Direct Google URL Test</h3>
+      <button onclick="testDirectGoogleURL()">Test Direct Google URL</button>
+      <div id="google-result"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>4. Manual Test</h3>
+      <p>Click this button to manually test the OAuth flow:</p>
+      <button onclick="manualOAuthTest()" style="background: #28a745">
+        🚀 Start OAuth Test
+      </button>
+      <div id="manual-result"></div>
+    </div>
+
+    <script>
+      const GOOGLE_OAUTH_URL =
+        "https://accounts.google.com/oauth/authorize?client_id=1023704543857-3ncqko6crdtn9g1p4q0p9j19jd4alo77.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fauth%2Fgoogle%2Fcallback&scope=profile%20email&response_type=code&prompt=select_account&access_type=offline&include_granted_scopes=true";
+
+      function showResult(elementId, message, isSuccess = true) {
+        const element = document.getElementById(elementId);
+        element.innerHTML = `<div class="${isSuccess ? "success" : "error"}">${message}</div>`;
+      }
+
+      async function testBackendHealth() {
+        try {
+          const response = await fetch("http://localhost:5000/api/health");
+          const data = await response.json();
+          showResult(
+            "health-result",
+            `✅ Backend is running!<br>Status: ${data.status}<br>Message: ${data.message}`,
+            true,
+          );
+        } catch (error) {
+          showResult(
+            "health-result",
+            `❌ Backend not running: ${error.message}`,
+            false,
+          );
+        }
+      }
+
+      async function testOAuthEndpoint() {
+        try {
+          const response = await fetch(
+            "http://localhost:5000/api/auth/google",
+            {
+              method: "GET",
+              redirect: "manual",
+            },
+          );
+
+          if (response.status === 302 || response.status === 301) {
+            const location = response.headers.get("Location");
+            showResult(
+              "oauth-result",
+              `✅ OAuth endpoint working!<br>Redirects to: <div class="url-display">${location}</div>`,
+              true,
+            );
+          } else {
+            showResult(
+              "oauth-result",
+              `⚠️ Unexpected response: Status ${response.status}`,
+              false,
+            );
+          }
+        } catch (error) {
+          showResult(
+            "oauth-result",
+            `❌ OAuth endpoint error: ${error.message}`,
+            false,
+          );
+        }
+      }
+
+      async function testDirectGoogleURL() {
+        try {
+          const response = await fetch(GOOGLE_OAUTH_URL, {
+            method: "GET",
+            redirect: "manual",
+          });
+
+          if (response.status === 200) {
+            showResult(
+              "google-result",
+              `✅ Google OAuth URL is accessible!<br>Status: ${response.status}`,
+              true,
+            );
+          } else if (response.status === 302 || response.status === 301) {
+            showResult(
+              "google-result",
+              `✅ Google OAuth URL redirects!<br>Status: ${response.status}`,
+              true,
+            );
+          } else {
+            showResult(
+              "google-result",
+              `⚠️ Unexpected Google response: Status ${response.status}`,
+              false,
+            );
+          }
+        } catch (error) {
+          showResult(
+            "google-result",
+            `❌ Google OAuth URL error: ${error.message}`,
+            false,
+          );
+        }
+      }
+
+      function manualOAuthTest() {
+        showResult(
+          "manual-result",
+          "🚀 Opening Google OAuth in new tab...",
+          true,
+        );
+        window.open(GOOGLE_OAUTH_URL, "_blank");
+      }
+
+      // Auto-run backend health check on page load
+      window.onload = function () {
+        testBackendHealth();
+      };
+    </script>
+  </body>
+</html>

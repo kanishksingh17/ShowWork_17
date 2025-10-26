@@ -1,142 +1,142 @@
 // Jest setup file for testing configuration
 
-import '@testing-library/jest-dom'
-import { TextEncoder, TextDecoder } from 'util'
+import "@testing-library/jest-dom";
+import { TextEncoder, TextDecoder } from "util";
 
 // Polyfills for Node.js environment
-global.TextEncoder = TextEncoder
-global.TextDecoder = TextDecoder
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // Mock Next.js router
-jest.mock('next/router', () => ({
+jest.mock("next/router", () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
     prefetch: jest.fn(),
     back: jest.fn(),
     reload: jest.fn(),
-    pathname: '/',
-    route: '/',
+    pathname: "/",
+    route: "/",
     query: {},
-    asPath: '/',
+    asPath: "/",
     events: {
       on: jest.fn(),
       off: jest.fn(),
       emit: jest.fn(),
     },
   }),
-}))
+}));
 
 // Mock Next.js navigation
-jest.mock('next/navigation', () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
     prefetch: jest.fn(),
     back: jest.fn(),
     reload: jest.fn(),
-    pathname: '/',
-    route: '/',
+    pathname: "/",
+    route: "/",
     query: {},
-    asPath: '/',
+    asPath: "/",
   }),
-  usePathname: () => '/',
+  usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
-}))
+}));
 
 // Mock Next.js image component
-jest.mock('next/image', () => ({
+jest.mock("next/image", () => ({
   __esModule: true,
   default: (props) => {
     // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
-    return <img {...props} />
+    return <img {...props} />;
   },
-}))
+}));
 
 // Mock Framer Motion
-jest.mock('framer-motion', () => ({
+jest.mock("framer-motion", () => ({
   motion: {
-    div: 'div',
-    span: 'span',
-    button: 'button',
-    img: 'img',
-    section: 'section',
-    article: 'article',
-    header: 'header',
-    footer: 'footer',
-    nav: 'nav',
-    main: 'main',
-    aside: 'aside',
-    h1: 'h1',
-    h2: 'h2',
-    h3: 'h3',
-    h4: 'h4',
-    h5: 'h5',
-    h6: 'h6',
-    p: 'p',
-    a: 'a',
-    ul: 'ul',
-    ol: 'ol',
-    li: 'li',
-    form: 'form',
-    input: 'input',
-    textarea: 'textarea',
-    select: 'select',
-    option: 'option',
-    label: 'label',
-    fieldset: 'fieldset',
-    legend: 'legend',
-    table: 'table',
-    thead: 'thead',
-    tbody: 'tbody',
-    tfoot: 'tfoot',
-    tr: 'tr',
-    th: 'th',
-    td: 'td',
-    canvas: 'canvas',
-    svg: 'svg',
-    path: 'path',
-    circle: 'circle',
-    rect: 'rect',
-    line: 'line',
-    polyline: 'polyline',
-    polygon: 'polygon',
-    ellipse: 'ellipse',
-    g: 'g',
-    defs: 'defs',
-    use: 'use',
-    symbol: 'symbol',
-    marker: 'marker',
-    pattern: 'pattern',
-    clipPath: 'clipPath',
-    mask: 'mask',
-    linearGradient: 'linearGradient',
-    radialGradient: 'radialGradient',
-    stop: 'stop',
-    animate: 'animate',
-    animateTransform: 'animateTransform',
-    animateMotion: 'animateMotion',
-    mpath: 'mpath',
-    set: 'set',
-    text: 'text',
-    tspan: 'tspan',
-    tref: 'tref',
-    textPath: 'textPath',
-    altGlyph: 'altGlyph',
-    altGlyphDef: 'altGlyphDef',
-    altGlyphItem: 'altGlyphItem',
-    glyphRef: 'glyphRef',
-    font: 'font',
-    fontFace: 'fontFace',
-    missingGlyph: 'missingGlyph',
-    hkern: 'hkern',
-    vkern: 'vkern',
-    foreignObject: 'foreignObject',
-    desc: 'desc',
-    title: 'title',
-    metadata: 'metadata',
-    style: 'style',
-    script: 'script',
+    div: "div",
+    span: "span",
+    button: "button",
+    img: "img",
+    section: "section",
+    article: "article",
+    header: "header",
+    footer: "footer",
+    nav: "nav",
+    main: "main",
+    aside: "aside",
+    h1: "h1",
+    h2: "h2",
+    h3: "h3",
+    h4: "h4",
+    h5: "h5",
+    h6: "h6",
+    p: "p",
+    a: "a",
+    ul: "ul",
+    ol: "ol",
+    li: "li",
+    form: "form",
+    input: "input",
+    textarea: "textarea",
+    select: "select",
+    option: "option",
+    label: "label",
+    fieldset: "fieldset",
+    legend: "legend",
+    table: "table",
+    thead: "thead",
+    tbody: "tbody",
+    tfoot: "tfoot",
+    tr: "tr",
+    th: "th",
+    td: "td",
+    canvas: "canvas",
+    svg: "svg",
+    path: "path",
+    circle: "circle",
+    rect: "rect",
+    line: "line",
+    polyline: "polyline",
+    polygon: "polygon",
+    ellipse: "ellipse",
+    g: "g",
+    defs: "defs",
+    use: "use",
+    symbol: "symbol",
+    marker: "marker",
+    pattern: "pattern",
+    clipPath: "clipPath",
+    mask: "mask",
+    linearGradient: "linearGradient",
+    radialGradient: "radialGradient",
+    stop: "stop",
+    animate: "animate",
+    animateTransform: "animateTransform",
+    animateMotion: "animateMotion",
+    mpath: "mpath",
+    set: "set",
+    text: "text",
+    tspan: "tspan",
+    tref: "tref",
+    textPath: "textPath",
+    altGlyph: "altGlyph",
+    altGlyphDef: "altGlyphDef",
+    altGlyphItem: "altGlyphItem",
+    glyphRef: "glyphRef",
+    font: "font",
+    fontFace: "fontFace",
+    missingGlyph: "missingGlyph",
+    hkern: "hkern",
+    vkern: "vkern",
+    foreignObject: "foreignObject",
+    desc: "desc",
+    title: "title",
+    metadata: "metadata",
+    style: "style",
+    script: "script",
   },
   AnimatePresence: ({ children }) => children,
   useAnimation: () => ({
@@ -170,7 +170,7 @@ jest.mock('framer-motion', () => ({
   usePresence: jest.fn(() => [true, jest.fn()]),
   useReducedMotion: jest.fn(() => false),
   useIsPresent: jest.fn(() => true),
-  useWillChange: jest.fn(() => 'auto'),
+  useWillChange: jest.fn(() => "auto"),
   useAnimationFrame: jest.fn(),
   useMotionValueEvent: jest.fn(),
   useTime: jest.fn(() => ({ get: jest.fn() })),
@@ -189,7 +189,7 @@ jest.mock('framer-motion', () => ({
     onChange: jest.fn(),
   })),
   useMotionValueEvent: jest.fn(),
-  useWillChange: jest.fn(() => 'auto'),
+  useWillChange: jest.fn(() => "auto"),
   useReducedMotion: jest.fn(() => false),
   useIsPresent: jest.fn(() => true),
   usePresence: jest.fn(() => [true, jest.fn()]),
@@ -205,15 +205,15 @@ jest.mock('framer-motion', () => ({
   })),
   useTransform: jest.fn(() => jest.fn()),
   useMotionTemplate: jest.fn(() => jest.fn()),
-}))
+}));
 
 // Mock Three.js
-jest.mock('three', () => ({
+jest.mock("three", () => ({
   WebGLRenderer: jest.fn(() => ({
     setSize: jest.fn(),
     render: jest.fn(),
     dispose: jest.fn(),
-    domElement: document.createElement('canvas'),
+    domElement: document.createElement("canvas"),
   })),
   Scene: jest.fn(),
   PerspectiveCamera: jest.fn(),
@@ -279,11 +279,11 @@ jest.mock('three', () => ({
     remove: jest.fn(),
     clear: jest.fn(),
   },
-  REVISION: '1.0.0',
-}))
+  REVISION: "1.0.0",
+}));
 
 // Mock React Three Fiber
-jest.mock('@react-three/fiber', () => ({
+jest.mock("@react-three/fiber", () => ({
   Canvas: ({ children }) => children,
   useFrame: jest.fn(),
   useThree: jest.fn(() => ({
@@ -307,7 +307,7 @@ jest.mock('@react-three/fiber', () => ({
   useProgress: jest.fn(() => ({
     active: false,
     progress: 100,
-    item: '',
+    item: "",
     loaded: 0,
     total: 0,
   })),
@@ -427,7 +427,7 @@ jest.mock('@react-three/fiber', () => ({
     clip: jest.fn(),
     refresh: jest.fn(),
   })),
-}))
+}));
 
 // Mock WebSocket
 global.WebSocket = jest.fn(() => ({
@@ -440,26 +440,26 @@ global.WebSocket = jest.fn(() => ({
   OPEN: 1,
   CLOSING: 2,
   CLOSED: 3,
-}))
+}));
 
 // Mock IntersectionObserver
 global.IntersectionObserver = jest.fn(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}))
+}));
 
 // Mock ResizeObserver
 global.ResizeObserver = jest.fn(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}))
+}));
 
 // Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -469,56 +469,56 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-})
+});
 
 // Mock crypto
-Object.defineProperty(global, 'crypto', {
+Object.defineProperty(global, "crypto", {
   value: {
-    randomUUID: jest.fn(() => 'mock-uuid'),
+    randomUUID: jest.fn(() => "mock-uuid"),
     getRandomValues: jest.fn((arr) => arr),
   },
-})
+});
 
 // Mock fetch
-global.fetch = jest.fn()
+global.fetch = jest.fn();
 
 // Mock console methods to reduce noise in tests
-const originalError = console.error
-const originalWarn = console.warn
+const originalError = console.error;
+const originalWarn = console.warn;
 
 beforeAll(() => {
   console.error = (...args) => {
     if (
-      typeof args[0] === 'string' &&
-      (args[0].includes('Warning: ReactDOM.render') ||
-        args[0].includes('Warning: componentWillReceiveProps') ||
-        args[0].includes('Warning: componentWillMount'))
+      typeof args[0] === "string" &&
+      (args[0].includes("Warning: ReactDOM.render") ||
+        args[0].includes("Warning: componentWillReceiveProps") ||
+        args[0].includes("Warning: componentWillMount"))
     ) {
-      return
+      return;
     }
-    originalError.call(console, ...args)
-  }
+    originalError.call(console, ...args);
+  };
 
   console.warn = (...args) => {
     if (
-      typeof args[0] === 'string' &&
-      (args[0].includes('Warning: ReactDOM.render') ||
-        args[0].includes('Warning: componentWillReceiveProps') ||
-        args[0].includes('Warning: componentWillMount'))
+      typeof args[0] === "string" &&
+      (args[0].includes("Warning: ReactDOM.render") ||
+        args[0].includes("Warning: componentWillReceiveProps") ||
+        args[0].includes("Warning: componentWillMount"))
     ) {
-      return
+      return;
     }
-    originalWarn.call(console, ...args)
-  }
-})
+    originalWarn.call(console, ...args);
+  };
+});
 
 afterAll(() => {
-  console.error = originalError
-  console.warn = originalWarn
-})
+  console.error = originalError;
+  console.warn = originalWarn;
+});
 
 // Clean up after each test
 afterEach(() => {
-  jest.clearAllMocks()
-  jest.clearAllTimers()
-})
+  jest.clearAllMocks();
+  jest.clearAllTimers();
+});

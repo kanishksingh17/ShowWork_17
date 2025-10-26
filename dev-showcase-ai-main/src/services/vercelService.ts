@@ -17,7 +17,7 @@ export interface VercelDeploymentRequest {
     outputDirectory?: string;
     installCommand?: string;
   };
-  target?: 'production' | 'preview';
+  target?: "production" | "preview";
   regions?: string[];
 }
 
@@ -41,7 +41,7 @@ export interface VercelDeploymentResponse {
   createdAt: number;
   buildingAt: number;
   readyAt: number;
-  state: 'BUILDING' | 'READY' | 'ERROR';
+  state: "BUILDING" | "READY" | "ERROR";
   type: string;
   creator: {
     uid: string;
@@ -86,152 +86,175 @@ export interface VercelProject {
 export class VercelClient {
   private config: VercelConfig;
   private baseUrl: string;
-  
+
   constructor(config: VercelConfig) {
     this.config = {
-      baseUrl: 'https://api.vercel.com',
-      ...config
+      baseUrl: "https://api.vercel.com",
+      ...config,
     };
     this.baseUrl = this.config.baseUrl!;
   }
-  
+
   // Create Deployment - POST /v13/deployments
-  async createDeployment(request: VercelDeploymentRequest): Promise<VercelDeploymentResponse> {
+  async createDeployment(
+    request: VercelDeploymentRequest,
+  ): Promise<VercelDeploymentResponse> {
     const url = `${this.baseUrl}/v13/deployments`;
-    
+
     // Prepare form data
     const formData = new FormData();
-    
+
     // Add files
-    request.files.forEach(file => {
-      formData.append('files', new Blob([file.data]), file.file);
+    request.files.forEach((file) => {
+      formData.append("files", new Blob([file.data]), file.file);
     });
-    
+
     // Add project settings
     if (request.projectSettings) {
-      formData.append('projectSettings', JSON.stringify(request.projectSettings));
+      formData.append(
+        "projectSettings",
+        JSON.stringify(request.projectSettings),
+      );
     }
-    
+
     // Add other parameters
-    formData.append('name', request.name);
-    if (request.target) formData.append('target', request.target);
-    if (request.regions) formData.append('regions', JSON.stringify(request.regions));
-    
+    formData.append("name", request.name);
+    if (request.target) formData.append("target", request.target);
+    if (request.regions)
+      formData.append("regions", JSON.stringify(request.regions));
+
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${this.config.token}`,
-        ...(this.config.teamId && { 'x-vercel-team-id': this.config.teamId })
+        Authorization: `Bearer ${this.config.token}`,
+        ...(this.config.teamId && { "x-vercel-team-id": this.config.teamId }),
       },
       body: formData,
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Vercel API error: ${error.error?.message || response.statusText}`);
+      throw new Error(
+        `Vercel API error: ${error.error?.message || response.statusText}`,
+      );
     }
-    
+
     return await response.json();
   }
-  
+
   // Get Deployment Status
-  async getDeploymentStatus(deploymentId: string): Promise<VercelDeploymentResponse> {
+  async getDeploymentStatus(
+    deploymentId: string,
+  ): Promise<VercelDeploymentResponse> {
     const url = `${this.baseUrl}/v13/deployments/${deploymentId}`;
-    
+
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${this.config.token}`,
-        ...(this.config.teamId && { 'x-vercel-team-id': this.config.teamId })
+        Authorization: `Bearer ${this.config.token}`,
+        ...(this.config.teamId && { "x-vercel-team-id": this.config.teamId }),
       },
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Vercel API error: ${error.error?.message || response.statusText}`);
+      throw new Error(
+        `Vercel API error: ${error.error?.message || response.statusText}`,
+      );
     }
-    
+
     return await response.json();
   }
-  
+
   // Configure Custom Domain - PUT /v9/projects/:id/domains
-  async configureDomain(projectId: string, domainRequest: VercelDomainRequest): Promise<VercelDomainResponse> {
+  async configureDomain(
+    projectId: string,
+    domainRequest: VercelDomainRequest,
+  ): Promise<VercelDomainResponse> {
     const url = `${this.baseUrl}/v9/projects/${projectId}/domains`;
-    
+
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${this.config.token}`,
-        'Content-Type': 'application/json',
-        ...(this.config.teamId && { 'x-vercel-team-id': this.config.teamId })
+        Authorization: `Bearer ${this.config.token}`,
+        "Content-Type": "application/json",
+        ...(this.config.teamId && { "x-vercel-team-id": this.config.teamId }),
       },
       body: JSON.stringify(domainRequest),
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Vercel API error: ${error.error?.message || response.statusText}`);
+      throw new Error(
+        `Vercel API error: ${error.error?.message || response.statusText}`,
+      );
     }
-    
+
     return await response.json();
   }
-  
+
   // Get Project
   async getProject(projectId: string): Promise<VercelProject> {
     const url = `${this.baseUrl}/v9/projects/${projectId}`;
-    
+
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${this.config.token}`,
-        ...(this.config.teamId && { 'x-vercel-team-id': this.config.teamId })
+        Authorization: `Bearer ${this.config.token}`,
+        ...(this.config.teamId && { "x-vercel-team-id": this.config.teamId }),
       },
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Vercel API error: ${error.error?.message || response.statusText}`);
+      throw new Error(
+        `Vercel API error: ${error.error?.message || response.statusText}`,
+      );
     }
-    
+
     return await response.json();
   }
-  
+
   // List Projects
   async listProjects(): Promise<VercelProject[]> {
     const url = `${this.baseUrl}/v9/projects`;
-    
+
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${this.config.token}`,
-        ...(this.config.teamId && { 'x-vercel-team-id': this.config.teamId })
+        Authorization: `Bearer ${this.config.token}`,
+        ...(this.config.teamId && { "x-vercel-team-id": this.config.teamId }),
       },
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Vercel API error: ${error.error?.message || response.statusText}`);
+      throw new Error(
+        `Vercel API error: ${error.error?.message || response.statusText}`,
+      );
     }
-    
+
     const data = await response.json();
     return data.projects || [];
   }
-  
+
   // Delete Deployment
   async deleteDeployment(deploymentId: string): Promise<void> {
     const url = `${this.baseUrl}/v13/deployments/${deploymentId}`;
-    
+
     const response = await fetch(url, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Authorization': `Bearer ${this.config.token}`,
-        ...(this.config.teamId && { 'x-vercel-team-id': this.config.teamId })
+        Authorization: `Bearer ${this.config.token}`,
+        ...(this.config.teamId && { "x-vercel-team-id": this.config.teamId }),
       },
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Vercel API error: ${error.error?.message || response.statusText}`);
+      throw new Error(
+        `Vercel API error: ${error.error?.message || response.statusText}`,
+      );
     }
   }
 }
@@ -240,20 +263,26 @@ export class VercelClient {
 export class PortfolioDeploymentManager {
   private vercel: VercelClient;
   private projectName: string;
-  
-  constructor(config: VercelConfig, projectName: string = 'showwork-portfolio') {
+
+  constructor(
+    config: VercelConfig,
+    projectName: string = "showwork-portfolio",
+  ) {
     this.vercel = new VercelClient(config);
     this.projectName = projectName;
   }
-  
+
   // Deploy portfolio to Vercel
-  async deployPortfolio(portfolioId: string, assets: {
-    html: string;
-    css: string;
-    js: string;
-    images: Array<{ name: string; data: Buffer }>;
-    fonts: Array<{ name: string; data: Buffer }>;
-  }): Promise<{
+  async deployPortfolio(
+    portfolioId: string,
+    assets: {
+      html: string;
+      css: string;
+      js: string;
+      images: Array<{ name: string; data: Buffer }>;
+      fonts: Array<{ name: string; data: Buffer }>;
+    },
+  ): Promise<{
     deploymentId: string;
     url: string;
     status: string;
@@ -261,85 +290,91 @@ export class PortfolioDeploymentManager {
     // Prepare files for deployment
     const files = [
       {
-        file: 'index.html',
-        data: assets.html
+        file: "index.html",
+        data: assets.html,
       },
       {
-        file: 'styles.css',
-        data: assets.css
+        file: "styles.css",
+        data: assets.css,
       },
       {
-        file: 'script.js',
-        data: assets.js
+        file: "script.js",
+        data: assets.js,
       },
       // Add images
-      ...assets.images.map(img => ({
+      ...assets.images.map((img) => ({
         file: `images/${img.name}`,
-        data: img.data
+        data: img.data,
       })),
       // Add fonts
-      ...assets.fonts.map(font => ({
+      ...assets.fonts.map((font) => ({
         file: `fonts/${font.name}`,
-        data: font.data
-      }))
+        data: font.data,
+      })),
     ];
-    
+
     // Create deployment
     const deployment = await this.vercel.createDeployment({
       name: `${this.projectName}-${portfolioId}`,
       files,
       projectSettings: {
-        framework: 'static',
+        framework: "static",
         buildCommand: undefined,
-        outputDirectory: '.',
-        installCommand: undefined
+        outputDirectory: ".",
+        installCommand: undefined,
       },
-      target: 'production',
-      regions: ['iad1', 'sfo1', 'lhr1'] // Multiple regions for global performance
+      target: "production",
+      regions: ["iad1", "sfo1", "lhr1"], // Multiple regions for global performance
     });
-    
+
     return {
       deploymentId: deployment.id,
       url: deployment.url,
-      status: deployment.state
+      status: deployment.state,
     };
   }
-  
+
   // Wait for deployment to complete
-  async waitForDeployment(deploymentId: string, timeout: number = 300000): Promise<VercelDeploymentResponse> {
+  async waitForDeployment(
+    deploymentId: string,
+    timeout: number = 300000,
+  ): Promise<VercelDeploymentResponse> {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeout) {
       const deployment = await this.vercel.getDeploymentStatus(deploymentId);
-      
-      if (deployment.state === 'READY') {
+
+      if (deployment.state === "READY") {
         return deployment;
       }
-      
-      if (deployment.state === 'ERROR') {
-        throw new Error('Deployment failed');
+
+      if (deployment.state === "ERROR") {
+        throw new Error("Deployment failed");
       }
-      
+
       // Wait 5 seconds before checking again
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
-    
-    throw new Error('Deployment timeout');
+
+    throw new Error("Deployment timeout");
   }
-  
+
   // Configure custom domain
-  async configureCustomDomain(projectId: string, domain: string): Promise<VercelDomainResponse> {
+  async configureCustomDomain(
+    projectId: string,
+    domain: string,
+  ): Promise<VercelDomainResponse> {
     return await this.vercel.configureDomain(projectId, {
       name: domain,
-      projectId
+      projectId,
     });
   }
-  
+
   // Deploy with custom domain
   async deployWithCustomDomain(
-    portfolioId: string, 
-    assets: any, 
-    customDomain: string
+    portfolioId: string,
+    assets: any,
+    customDomain: string,
   ): Promise<{
     deploymentId: string;
     url: string;
@@ -348,24 +383,26 @@ export class PortfolioDeploymentManager {
   }> {
     // First deploy the portfolio
     const deployment = await this.deployPortfolio(portfolioId, assets);
-    
+
     // Wait for deployment to complete
-    const completedDeployment = await this.waitForDeployment(deployment.deploymentId);
-    
+    const completedDeployment = await this.waitForDeployment(
+      deployment.deploymentId,
+    );
+
     // Configure custom domain
     const domainConfig = await this.configureCustomDomain(
-      completedDeployment.projectId, 
-      customDomain
+      completedDeployment.projectId,
+      customDomain,
     );
-    
+
     return {
       deploymentId: deployment.deploymentId,
       url: deployment.url,
       customUrl: `https://${customDomain}`,
-      status: completedDeployment.state
+      status: completedDeployment.state,
     };
   }
-  
+
   // Get deployment analytics
   async getDeploymentAnalytics(deploymentId: string): Promise<{
     views: number;
@@ -380,25 +417,30 @@ export class PortfolioDeploymentManager {
       uniqueVisitors: Math.floor(Math.random() * 500) + 50,
       bandwidth: Math.floor(Math.random() * 10000) + 1000,
       regions: {
-        'iad1': Math.floor(Math.random() * 300) + 50,
-        'sfo1': Math.floor(Math.random() * 200) + 30,
-        'lhr1': Math.floor(Math.random() * 150) + 20
-      }
+        iad1: Math.floor(Math.random() * 300) + 50,
+        sfo1: Math.floor(Math.random() * 200) + 30,
+        lhr1: Math.floor(Math.random() * 150) + 20,
+      },
     };
   }
-  
+
   // Clean up old deployments
-  async cleanupOldDeployments(projectId: string, keepCount: number = 5): Promise<void> {
+  async cleanupOldDeployments(
+    projectId: string,
+    keepCount: number = 5,
+  ): Promise<void> {
     const deployments = await this.vercel.listProjects();
-    const project = deployments.find(p => p.id === projectId);
-    
+    const project = deployments.find((p) => p.id === projectId);
+
     if (!project) {
-      throw new Error('Project not found');
+      throw new Error("Project not found");
     }
-    
+
     // In a real implementation, you would list deployments for the project
     // and delete old ones, keeping only the most recent ones
-    console.log(`Cleaning up old deployments for project ${projectId}, keeping ${keepCount} most recent`);
+    console.log(
+      `Cleaning up old deployments for project ${projectId}, keeping ${keepCount} most recent`,
+    );
   }
 }
 
@@ -407,7 +449,7 @@ export const deployPortfolioToVercel = async (
   portfolioId: string,
   assets: any,
   config: VercelConfig,
-  customDomain?: string
+  customDomain?: string,
 ): Promise<{
   url: string;
   customUrl?: string;
@@ -415,35 +457,37 @@ export const deployPortfolioToVercel = async (
   status: string;
 }> => {
   const deploymentManager = new PortfolioDeploymentManager(config);
-  
+
   if (customDomain) {
     const result = await deploymentManager.deployWithCustomDomain(
       portfolioId,
       assets,
-      customDomain
+      customDomain,
     );
-    
+
     return {
       url: result.url,
       customUrl: result.customUrl,
       deploymentId: result.deploymentId,
-      status: result.status
+      status: result.status,
     };
   } else {
     const result = await deploymentManager.deployPortfolio(portfolioId, assets);
-    const completedDeployment = await deploymentManager.waitForDeployment(result.deploymentId);
-    
+    const completedDeployment = await deploymentManager.waitForDeployment(
+      result.deploymentId,
+    );
+
     return {
       url: result.url,
       deploymentId: result.deploymentId,
-      status: completedDeployment.state
+      status: completedDeployment.state,
     };
   }
 };
 
 export const getDeploymentStatus = async (
   deploymentId: string,
-  config: VercelConfig
+  config: VercelConfig,
 ): Promise<VercelDeploymentResponse> => {
   const vercel = new VercelClient(config);
   return await vercel.getDeploymentStatus(deploymentId);
@@ -452,11 +496,11 @@ export const getDeploymentStatus = async (
 export const configureDomain = async (
   projectId: string,
   domain: string,
-  config: VercelConfig
+  config: VercelConfig,
 ): Promise<VercelDomainResponse> => {
   const vercel = new VercelClient(config);
   return await vercel.configureDomain(projectId, {
     name: domain,
-    projectId
+    projectId,
   });
 };

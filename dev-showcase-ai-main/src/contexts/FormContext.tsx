@@ -1,5 +1,8 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useFormPersistence, useStepPersistence } from '@/hooks/useLocalStorage';
+import React, { createContext, useContext, ReactNode } from "react";
+import {
+  useFormPersistence,
+  useStepPersistence,
+} from "@/hooks/useLocalStorage";
 
 // Define the form data structure
 export interface ProjectFormData {
@@ -11,10 +14,10 @@ export interface ProjectFormData {
   category: string;
   url: string;
   tags: string[];
-  
+
   // Technology Stack
   technologies: string[];
-  
+
   // Project Media
   media: Array<{
     id: number;
@@ -23,7 +26,7 @@ export interface ProjectFormData {
     size: number;
     url: string;
   }>;
-  
+
   // Metadata
   lastUpdated: string;
   isDraft: boolean;
@@ -38,17 +41,20 @@ interface FormContextType {
   isLoading: boolean;
   resetForm: () => void;
   validateStep: (step: string) => boolean;
-  getStepCompletion: (step: string) => { isComplete: boolean; missingFields: string[] };
+  getStepCompletion: (step: string) => {
+    isComplete: boolean;
+    missingFields: string[];
+  };
 }
 
 // Initial form data
 const initialFormData: ProjectFormData = {
-  name: '',
-  description: '',
-  status: '',
-  visibility: '',
-  category: '',
-  url: '',
+  name: "",
+  description: "",
+  status: "",
+  visibility: "",
+  category: "",
+  url: "",
   tags: [],
   technologies: [],
   media: [],
@@ -65,25 +71,30 @@ interface FormProviderProps {
 }
 
 export function FormProvider({ children }: FormProviderProps) {
-  const [formData, updateFormData, isLoading] = useFormPersistence(initialFormData);
+  const [formData, updateFormData, isLoading] =
+    useFormPersistence(initialFormData);
   const [currentStep, setCurrentStep] = useStepPersistence();
 
   // Reset form data
   const resetForm = () => {
     updateFormData(initialFormData);
-    setCurrentStep('project-info');
+    setCurrentStep("project-info");
   };
 
   // Validate individual steps
   const validateStep = (step: string): boolean => {
     switch (step) {
-      case 'project-info':
-        return !!(formData.name.trim() && formData.description.trim() && formData.tags.length > 0);
-      case 'tech-stack':
+      case "project-info":
+        return !!(
+          formData.name.trim() &&
+          formData.description.trim() &&
+          formData.tags.length > 0
+        );
+      case "tech-stack":
         return formData.technologies.length > 0;
-      case 'project-media':
+      case "project-media":
         return formData.media.length > 0;
-      case 'actions-help':
+      case "actions-help":
         return true; // Always valid
       default:
         return false;
@@ -91,26 +102,29 @@ export function FormProvider({ children }: FormProviderProps) {
   };
 
   // Get step completion details
-  const getStepCompletion = (step: string): { isComplete: boolean; missingFields: string[] } => {
+  const getStepCompletion = (
+    step: string,
+  ): { isComplete: boolean; missingFields: string[] } => {
     const missingFields: string[] = [];
-    
+
     switch (step) {
-      case 'project-info':
-        if (!formData.name.trim()) missingFields.push('Project Name');
-        if (!formData.description.trim()) missingFields.push('Description');
-        if (formData.tags.length === 0) missingFields.push('Tags');
+      case "project-info":
+        if (!formData.name.trim()) missingFields.push("Project Name");
+        if (!formData.description.trim()) missingFields.push("Description");
+        if (formData.tags.length === 0) missingFields.push("Tags");
         break;
-      case 'tech-stack':
-        if (formData.technologies.length === 0) missingFields.push('Technologies');
+      case "tech-stack":
+        if (formData.technologies.length === 0)
+          missingFields.push("Technologies");
         break;
-      case 'project-media':
-        if (formData.media.length === 0) missingFields.push('Media Files');
+      case "project-media":
+        if (formData.media.length === 0) missingFields.push("Media Files");
         break;
     }
-    
+
     return {
       isComplete: missingFields.length === 0,
-      missingFields
+      missingFields,
     };
   };
 
@@ -126,9 +140,7 @@ export function FormProvider({ children }: FormProviderProps) {
   };
 
   return (
-    <FormContext.Provider value={contextValue}>
-      {children}
-    </FormContext.Provider>
+    <FormContext.Provider value={contextValue}>{children}</FormContext.Provider>
   );
 }
 
@@ -136,8 +148,7 @@ export function FormProvider({ children }: FormProviderProps) {
 export function useFormContext(): FormContextType {
   const context = useContext(FormContext);
   if (context === undefined) {
-    throw new Error('useFormContext must be used within a FormProvider');
+    throw new Error("useFormContext must be used within a FormProvider");
   }
   return context;
 }
-

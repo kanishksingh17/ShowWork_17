@@ -1,40 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Github, Mail } from "lucide-react"
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Github, Mail } from "lucide-react";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const router = useRouter()
+    confirmPassword: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
-    }))
-  }
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
     }
 
     try {
@@ -48,7 +48,7 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
         }),
-      })
+      });
 
       if (response.ok) {
         // Auto sign in after successful registration
@@ -56,26 +56,26 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
           redirect: false,
-        })
+        });
 
         if (result?.ok) {
-          router.push("/dashboard")
+          router.push("/dashboard");
         }
       } else {
-        const errorData = await response.json()
-        setError(errorData.error || "Registration failed")
+        const errorData = await response.json();
+        setError(errorData.error || "Registration failed");
       }
     } catch (error) {
-      console.error("Sign up error:", error)
-      setError("An error occurred during registration")
+      console.error("Sign up error:", error);
+      setError("An error occurred during registration");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleOAuthSignIn = (provider: string) => {
-    signIn(provider, { callbackUrl: "/dashboard" })
-  }
+    signIn(provider, { callbackUrl: "/dashboard" });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
@@ -129,11 +129,7 @@ export default function SignUp() {
             {error && (
               <div className="text-red-600 text-sm text-center">{error}</div>
             )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Sign Up"}
             </Button>
           </form>
@@ -177,5 +173,5 @@ export default function SignUp() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

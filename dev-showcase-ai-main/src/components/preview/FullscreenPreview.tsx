@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Maximize2,
   Minimize2,
@@ -23,122 +23,123 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowDown,
-  Home
-} from 'lucide-react'
-import { usePreview } from '../../lib/preview/context'
-import { DeviceSelector } from './DeviceSelector'
-import { ZoomControls } from './ZoomControls'
-import { PanControls } from './PanControls'
+  Home,
+} from "lucide-react";
+import { usePreview } from "../../lib/preview/context";
+import { DeviceSelector } from "./DeviceSelector";
+import { ZoomControls } from "./ZoomControls";
+import { PanControls } from "./PanControls";
 
 interface FullscreenPreviewProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }
 
-export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({ 
-  children, 
-  className = '' 
+export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
+  children,
+  className = "",
 }) => {
-  const { state, actions } = usePreview()
-  const [showControls, setShowControls] = useState(true)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const fullscreenRef = useRef<HTMLDivElement>(null)
+  const { state, actions } = usePreview();
+  const [showControls, setShowControls] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fullscreenRef = useRef<HTMLDivElement>(null);
 
   // Auto-hide controls in fullscreen
   useEffect(() => {
     if (state.isFullscreen) {
       const handleMouseMove = () => {
-        setShowControls(true)
-        
+        setShowControls(true);
+
         if (controlsTimeoutRef.current) {
-          clearTimeout(controlsTimeoutRef.current)
+          clearTimeout(controlsTimeoutRef.current);
         }
-        
+
         controlsTimeoutRef.current = setTimeout(() => {
-          setShowControls(false)
-        }, 3000)
-      }
+          setShowControls(false);
+        }, 3000);
+      };
 
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          actions.exitFullscreen()
-        } else if (e.key === 'F11') {
-          e.preventDefault()
-          actions.toggleFullscreen()
+        if (e.key === "Escape") {
+          actions.exitFullscreen();
+        } else if (e.key === "F11") {
+          e.preventDefault();
+          actions.toggleFullscreen();
         }
-      }
+      };
 
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('keydown', handleKeyDown)
-      
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("keydown", handleKeyDown);
+
       // Initial show controls
-      setShowControls(true)
+      setShowControls(true);
       controlsTimeoutRef.current = setTimeout(() => {
-        setShowControls(false)
-      }, 3000)
+        setShowControls(false);
+      }, 3000);
 
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('keydown', handleKeyDown)
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("keydown", handleKeyDown);
         if (controlsTimeoutRef.current) {
-          clearTimeout(controlsTimeoutRef.current)
+          clearTimeout(controlsTimeoutRef.current);
         }
-      }
+      };
     }
-  }, [state.isFullscreen, actions])
+  }, [state.isFullscreen, actions]);
 
   // Handle fullscreen change
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const isFullscreen = !!document.fullscreenElement
+      const isFullscreen = !!document.fullscreenElement;
       if (isFullscreen !== state.isFullscreen) {
-        actions.toggleFullscreen()
+        actions.toggleFullscreen();
       }
-    }
+    };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [state.isFullscreen, actions])
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [state.isFullscreen, actions]);
 
   const handleEnterFullscreen = useCallback(async () => {
-    setIsTransitioning(true)
+    setIsTransitioning(true);
     try {
-      await actions.enterFullscreen()
+      await actions.enterFullscreen();
     } finally {
-      setIsTransitioning(false)
+      setIsTransitioning(false);
     }
-  }, [actions])
+  }, [actions]);
 
   const handleExitFullscreen = useCallback(async () => {
-    setIsTransitioning(true)
+    setIsTransitioning(true);
     try {
-      await actions.exitFullscreen()
+      await actions.exitFullscreen();
     } finally {
-      setIsTransitioning(false)
+      setIsTransitioning(false);
     }
-  }, [actions])
+  }, [actions]);
 
   const handleToggleFullscreen = useCallback(async () => {
     if (state.isFullscreen) {
-      await handleExitFullscreen()
+      await handleExitFullscreen();
     } else {
-      await handleEnterFullscreen()
+      await handleEnterFullscreen();
     }
-  }, [state.isFullscreen, handleEnterFullscreen, handleExitFullscreen])
+  }, [state.isFullscreen, handleEnterFullscreen, handleExitFullscreen]);
 
   const getDeviceIcon = () => {
     switch (state.deviceViewport.type) {
-      case 'desktop':
-        return <Monitor className="w-4 h-4" />
-      case 'tablet':
-        return <Tablet className="w-4 h-4" />
-      case 'mobile':
-        return <Smartphone className="w-4 h-4" />
+      case "desktop":
+        return <Monitor className="w-4 h-4" />;
+      case "tablet":
+        return <Tablet className="w-4 h-4" />;
+      case "mobile":
+        return <Smartphone className="w-4 h-4" />;
       default:
-        return <Monitor className="w-4 h-4" />
+        return <Monitor className="w-4 h-4" />;
     }
-  }
+  };
 
   return (
     <div className={`relative ${className}`} ref={fullscreenRef}>
@@ -181,12 +182,13 @@ export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
                           {state.deviceViewport.name}
                         </span>
                         <span className="text-xs text-gray-400">
-                          {state.deviceViewport.width}×{state.deviceViewport.height}
+                          {state.deviceViewport.width}×
+                          {state.deviceViewport.height}
                         </span>
                       </div>
-                      
+
                       <div className="h-4 w-px bg-gray-600" />
-                      
+
                       <DeviceSelector />
                     </div>
 
@@ -206,9 +208,9 @@ export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
                       >
                         <RotateCcw className="w-4 h-4" />
                       </button>
-                      
+
                       <div className="h-4 w-px bg-gray-600" />
-                      
+
                       <button
                         onClick={handleExitFullscreen}
                         className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded"
@@ -223,14 +225,29 @@ export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
                   <div className="flex items-center justify-between px-4 py-2 bg-black bg-opacity-60 text-xs text-gray-400">
                     <div className="flex items-center space-x-4">
                       <span>Zoom: {Math.round(state.zoom * 100)}%</span>
-                      <span>Pan: {state.pan.x}, {state.pan.y}</span>
+                      <span>
+                        Pan: {state.pan.x}, {state.pan.y}
+                      </span>
                       <span>FPS: {state.performanceMetrics.fps}</span>
-                      <span>Memory: {Math.round(state.performanceMetrics.memoryUsage / 1024 / 1024)}MB</span>
+                      <span>
+                        Memory:{" "}
+                        {Math.round(
+                          state.performanceMetrics.memoryUsage / 1024 / 1024,
+                        )}
+                        MB
+                      </span>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <span>Last Update: {state.lastUpdate?.toLocaleTimeString() || 'Never'}</span>
-                      <div className={`w-2 h-2 rounded-full ${state.isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span>{state.isConnected ? 'Connected' : 'Disconnected'}</span>
+                      <span>
+                        Last Update:{" "}
+                        {state.lastUpdate?.toLocaleTimeString() || "Never"}
+                      </span>
+                      <div
+                        className={`w-2 h-2 rounded-full ${state.isConnected ? "bg-green-500" : "bg-red-500"}`}
+                      />
+                      <span>
+                        {state.isConnected ? "Connected" : "Disconnected"}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -244,7 +261,7 @@ export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
                 style={{
                   width: state.deviceViewport.width * state.zoom,
                   height: state.deviceViewport.height * state.zoom,
-                  transform: `translate(${state.pan.x}px, ${state.pan.y}px)`
+                  transform: `translate(${state.pan.x}px, ${state.pan.y}px)`,
                 }}
               >
                 {children}
@@ -267,23 +284,31 @@ export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
                         <span>Keyboard Shortcuts</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">Esc</kbd>
+                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">
+                          Esc
+                        </kbd>
                         <span>Exit</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">F11</kbd>
+                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">
+                          F11
+                        </kbd>
                         <span>Toggle</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">Mouse</kbd>
+                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">
+                          Mouse
+                        </kbd>
                         <span>Pan</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">Wheel</kbd>
+                        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">
+                          Wheel
+                        </kbd>
                         <span>Zoom</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2 text-xs text-gray-400">
                       <div className="flex items-center space-x-1">
                         <Eye className="w-3 h-3" />
@@ -330,7 +355,9 @@ export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
                       <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
                         <X className="w-4 h-4 text-red-600" />
                       </div>
-                      <span className="text-gray-900 font-medium">Preview Error</span>
+                      <span className="text-gray-900 font-medium">
+                        Preview Error
+                      </span>
                     </div>
                     <p className="text-gray-600 text-sm mb-4">{state.error}</p>
                     <div className="flex space-x-2">
@@ -356,13 +383,9 @@ export const FullscreenPreview: React.FC<FullscreenPreviewProps> = ({
       </AnimatePresence>
 
       {/* Regular Preview Content */}
-      {!state.isFullscreen && (
-        <div className="relative">
-          {children}
-        </div>
-      )}
+      {!state.isFullscreen && <div className="relative">{children}</div>}
     </div>
-  )
-}
+  );
+};
 
-export default FullscreenPreview
+export default FullscreenPreview;
