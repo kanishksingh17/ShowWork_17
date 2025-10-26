@@ -1,8 +1,17 @@
-# Render Infrastructure as Code
-# Deploy ShowWork to Render with this configuration
+# ===========================================
+# 🚀 Render Infrastructure as Code for ShowWork
+# ===========================================
+# This configuration deploys your entire app stack to Render:
+# - Backend API
+# - Frontend Web App
+# - Background Workers
+# - Managed MongoDB & Redis
+# ===========================================
 
 services:
-  # Backend API Service
+  # ==========================
+  # 🧠 Backend API Service
+  # ==========================
   - type: web
     name: showwork-backend
     env: docker
@@ -20,13 +29,23 @@ services:
         sync: false
       - key: OPENAI_API_KEY
         sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
     autoDeploy: true
 
-  # Frontend Service
+  # ==========================
+  # 🌐 Frontend Web Service
+  # ==========================
   - type: web
     name: showwork-frontend
     env: docker
@@ -36,11 +55,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: VITE_BACKEND_URL
+      - key: NEXT_PUBLIC_API_URL
         value: https://showwork-backend.onrender.com
     autoDeploy: true
 
-  # Publish Worker
+  # ==========================
+  # ⚙️ Publish Worker
+  # ==========================
   - type: worker
     name: showwork-publish-worker
     env: docker
@@ -57,10 +78,6 @@ services:
     command: node src/lib/workers/publish-worker.js
     autoDeploy: true
 
-  # Analytics Worker
-  - type: worker
-    name: showwork-analytics-worker
-    env: docker
-    dockerfilePath: ./Dockerfile.production
-    plan: free
-    region:
+  # ==========================
+  # 📊 Analytics Worker
+  # ==========================
