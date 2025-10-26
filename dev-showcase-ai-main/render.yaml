@@ -1,8 +1,11 @@
-# Render Infrastructure as Code
-# Deploy ShowWork to Render with this configuration
+# =========================================================
+# Render Infrastructure as Code - ShowWork Deployment
+# =========================================================
 
 services:
-  # Backend API Service
+  # =====================================
+  # 🌐 Backend API
+  # =====================================
   - type: web
     name: showwork-backend
     env: docker
@@ -32,35 +35,13 @@ services:
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
-      - key: FRONTEND_URL
-        value: https://showwork-frontend.onrender.com
-      - key: BACKEND_URL
-        value: https://showwork-backend.onrender.com
-      - key: CORS_ORIGIN
-        value: https://showwork-frontend.onrender.com
-    healthCheckPath: /api/health
     autoDeploy: true
 
-  # Frontend Service
-  - type: web
-    name: showwork-frontend
-    env: docker
-    dockerfilePath: ./Dockerfile.frontend.production
-    plan: free
-    region: oregon
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: VITE_API_URL
-        value: https://showwork-backend.onrender.com
-      - key: FRONTEND_URL
-        value: https://showwork-frontend.onrender.com
-    healthCheckPath: /health
-    autoDeploy: true
-
-  # Background Workers
+  # =====================================
+  # 🧠 Publish Worker
+  # =====================================
   - type: worker
-    name: showwork-workers
+    name: showwork-publish-worker
     env: docker
     dockerfilePath: ./Dockerfile.publish.production
     plan: free
@@ -72,18 +53,17 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
-      - key: OPENAI_API_KEY
-        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
-    command: node src/lib/workers/publish-worker.js
     autoDeploy: true
 
-  # Analytics Workers
+  # =====================================
+  # 📊 Analytics Worker
+  # =====================================
   - type: worker
-    name: showwork-analytics-workers
+    name: showwork-analytics-worker
     env: docker
     dockerfilePath: ./Dockerfile.analytics.production
     plan: free
@@ -99,10 +79,27 @@ services:
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
-    command: node src/lib/workers/analytics-worker.js
     autoDeploy: true
 
-# Database (Use Render Managed Database)
+  # =====================================
+  # 🖥️ Frontend (Next.js or React)
+  # =====================================
+  - type: web
+    name: showwork-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://showwork-backend.onrender.com
+    autoDeploy: true
+
+# =====================================
+# ☁️ Databases & Redis
+# =====================================
 databases:
   - name: showwork-database
     plan: free
@@ -110,7 +107,6 @@ databases:
     databaseName: showwork
     user: showwork_user
 
-# Redis (Use Render Redis)
 redis:
   - name: showwork-redis
     plan: free
