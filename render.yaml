@@ -1,39 +1,24 @@
-# render.yaml
-# =========================================================
-# SHOWWORK Render Deployment Configuration (Production)
-# =========================================================
+# Render Infrastructure as Code
+# Deploy ShowWork to Render with this configuration
 
 services:
-  # -------------------------------------------------------
-  # Backend Service
-  # -------------------------------------------------------
+  # Backend API Service
   - type: web
     name: showwork-backend
     env: docker
+    dockerfilePath: ./Dockerfile.production
     plan: free
     region: oregon
-    dockerfilePath: ./Dockerfile.production
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 5001
       - key: DATABASE_URL
-        fromDatabase:
-          name: showwork-database
-          property: connectionString
+        sync: false
       - key: REDIS_URL
-        fromService:
-          name: showwork-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: OPENAI_API_KEY
-        sync: false
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GITHUB_CLIENT_ID
-        sync: false
-      - key: GITHUB_CLIENT_SECRET
         sync: false
       - key: JWT_SECRET
         generateValue: true
@@ -41,30 +26,23 @@ services:
         generateValue: true
     autoDeploy: true
 
-  # -------------------------------------------------------
   # Frontend Service
-  # -------------------------------------------------------
   - type: web
     name: showwork-frontend
     env: docker
+    dockerfilePath: ./Dockerfile.frontend.production
     plan: free
     region: oregon
-    dockerfilePath: ./Dockerfile.frontend.production
     envVars:
       - key: NODE_ENV
         value: production
-      - key: VITE_API_BASE_URL
-        fromService:
-          name: showwork-backend
-          type: web
-          property: url
+      - key: VITE_BACKEND_URL
+        value: https://showwork-backend.onrender.com
     autoDeploy: true
 
-  # -------------------------------------------------------
-  # Publish Workers
-  # -------------------------------------------------------
+  # Publish Worker
   - type: worker
-    name: showwork-publish-workers
+    name: showwork-publish-worker
     env: docker
     dockerfilePath: ./Dockerfile.production
     plan: free
@@ -73,64 +51,16 @@ services:
       - key: NODE_ENV
         value: production
       - key: REDIS_URL
-        fromService:
-          name: showwork-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: DATABASE_URL
-        fromDatabase:
-          name: showwork-database
-          property: connectionString
-      - key: JWT_SECRET
-        generateValue: true
-      - key: SESSION_SECRET
-        generateValue: true
+        sync: false
     command: node src/lib/workers/publish-worker.js
     autoDeploy: true
 
-  # -------------------------------------------------------
-  # Analytics Workers
-  # -------------------------------------------------------
+  # Analytics Worker
   - type: worker
-    name: showwork-analytics-workers
+    name: showwork-analytics-worker
     env: docker
     dockerfilePath: ./Dockerfile.production
     plan: free
-    region: oregon
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: REDIS_URL
-        fromService:
-          name: showwork-redis
-          type: redis
-          property: connectionString
-      - key: DATABASE_URL
-        fromDatabase:
-          name: showwork-database
-          property: connectionString
-      - key: JWT_SECRET
-        generateValue: true
-      - key: SESSION_SECRET
-        generateValue: true
-    command: node src/lib/workers/analytics-worker.js
-    autoDeploy: true
-
-# -------------------------------------------------------
-# Managed Database
-# -------------------------------------------------------
-databases:
-  - name: showwork-database
-    plan: free
-    region: oregon
-    databaseName: showwork
-    user: showwork_user
-
-# -------------------------------------------------------
-# Managed Redis
-# -------------------------------------------------------
-redis:
-  - name: showwork-redis
-    plan: free
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
+    region:
