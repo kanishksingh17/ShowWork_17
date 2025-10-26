@@ -1,0 +1,118 @@
+# Render Infrastructure as Code
+# Deploy ShowWork to Render with this configuration
+
+services:
+  # Backend API Service
+  - type: web
+    name: showwork-backend
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://showwork-frontend.onrender.com
+      - key: BACKEND_URL
+        value: https://showwork-backend.onrender.com
+      - key: CORS_ORIGIN
+        value: https://showwork-frontend.onrender.com
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  # Frontend Service
+  - type: web
+    name: showwork-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://showwork-backend.onrender.com
+      - key: FRONTEND_URL
+        value: https://showwork-frontend.onrender.com
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Background Workers
+  - type: worker
+    name: showwork-workers
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+    command: node src/lib/workers/publish-worker.js
+    autoDeploy: true
+
+  # Analytics Workers
+  - type: worker
+    name: showwork-analytics-workers
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+    command: node src/lib/workers/analytics-worker.js
+    autoDeploy: true
+
+# Database (Use Render Managed Database)
+databases:
+  - name: showwork-database
+    plan: free
+    region: oregon
+    databaseName: showwork
+    user: showwork_user
+
+# Redis (Use Render Redis)
+redis:
+  - name: showwork-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
