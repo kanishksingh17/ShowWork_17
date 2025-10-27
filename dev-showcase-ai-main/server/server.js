@@ -224,6 +224,30 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+// ✅ Define your API routes
+app.use("/api/auth", authRoutes);
+app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+
+// ✅ Default route to check if backend is running
+app.get("/", (req, res) => {
+  res.json({ 
+    success: true, 
+    message: "✅ Backend is running successfully!",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// ✅ Health check route for Render
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Debug routes for testing
 app.get("/api/debug/session", (req, res) => {
   console.log("Session data:", req.session);
@@ -808,6 +832,28 @@ function startServer() {
     console.log("💡 Please investigate and fix this issue when possible");
   });
 }
+
+// ✅ 404 Middleware - must be after all routes
+app.use((req, res, next) => {
+  res.status(404).json({ 
+    success: false, 
+    error: "Route not found",
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ✅ Error Middleware - must be after all routes and 404 handler
+app.use((err, req, res, next) => {
+  console.error("Error caught by middleware:", err);
+  res.status(500).json({ 
+    success: false, 
+    error: "Server Error",
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Start the server
 // Connect to MongoDB first, then start server
