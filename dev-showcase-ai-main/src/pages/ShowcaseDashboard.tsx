@@ -120,7 +120,68 @@ const ShowcaseDashboard = ({
     const loadProjects = () => {
       const storedProjects = localStorage.getItem("showcase-projects");
       if (storedProjects) {
-        setProjects(JSON.parse(storedProjects));
+        const parsedProjects = JSON.parse(storedProjects);
+        setProjects(parsedProjects);
+        console.log("Loaded projects from localStorage:", parsedProjects);
+      } else {
+        // Create sample projects if none exist
+        const sampleProjects: Project[] = [
+          {
+            id: "1",
+            name: "E-commerce Platform",
+            description: "A full-stack e-commerce platform built with React, Node.js, and MongoDB. Features include user authentication, product management, shopping cart, and payment integration.",
+            status: "published",
+            lastUpdated: "2024-01-15",
+            category: "Web Development",
+            views: 1250,
+            submittedAt: "2024-01-10",
+            visibility: "public",
+            tags: ["ecommerce", "react", "nodejs", "mongodb"],
+            technologies: ["React", "Node.js", "MongoDB", "Express", "Stripe"],
+            codeQualityScore: 85,
+            likes: 45,
+            githubUrl: "https://github.com/example/ecommerce-platform",
+            liveUrl: "https://ecommerce-demo.com"
+          },
+          {
+            id: "2",
+            name: "Portfolio Website",
+            description: "A modern, responsive portfolio website showcasing my projects and skills. Built with Next.js and Tailwind CSS.",
+            status: "published",
+            lastUpdated: "2024-01-12",
+            category: "Web Development",
+            views: 890,
+            submittedAt: "2024-01-08",
+            visibility: "public",
+            tags: ["portfolio", "nextjs", "tailwind", "responsive"],
+            technologies: ["Next.js", "Tailwind CSS", "TypeScript", "Framer Motion"],
+            codeQualityScore: 92,
+            likes: 32,
+            githubUrl: "https://github.com/example/portfolio",
+            liveUrl: "https://myportfolio.com"
+          },
+          {
+            id: "3",
+            name: "Task Management App",
+            description: "A collaborative task management application with real-time updates, team collaboration features, and project tracking capabilities.",
+            status: "published",
+            lastUpdated: "2024-01-14",
+            category: "Web Development",
+            views: 2100,
+            submittedAt: "2024-01-05",
+            visibility: "public",
+            tags: ["productivity", "collaboration", "realtime", "team"],
+            technologies: ["Vue.js", "Socket.io", "PostgreSQL", "Redis"],
+            codeQualityScore: 88,
+            likes: 67,
+            githubUrl: "https://github.com/example/task-manager",
+            liveUrl: "https://taskmanager-demo.com"
+          }
+        ];
+        
+        setProjects(sampleProjects);
+        localStorage.setItem("showcase-projects", JSON.stringify(sampleProjects));
+        console.log("Created sample projects:", sampleProjects);
       }
     };
 
@@ -498,6 +559,22 @@ const ShowcaseDashboard = ({
         {/* Search and Filter Bar */}
         {currentPage === "showcase" && (
           <div className="bg-white border-b border-gray-200 px-6 py-4">
+            {/* Debug Info */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="text-sm text-blue-800">
+                <strong>Debug Info:</strong> Total projects: {projects.length} | 
+                Filtered: {filteredAndSortedProjects.length} | 
+                Status filter: {statusFilter} | 
+                Category filter: {categoryFilter} | 
+                Visibility filter: {visibilityFilter}
+                {projects.length > 0 && (
+                  <div className="mt-1">
+                    Project statuses: {projects.map(p => p.status).join(", ")}
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <div className="relative">
@@ -875,12 +952,12 @@ const ShowcaseDashboard = ({
 
               {/* Projects Display */}
               <div className="space-y-6">
-                {/* Saved Projects */}
-                {savedProjects.length > 0 && (
+                {/* All Projects */}
+                {filteredAndSortedProjects.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-gray-900 text-2xl font-bold">
-                        Saved Projects ({savedProjects.length})
+                        My Projects ({filteredAndSortedProjects.length})
                       </h2>
                       <Button
                         variant="outline"
@@ -888,7 +965,7 @@ const ShowcaseDashboard = ({
                         onClick={handleSelectAll}
                         className="text-sm"
                       >
-                        {selectedProjects.length === savedProjects.length
+                        {selectedProjects.length === filteredAndSortedProjects.length
                           ? "Deselect All"
                           : "Select All"}
                       </Button>
@@ -896,7 +973,7 @@ const ShowcaseDashboard = ({
 
                     {viewMode === "grid" ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {savedProjects.map((project) => (
+                        {filteredAndSortedProjects.map((project) => (
                           <Card
                             key={project.id}
                             className="hover:shadow-md transition-shadow"
@@ -1051,7 +1128,7 @@ const ShowcaseDashboard = ({
                             </tr>
                           </thead>
                           <tbody>
-                            {savedProjects.map((project) => (
+                            {filteredAndSortedProjects.map((project) => (
                               <tr
                                 key={project.id}
                                 className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
@@ -1122,12 +1199,12 @@ const ShowcaseDashboard = ({
                   </div>
                 )}
 
-                {/* Submitted Projects */}
-                {submittedProjects.length > 0 && (
+                {/* Published Projects */}
+                {filteredAndSortedProjects.filter(p => p.status === 'published').length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-gray-900 text-2xl font-bold">
-                        Submitted Projects ({submittedProjects.length})
+                        Published Projects ({filteredAndSortedProjects.filter(p => p.status === 'published').length})
                       </h2>
                       <div className="flex items-center gap-2">
                         <Button
@@ -1147,7 +1224,7 @@ const ShowcaseDashboard = ({
 
                     {viewMode === "grid" ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {submittedProjects.map((project) => (
+                        {filteredAndSortedProjects.filter(p => p.status === 'published').map((project) => (
                           <Card
                             key={project.id}
                             className="hover:shadow-md transition-shadow"
@@ -1326,7 +1403,7 @@ const ShowcaseDashboard = ({
                             </tr>
                           </thead>
                           <tbody>
-                            {submittedProjects.map((project) => (
+                            {filteredAndSortedProjects.filter(p => p.status === 'published').map((project) => (
                               <tr
                                 key={project.id}
                                 className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
