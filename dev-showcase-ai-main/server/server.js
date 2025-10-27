@@ -24,7 +24,7 @@ process.env.GOOGLE_CLIENT_ID =
 process.env.GOOGLE_CLIENT_SECRET = "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";
 process.env.GITHUB_CLIENT_ID = "Ov23lieCxcgF7AFq4uVZ";
 process.env.GITHUB_CLIENT_SECRET = "47ea179ee6f940bce9fbff8ccf696ee225074b93";
-process.env.PORT = "5000";
+// PORT will be set by Render or default to 5001
 process.env.SESSION_SECRET = "your-super-secret-session-key-change-this";
 process.env.MONGO_URI = "mongodb://localhost:27017/showwork";
 process.env.JWT_SECRET = "your-jwt-secret-key-change-this";
@@ -809,5 +809,20 @@ function startServer() {
   });
 }
 
-// Note: Server is started inside startServer() above after DB connection.
-// Avoid starting a second listener to prevent EADDRINUSE on port ${PORT}.
+// Start the server
+const PORT = process.env.PORT || 5001;
+
+// Connect to MongoDB first, then start server
+mongoose
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("✅ Connected to MongoDB");
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });
