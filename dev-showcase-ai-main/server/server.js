@@ -69,8 +69,11 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? [process.env.FRONTEND_URL || "https://yourdomain.com"]
-        : ["http://localhost:3000"],
+        ? [
+            process.env.FRONTEND_URL || "https://showwork-frontend.onrender.com",
+            "https://showwork-frontend.onrender.com"
+          ]
+        : ["http://localhost:3000", "http://localhost:3001"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
