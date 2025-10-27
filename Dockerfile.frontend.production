@@ -1,5 +1,5 @@
 # ----------------------------
-# Frontend - ShowWork (Next.js)
+# Frontend - ShowWork (Vite + React)
 # ----------------------------
 
 # Stage 1: Build
@@ -17,17 +17,15 @@ COPY dev-showcase-ai-main/ ./
 RUN npm run build
 
 # Stage 2: Production
-FROM node:18-alpine AS runner
-WORKDIR /app
+FROM nginx:alpine AS runner
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Copy the built files to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy the build output and necessary files
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
