@@ -4,14 +4,14 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from the actual project directory
+COPY dev-showcase-ai-main/package*.json ./
 
 # Install dependencies
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy source code
-COPY . .
+# Copy source code from the actual project directory
+COPY dev-showcase-ai-main/ .
 
 # Build the application
 RUN npm run build
@@ -31,9 +31,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 
-# Copy server files
-COPY --chown=nextjs:nodejs server/ ./server/
-COPY --chown=nextjs:nodejs prisma/ ./prisma/
+# Copy server files from builder stage
+COPY --from=builder --chown=nextjs:nodejs /app/server/ ./server/
+COPY --from=builder --chown=nextjs:nodejs /app/prisma/ ./prisma/
 
 # Install production dependencies only
 RUN npm ci --only=production && npm cache clean --force
