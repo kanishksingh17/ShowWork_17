@@ -1,0 +1,107 @@
+# ALL API KEYS AND ENVIRONMENT VARIABLES USED IN THIS PROJECT
+# =============================================================
+
+## 🔑 CORE API KEYS & CREDENTIALS
+
+### OAuth Authentication
+GOOGLE_CLIENT_ID=your-google-client-id-here
+GOOGLE_CLIENT_SECRET=your-google-client-secret-here
+GITHUB_CLIENT_ID=your-github-client-id-here
+GITHUB_CLIENT_SECRET=your-github-client-secret-here
+
+### AI Services
+OPENAI_API_KEY=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
+VITE_OPENAI_API_KEY=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
+
+### Cloud Services
+AWS_ACCESS_KEY_ID=AKIA32DYVQOPEUM466FG 
+AWS_SECRET_ACCESS_KEY=50JYymSbyLnqbeh/HbMhCknlPs4tju5fV6ROp/Lj
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=showwork-portfolios
+VERCEL_TOKEN=a5xLzfUEEfhRW3a006pg4ArT
+VERCEL_ORG_ID=your-vercel-org-id-here
+VERCEL_PROJECT_ID=your-vercel-project-id-here
+
+## 🗄️ DATABASE & STORAGE
+DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/database
+REDIS_URL=rediss://default:password@host:port
+MONGO_URI=mongodb://admin:password@mongodb:27017/showwork?authSource=admin
+
+## 🔐 SECURITY & AUTHENTICATION
+NEXTAUTH_SECRET=your-secret-key-here
+JWT_SECRET=your-jwt-secret-here
+SESSION_SECRET=your-session-secret-here
+ENCRYPTION_KEY=your-encryption-key-here
+
+## 📊 ANALYTICS & MONITORING
+GOOGLE_ANALYTICS_ID=GA_MEASUREMENT_ID
+MIXPANEL_TOKEN=your-mixpanel-token-here
+SENTRY_DSN=your-sentry-dsn-here
+
+## 📧 EMAIL & NOTIFICATIONS
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-email-password-here
+SLACK_WEBHOOK_URL=your-slack-webhook-url-here
+DISCORD_WEBHOOK=your-discord-webhook-url-here
+
+## 🧪 TESTING & CI/CD
+TEST_DATABASE_URL=postgresql://username:password@localhost:5432/portfolio_builder_test
+CYPRESS_baseUrl=http://localhost:3000
+LHCI_GITHUB_APP_TOKEN=your-lighthouse-ci-token-here
+CODECOV_TOKEN=your-codecov-token-here
+SNYK_TOKEN=your-snyk-token-here
+
+## ⚙️ APPLICATION CONFIGURATION
+NODE_ENV=development
+PORT=5001
+NEXTAUTH_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:5001
+CORS_ORIGIN=http://localhost:3000
+VITE_API_URL=http://localhost:5001
+
+## 🎛️ FEATURE FLAGS & PERFORMANCE
+ENABLE_AI_GENERATION=true
+ENABLE_3D_PREVIEW=true
+ENABLE_ANALYTICS=true
+ENABLE_EXPORT=true
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+MAX_FILE_SIZE=10485760
+ALLOWED_FILE_TYPES=image/jpeg,image/png,image/webp,application/pdf
+
+## 🔧 DEVELOPMENT & DEBUGGING
+DEBUG=portfolio:*
+LOG_LEVEL=info
+WEBSOCKET_URL=ws://localhost:3001
+ENABLE_COMPRESSION=true
+ENABLE_CACHING=true
+CACHE_TTL=3600
+
+## 📝 ADDITIONAL VITE ENVIRONMENT VARIABLES
+VITE_AWS_ACCESS_KEY_ID=AKIA32DYVQOPEUM466FG
+VITE_AWS_SECRET_ACCESS_KEY=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
+VITE_AWS_REGION=us-east-1
+VITE_AWS_BUCKET_NAME=showwork-portfolios
+VITE_VERCEL_TOKEN=a5xLzfUEEfhRW3a006pg4ArT
+VITE_VERCEL_TEAM_ID=your-vercel-team-id-here
+VITE_VERCEL_BASE_URL=https://api.vercel.com
+VITE_DEFAULT_TEMPLATE=dev-neo-001
+VITE_GENERATION_TIMEOUT=300000
+VITE_PERFORMANCE_TARGET=90
+VITE_MAX_BUNDLE_SIZE=500000
+
+## 📱 REACT APP ENVIRONMENT VARIABLES
+REACT_APP_OPENAI_API_KEY=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
+REACT_APP_GITHUB_TOKEN=your-github-token-here
+REACT_APP_LINKEDIN_TOKEN=your-linkedin-token-here
+
+# =============================================================
+# NOTES:
+# - Replace all placeholder values with your actual credentials
+# - Never commit real API keys to version control
+# - Use different keys for development and production
+# - Keep your .env files secure and never share them publicly
+# =============================================================
