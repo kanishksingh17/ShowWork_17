@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import EnhancedProjectCreation from "./pages/EnhancedProjectCreation";
+import ShowcaseDashboard from "./pages/ShowcaseDashboard";
+import ManualProjectForm from "./pages/ManualProjectForm";
 import ContentManagement from "./pages/ContentManagement";
 import Analytics from "./pages/Analytics";
 import Community from "./pages/Community";
@@ -16,11 +18,11 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/content" element={<ContentManagement />} />
-        <Route path="/showcase" element={<EnhancedProjectCreation />} />
+        <Route path="/showcase" element={<ShowcaseDashboard />} />
         <Route path="/showcase/add" element={<EnhancedProjectCreation />} />
         <Route
           path="/showcase/manual-add"
-          element={<EnhancedProjectCreation />}
+          element={<ManualProjectForm />}
         />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/community" element={<Community />} />
