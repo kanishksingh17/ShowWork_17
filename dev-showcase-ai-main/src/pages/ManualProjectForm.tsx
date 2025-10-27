@@ -25,6 +25,8 @@ import {
   EyeOff,
   Plus,
   X,
+  Settings,
+  RefreshCw,
 } from "lucide-react";
 
 interface ProjectData {
