@@ -1,28 +1,36 @@
-# ======================================
-# 🚀 Dockerfile.production for ShowWork Backend
-# ======================================
+# ----------------------------
+# Backend - ShowWork (Node + Express)
+# ----------------------------
 
-FROM node:18-alpine AS builder
+# Stage 1: Build
+FROM node:18-alpine AS build
 WORKDIR /app
 
-# Copy package files from the subdirectory
+# Copy package files and install deps
 COPY dev-showcase-ai-main/package*.json ./
-RUN npm ci
+RUN npm install --production
 
-# Copy all source files
+# Copy the rest of the backend source
 COPY dev-showcase-ai-main/ ./
 
-# Build your app
-RUN npm run build
+# ✅ Optional Debug Step: List important folders
+RUN echo "=== BUILD DEBUG: checking structure ===" && \
+    ls -R prisma server src || true
 
-# ======================================
-# ✅ Production Image
-# ======================================
-FROM node:18-alpine AS production
+# Stage 2: Production
+FROM node:18-alpine
 WORKDIR /app
-
-COPY --from=builder /app ./
 ENV NODE_ENV=production
+ENV PORT=5001
+
+# Copy built app from build stage
+COPY --from=build /app /app
+
+# Expose backend port
 EXPOSE 5001
 
+# Healthcheck for Render (optional)
+HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:5001/api/health || exit 1
+
+# Run the backend
 CMD ["node", "server/server.js"]
