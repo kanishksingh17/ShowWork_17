@@ -1,13 +1,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Dashboard } from "./pages/Dashboard";
-import { EnhancedProjectCreation } from "./pages/EnhancedProjectCreation";
-import { ContentManagement } from "./pages/ContentManagement";
-import { Analytics } from "./pages/Analytics";
-import { Community } from "./pages/Community";
-import { Portfolio } from "./pages/Portfolio";
-import { Integrations } from "./pages/Integrations";
-import { Settings } from "./pages/Settings";
+import Dashboard from "./pages/Dashboard";
+import EnhancedProjectCreation from "./pages/EnhancedProjectCreation";
+import ContentManagement from "./pages/ContentManagement";
+import Analytics from "./pages/Analytics";
+import Community from "./pages/Community";
+import Portfolio from "./pages/Portfolio";
+import Integrations from "./pages/Integrations";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
