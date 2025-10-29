@@ -109,11 +109,14 @@ export default function Login() {
     setSocialLoading(provider);
     console.log(`${provider} OAuth login initiated`);
 
-    // Redirect to backend OAuth endpoints (port 5000)
+    // Get API base URL from environment or use fallback
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+    
+    // Redirect to backend OAuth endpoints
     if (provider === "google") {
-      window.location.href = "http://localhost:5000/api/auth/google";
+      window.location.href = `${apiBaseUrl}/api/auth/google`;
     } else if (provider === "github") {
-      window.location.href = "http://localhost:5000/api/auth/github";
+      window.location.href = `${apiBaseUrl}/api/auth/github`;
     }
   };
 
