@@ -1,9 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { UnifiedSidebar } from "../components/UnifiedSidebar";
-import { Briefcase, Eye, Download, Share2 } from "lucide-react";
+import { Briefcase, Eye, Download, Share2, Sparkles } from "lucide-react";
 
 export default function Portfolio() {
+  const navigate = useNavigate();
+  
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <UnifiedSidebar currentPage="portfolio" />
@@ -21,6 +25,13 @@ export default function Portfolio() {
                 Manage and customize your portfolio
               </p>
             </div>
+            <Button
+              onClick={() => navigate("/portfolio/builder")}
+              className="flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Create New Portfolio
+            </Button>
           </div>
 
           {/* Portfolio Stats */}

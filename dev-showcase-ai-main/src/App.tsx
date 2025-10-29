@@ -6,8 +6,10 @@ import ShowcaseDashboard from "./pages/ShowcaseDashboard";
 import ManualProjectForm from "./app/showcase/ManualProjectForm";
 import ContentManagement from "./pages/ContentManagement";
 import Analytics from "./pages/Analytics";
+import { ComprehensiveAnalyticsDashboard } from "./components/dashboard/ComprehensiveAnalyticsDashboard";
 import Community from "./pages/Community";
 import Portfolio from "./pages/Portfolio";
+import PortfolioBuilder from "./pages/PortfolioBuilder";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 
@@ -25,8 +27,10 @@ function App() {
           element={<ManualProjectForm />}
         />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/analytics/comprehensive" element={<ComprehensiveAnalyticsDashboard portfolioId="default" />} />
         <Route path="/community" element={<Community />} />
         <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/portfolio/builder" element={<PortfolioBuilder />} />
         <Route path="/integrations" element={<Integrations />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,7 @@ interface OverallStats {
 }
 
 export default function Analytics() {
+  const navigate = useNavigate();
   const [analytics, setAnalytics] = useState<ProjectAnalytics[]>([]);
   const [overallStats, setOverallStats] = useState<OverallStats>({
     totalViews: 0,
@@ -177,6 +179,15 @@ export default function Analytics() {
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate("/analytics/comprehensive")}
+                className="flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Comprehensive Analytics
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

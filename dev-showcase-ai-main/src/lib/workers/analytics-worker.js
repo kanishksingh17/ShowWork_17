@@ -1,112 +1,95 @@
-/**
- * Analytics Worker - Handles background analytics processing
- * Processes analytics events from Redis queue
- */
+// A worker that consumes analytics jobs and writes results to MongoDB
+const { Worker } = require('bullmq');
+const { queue } = require('../../config');
+const { connect } = require('../../db/connection');
+const AnalyticsEvent = require('../../models/AnalyticsEvent');
+const AnalyticsAggregate = require('../../models/AnalyticsAggregate');
 
-import { Worker, Queue } from 'bullmq';
-import { connectDB } from '../config/db.js';
-import AnalyticsEvent from '../../models/AnalyticsEvent.js';
+async function processJob(job) {
+  // job.data should include { type: 'pageview'|'engagement', payload: {...} }
+  const { type, payload, userId, portfolioId, projectId, platform = 'site' } = job.data;
 
-// Initialize database connection
-await connectDB();
+  console.log(`📊 Processing analytics job: ${type}`, { userId, portfolioId, projectId });
 
-// Create Redis connection
-const connection = {
-  host: process.env.REDIS_HOST || 'redis',
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-};
+  // Example processing logic — adapt to your spec
+  const result = {
+    userId,
+    portfolioId,
+    projectId,
+    eventType: type,
+    platform,
+    meta: payload,
+    ts: new Date(),
+    processedAt: new Date(),
+    summary: null
+  };
 
-// Create queue for analytics events
-const analyticsQueue = new Queue('analyticsQueue', { connection });
-
-// Create worker to process analytics
-const analyticsWorker = new Worker('analyticsQueue', async (job) => {
-  const { eventType, data, userId, projectId, platform } = job.data;
-  
-  console.log(`📊 Processing analytics event: ${eventType}`);
-  
-  try {
-    // Create analytics event record
-    const analyticsEvent = new AnalyticsEvent({
-      eventType,
-      data,
-      userId,
-      projectId,
-      platform,
-      timestamp: new Date(),
-      processed: true
-    });
-    
-    await analyticsEvent.save();
-    
-    // Update aggregated metrics
-    await updateAggregatedMetrics({
-      userId,
-      projectId,
-      platform,
-      eventType,
-      data
-    });
-    
-    console.log(`✅ Analytics event processed: ${eventType}`);
-    return { success: true, eventId: analyticsEvent._id };
-  } catch (error) {
-    console.error('❌ Analytics worker error:', error);
-    throw error;
+  if (type === 'view' || type === 'pageview') {
+    result.summary = {
+      path: payload.path || '/',
+      count: 1
+    };
+  } else if (type === 'engagement' || type === 'like' || type === 'share') {
+    result.summary = {
+      score: (payload.likes || 0) + (payload.shares || 0) * 2,
+      engagement: payload.engagement || 0
+    };
   }
-}, { connection });
 
-// Function to update aggregated metrics
-async function updateAggregatedMetrics({ userId, projectId, platform, eventType, data }) {
-  try {
-    // Update user-level metrics
-    await User.findByIdAndUpdate(userId, {
-      $inc: {
-        [`analytics.${platform}.${eventType}`]: 1,
-        [`analytics.${platform}.totalEngagement`]: data.engagement || 0
-      }
-    });
-    
-    // Update project-level metrics
-    await Project.findByIdAndUpdate(projectId, {
-      $inc: {
-        [`analytics.${platform}.${eventType}`]: 1,
-        [`analytics.${platform}.totalEngagement`]: data.engagement || 0
-      }
-    });
-    
-    console.log(`📈 Updated metrics for ${platform} - ${eventType}`);
-  } catch (error) {
-    console.error('❌ Failed to update aggregated metrics:', error);
+  // Save to Mongo
+  const analyticsEvent = await AnalyticsEvent.create(result);
+
+  // Update aggregated metrics
+  if (portfolioId) {
+    const today = new Date().toISOString().split('T')[0];
+    await AnalyticsAggregate.findOneAndUpdate(
+      { portfolioId, day: today },
+      { 
+        $inc: { 
+          [`counters.${type}s`]: 1,
+          [`counters.views`]: type === 'view' ? 1 : 0,
+          [`counters.likes`]: type === 'like' ? 1 : 0,
+          [`counters.shares`]: type === 'share' ? 1 : 0,
+          [`counters.clicks`]: type === 'click' ? 1 : 0,
+          [`counters.downloads`]: type === 'download' ? 1 : 0
+        } 
+      },
+      { upsert: true, new: true }
+    );
   }
+
+  return { eventId: analyticsEvent._id, summary: result.summary };
 }
 
-// Worker event handlers
-analyticsWorker.on('completed', (job) => {
-  console.log(`✅ Analytics event processed: ${job.id}`);
-});
+async function start() {
+  await connect();
+  
+  const worker = new Worker('analytics', async (job) => {
+    try {
+      const out = await processJob(job);
+      console.log('✅ Processed analytics job', job.id, out);
+      return out;
+    } catch (err) {
+      console.error('❌ Analytics job failed', job.id, err);
+      throw err;
+    }
+  }, { 
+    connection: queue.connection, 
+    concurrency: 5 
+  });
 
-analyticsWorker.on('failed', (job, err) => {
-  console.error(`❌ Analytics processing failed: ${job.id}`, err.message);
-});
+  worker.on('failed', (job, err) => console.error('❌ Worker failed job', job.id, err));
+  worker.on('completed', (job, res) => console.log('✅ Job completed', job.id));
+  worker.on('error', (err) => console.error('❌ Worker error:', err));
 
-analyticsWorker.on('error', (err) => {
-  console.error('❌ Analytics worker error:', err);
-});
+  console.log('📊 Analytics Worker started and ready to process jobs');
+}
 
-console.log('📊 Analytics Worker active on queue: analyticsQueue');
-console.log('🚀 Worker ready to process analytics events...');
+if (require.main === module) {
+  start().catch(err => {
+    console.error('❌ Failed to start analytics worker:', err);
+    process.exit(1);
+  });
+}
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('📊 Analytics Worker shutting down...');
-  await analyticsWorker.close();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.log('📊 Analytics Worker shutting down...');
-  await analyticsWorker.close();
-  process.exit(0);
-});
+module.exports = { start, processJob };

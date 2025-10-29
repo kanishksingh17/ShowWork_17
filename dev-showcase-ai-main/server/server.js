@@ -18,16 +18,8 @@ import { validateEnvironment, getEnvConfig } from "./config/env.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Set environment variables directly (hardcoded for now to ensure they work)
-process.env.GOOGLE_CLIENT_ID =
-  "1023704543857-3ncqko6crdtn9g1p4q0p9j19jd4alo77.apps.googleusercontent.com";
-process.env.GOOGLE_CLIENT_SECRET = "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";
-process.env.GITHUB_CLIENT_ID = "Ov23lieCxcgF7AFq4uVZ";
-process.env.GITHUB_CLIENT_SECRET = "47ea179ee6f940bce9fbff8ccf696ee225074b93";
-// PORT will be set by Render or default to 5001
-process.env.SESSION_SECRET = "your-super-secret-session-key-change-this";
-process.env.MONGO_URI = "mongodb://localhost:27017/showwork";
-process.env.JWT_SECRET = "your-jwt-secret-key-change-this";
+// Load environment variables from .env files
+dotenv.config();
 
 // Validate environment variables
 if (!validateEnvironment()) {
@@ -48,21 +40,8 @@ const app = express();
 
 // Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/showwork";
-mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("✅ Connected to MongoDB");
-    console.log(
-      `📊 Database: ${MONGO_URI.includes("mongodb+srv") ? "MongoDB Atlas" : "Local MongoDB"}`,
-    );
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
-  });
+
+console.log("🔒 MongoDB Atlas detected - using TLS (MongoDB Driver v6+)");
 
 // Middleware
 app.use(
@@ -743,98 +722,7 @@ app.post("/api/profile/update", async (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-
-// Try to connect to MongoDB, but start server even if it fails
-mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log("✅ MongoDB connected successfully");
-    startServer();
-  })
-  .catch((err) => {
-    console.warn("⚠️ MongoDB connection failed, but starting server anyway...");
-    console.warn("Error:", err.message);
-    console.warn(
-      "You can still test OAuth flows, but database operations will fail",
-    );
-    startServer();
-  });
-
-function startServer() {
-  const server = app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`🔗 Frontend should connect to: http://localhost:3001`);
-    console.log(`📱 Test OAuth: http://localhost:${PORT}/api/auth/google`);
-  });
-
-  // Handle server errors
-  server.on("error", (error) => {
-    if (error.code === "EADDRINUSE") {
-      console.error(`❌ Port ${PORT} is already in use!`);
-      console.error("Please stop any other servers using this port.");
-    } else {
-      console.error("❌ Server error:", error);
-    }
-  });
-
-  // Handle process termination gracefully
-  process.on("SIGTERM", () => {
-    console.log("\n🛑 Received SIGTERM - Server will continue running");
-    console.log("💡 To stop the server, use Ctrl+C or close the terminal");
-  });
-
-  // Keep the process alive and prevent automatic shutdown
-  console.log("🔒 Server process will stay running until manually stopped");
-  console.log("💡 Press Ctrl+C twice to stop the server");
-
-  // Keep-alive mechanism
-  const keepAlive = setInterval(() => {
-    // This keeps the event loop active
-  }, 1000);
-
-  // Clean up keep-alive on actual shutdown
-  const shutdown = () => {
-    clearInterval(keepAlive);
-    server.close(() => {
-      console.log("✅ Server closed");
-      process.exit(0);
-    });
-  };
-
-  // Only shutdown on double Ctrl+C
-  let shutdownAttempts = 0;
-  process.on("SIGINT", () => {
-    shutdownAttempts++;
-    if (shutdownAttempts === 1) {
-      console.log("\n🛑 First Ctrl+C detected - Server will continue running");
-      console.log(
-        "💡 Press Ctrl+C again within 3 seconds to actually stop the server",
-      );
-      setTimeout(() => {
-        shutdownAttempts = 0;
-      }, 3000);
-    } else if (shutdownAttempts === 2) {
-      console.log("\n🛑 Second Ctrl+C detected - Shutting down server...");
-      shutdown();
-    }
-  });
-
-  // Enhanced error handling for uncaught exceptions - keep server running
-  process.on("uncaughtException", (error) => {
-    console.error("🚨 Uncaught Exception:", error);
-    console.error("Stack:", error.stack);
-    console.log("🔄 Server will continue running despite this error");
-    console.log("💡 Please investigate and fix this issue when possible");
-  });
-
-  process.on("unhandledRejection", (reason, promise) => {
-    console.error("🚨 Unhandled Rejection at:", promise);
-    console.error("Reason:", reason);
-    console.log("🔄 Server will continue running despite this error");
-    console.log("💡 Please investigate and fix this issue when possible");
-  });
-}
+const PORT = process.env.PORT || 5001;
 
 // ✅ 404 Middleware - must be after all routes
 app.use((req, res, next) => {
@@ -861,10 +749,9 @@ app.use((err, req, res, next) => {
 // Start the server
 // Connect to MongoDB first, then start server
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGO_URI)
   .then(() => {
     console.log("✅ Connected to MongoDB");
-    const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);

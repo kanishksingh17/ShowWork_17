@@ -1,31 +1,15 @@
-import { MongoClient, Db } from "mongodb";
+import { MongoClient } from "mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
-const MONGODB_DB = process.env.MONGODB_DB || "dev-showcase-ai";
+const uri = process.env.MONGO_URI;
+export const client = new MongoClient(uri, {
+  tls: true,
+  tlsAllowInvalidCertificates: false,
+  serverSelectionTimeoutMS: 5000
+});
 
-let cachedClient: MongoClient | null = null;
-let cachedDb: Db | null = null;
-
-export async function connectToDatabase(): Promise<{
-  client: MongoClient;
-  db: Db;
-}> {
-  if (cachedClient && cachedDb) {
-    return { client: cachedClient, db: cachedDb };
-  }
-
-  try {
-    const client = new MongoClient(MONGODB_URI);
+export async function connectDB() {
+  if (!client.topology || !client.topology.isConnected()) {
     await client.connect();
-
-    const db = client.db(MONGODB_DB);
-
-    cachedClient = client;
-    cachedDb = db;
-
-    return { client, db };
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    throw error;
   }
+  return client.db();
 }

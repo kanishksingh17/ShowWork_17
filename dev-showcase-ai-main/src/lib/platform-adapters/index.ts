@@ -50,3 +50,4 @@ export function getAdapter(platform: string): PlatformAdapter {
 }
 
 
+

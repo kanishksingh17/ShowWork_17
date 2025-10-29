@@ -3,14 +3,14 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   // Basic OAuth fields
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
   password: { type: String, required: false }, // Optional for OAuth users
-  googleId: { type: String, unique: true, sparse: true },
-  githubId: { type: String, unique: true, sparse: true },
+  googleId: { type: String, sparse: true },
+  githubId: { type: String, sparse: true },
   avatar: { type: String }, // Profile picture URL
 
   // Portfolio Profile fields
-  username: { type: String, unique: true, sparse: true }, // For showork.com/username
+  username: { type: String, sparse: true }, // For showork.com/username
   tagline: { type: String, default: "" },
   bio: { type: String, default: "" },
   location: { type: String, default: "" },
@@ -102,10 +102,10 @@ userSchema.pre("save", function (next) {
 });
 
 // Create indexes for better performance
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-userSchema.index({ googleId: 1 });
-userSchema.index({ githubId: 1 });
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ username: 1 }, { unique: true, sparse: true });
+userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
+userSchema.index({ githubId: 1 }, { unique: true, sparse: true });
 userSchema.index({ profileCompleted: 1 });
 userSchema.index({ createdAt: -1 });
 

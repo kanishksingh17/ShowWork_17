@@ -1,91 +1,66 @@
-/**
- * Publish Worker - Handles background publishing to social platforms
- * Processes scheduled posts from Redis queue
- */
+import { Worker, QueueEvents } from "bullmq";
+import IORedis from "ioredis";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
-import { Worker, Queue } from 'bullmq';
-import { connectDB } from '../config/db.js';
-import { generatePost } from './postGenerator.js';
-import { publishToPlatform } from './platformPublisher.js';
+import ScheduledPost from "../../models/ScheduledPost.js";
+import PublishLog from "../../models/PublishLog.js";
+import { publishToPlatform } from "../workers_util/publishPlatform.js";
 
-// Initialize database connection
-await connectDB();
+const connection = new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false });
 
-// Create Redis connection
-const connection = {
-  host: process.env.REDIS_HOST || 'redis',
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-};
+await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 8000 });
+console.log("✅ publish-worker connected to MongoDB");
 
-// Create queue for scheduled posts
-const postQueue = new Queue('postQueue', { connection });
+const w = new Worker("publish-posts", async (job) => {
+  const { scheduledPostId } = job.data;
 
-// Create worker to process posts
-const publishWorker = new Worker('postQueue', async (job) => {
-  const { projectId, platforms, content, scheduledAt, userId } = job.data;
-  
-  console.log(`📣 Processing scheduled post for project ${projectId}`);
-  
-  try {
-    // Generate platform-specific content
-    const generatedContent = await generatePost({
-      projectTitle: job.data.projectTitle,
-      description: job.data.description,
-      platforms: platforms
-    });
-    
-    // Publish to each platform
-    const results = [];
-    for (const platform of platforms) {
-      try {
-        const result = await publishToPlatform({
-          platform,
-          content: generatedContent[platform] || content,
-          userId,
-          projectId
-        });
-        
-        results.push({ platform, success: true, result });
-        console.log(`✅ Published to ${platform}: ${result.postId}`);
-      } catch (error) {
-        console.error(`❌ Failed to publish to ${platform}:`, error.message);
-        results.push({ platform, success: false, error: error.message });
-      }
+  const post = await ScheduledPost.findById(scheduledPostId);
+  if (!post) throw new Error("ScheduledPost not found");
+
+  let partialFailures = false;
+  const results = [];
+
+  for (const platform of post.platforms) {
+    try {
+      const result = await publishToPlatform(platform, post.payload);
+      results.push({ platform, status: "success", ...result });
+      await PublishLog.create({ 
+        jobId: job.id, 
+        scheduledPostId: post._id, 
+        platform, 
+        status: "success", 
+        response: result 
+      });
+    } catch (e) {
+      partialFailures = true;
+      results.push({ platform, status: "failed", error: e.message });
+      await PublishLog.create({ 
+        jobId: job.id, 
+        scheduledPostId: post._id, 
+        platform, 
+        status: "failed", 
+        error: e.message 
+      });
     }
-    
-    return { success: true, results };
-  } catch (error) {
-    console.error('❌ Publish worker error:', error);
-    throw error;
   }
+
+  await ScheduledPost.findByIdAndUpdate(post._id, {
+    status: partialFailures ? "partial" : "published",
+    results
+  });
+
+  return { published: results.length, partialFailures };
 }, { connection });
 
-// Worker event handlers
-publishWorker.on('completed', (job) => {
-  console.log(`✅ Post published successfully: ${job.id}`);
-});
-
-publishWorker.on('failed', (job, err) => {
-  console.error(`❌ Post publishing failed: ${job.id}`, err.message);
-});
-
-publishWorker.on('error', (err) => {
-  console.error('❌ Publish worker error:', err);
-});
-
-console.log('📣 Publish Worker listening on queue: postQueue');
-console.log('🚀 Worker ready to process scheduled posts...');
+new QueueEvents("publish-posts", { connection });
+console.log("🚀 publish-worker running");
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('📣 Publish Worker shutting down...');
-  await publishWorker.close();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.log('📣 Publish Worker shutting down...');
-  await publishWorker.close();
+process.on("SIGTERM", async () => {
+  console.log("Shutting down publish worker...");
+  await worker.close();
+  await connection.quit();
   process.exit(0);
 });
