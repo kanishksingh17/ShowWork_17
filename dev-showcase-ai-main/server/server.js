@@ -244,9 +244,9 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "Test route working", timestamp: new Date().toISOString() });
 });
 
-// ✅ OAuth Routes (Public)
-app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
-app.get("/api/auth/google/callback", 
+// ✅ OAuth Routes (Public) - Using /oauth prefix to avoid Next.js /api/auth conflict
+app.get("/oauth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+app.get("/oauth/google/callback", 
   passport.authenticate("google", { failureRedirect: "/login?error=oauth_failed" }),
   (req, res) => {
     // Successful authentication, redirect to frontend with success flag
@@ -254,8 +254,8 @@ app.get("/api/auth/google/callback",
   }
 );
 
-app.get("/api/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
-app.get("/api/auth/github/callback",
+app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"] }));
+app.get("/oauth/github/callback",
   passport.authenticate("github", { failureRedirect: "/login?error=oauth_failed" }),
   (req, res) => {
     // Successful authentication, redirect to frontend with success flag

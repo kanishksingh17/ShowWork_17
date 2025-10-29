@@ -112,11 +112,11 @@ export default function Login() {
     // Get API base URL from environment or use fallback
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
     
-    // Redirect to backend OAuth endpoints
+    // Redirect to backend OAuth endpoints (Express backend, not Next.js API routes)
     if (provider === "google") {
-      window.location.href = `${apiBaseUrl}/api/auth/google`;
+      window.location.href = `${apiBaseUrl}/oauth/google`;
     } else if (provider === "github") {
-      window.location.href = `${apiBaseUrl}/api/auth/github`;
+      window.location.href = `${apiBaseUrl}/oauth/github`;
     }
   };
 
