@@ -865,7 +865,11 @@ app.use((err, req, res, next) => {
 // Start the server
 // Connect to MongoDB first, then start server
 mongoose
-  .connect(MONGO_URI)
+  .connect(MONGO_URI, {
+    tls: true,
+    tlsAllowInvalidCertificates: false,
+    serverSelectionTimeoutMS: 5000,
+  })
   .then(() => {
     console.log("✅ Connected to MongoDB");
     app.listen(PORT, () => {
