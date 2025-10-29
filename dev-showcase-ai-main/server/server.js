@@ -239,6 +239,40 @@ app.use("/api/auth", authLimiter, authRoutes); // Stricter rate limiting for aut
 app.use("/api/portfolio", authenticateUser, portfolioRoutes); // Protected portfolio routes
 app.use("/api/dashboard", authenticateUser, dashboardRoutes); // Protected dashboard routes
 
+// ✅ Test route
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Test route working", timestamp: new Date().toISOString() });
+});
+
+// ✅ OAuth Routes (Public)
+app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+app.get("/api/auth/google/callback", 
+  passport.authenticate("google", { failureRedirect: "/login?error=oauth_failed" }),
+  (req, res) => {
+    // Successful authentication, redirect to frontend with success flag
+    res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}?oauth_success=true`);
+  }
+);
+
+app.get("/api/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+app.get("/api/auth/github/callback",
+  passport.authenticate("github", { failureRedirect: "/login?error=oauth_failed" }),
+  (req, res) => {
+    // Successful authentication, redirect to frontend with success flag
+    res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}?oauth_success=true`);
+  }
+);
+
+// ✅ Logout route
+app.post("/api/auth/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ success: false, error: "Logout failed" });
+    }
+    res.json({ success: true, message: "Logged out successfully" });
+  });
+});
+
 // ✅ Add missing API routes for ShowWork functionality
 import { publishQueue, analyticsQueue } from "../src/lib/queue/index.js";
 
@@ -834,33 +868,11 @@ app.post("/api/profile/update", async (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 5001;
+
 // Error handling middleware (must be last)
 app.use(notFound);
 app.use(errorHandler);
-
-const PORT = process.env.PORT || 5001;
-
-// ✅ 404 Middleware - must be after all routes
-app.use((req, res, next) => {
-  res.status(404).json({ 
-    success: false, 
-    error: "Route not found",
-    path: req.path,
-    method: req.method,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// ✅ Error Middleware - must be after all routes and 404 handler
-app.use((err, req, res, next) => {
-  console.error("Error caught by middleware:", err);
-  res.status(500).json({ 
-    success: false, 
-    error: "Server Error",
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error',
-    timestamp: new Date().toISOString()
-  });
-});
 
 // Start the server
 // Connect to MongoDB first, then start server
