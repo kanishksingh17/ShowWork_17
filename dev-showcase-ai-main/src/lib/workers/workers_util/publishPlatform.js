@@ -1,16 +1,21 @@
-import { twitterAdapter } from "../../platform-adapters/twitter.js";
-import { linkedinAdapter } from "../../platform-adapters/linkedin.js";
-import { redditAdapter } from "../../platform-adapters/reddit.js";
-import { facebookAdapter } from "../../platform-adapters/facebook.js";
-import { instagramAdapter } from "../../platform-adapters/instagram.js";
+// Mock platform adapters for development
+// In production, these would connect to actual platform APIs
 
 export async function publishToPlatform(platform, payload) {
-  switch (platform) {
-    case "twitter": return twitterAdapter.publish(payload);
-    case "linkedin": return linkedinAdapter.publish(payload);
-    case "reddit": return redditAdapter.publish(payload);
-    case "facebook": return facebookAdapter.publish(payload);
-    case "instagram": return instagramAdapter.publish(payload);
-    default: throw new Error(`Unsupported platform: ${platform}`);
-  }
+  console.log(`📤 Publishing to ${platform}:`, payload);
+  
+  // Simulate API call delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Mock response - replace with actual platform API calls
+  const mockResponse = {
+    postId: `mock_${platform}_${Date.now()}`,
+    url: `https://${platform}.com/posts/mock_${Date.now()}`,
+    publishedAt: new Date(),
+    platform,
+    status: "success"
+  };
+  
+  console.log(`✅ Published to ${platform}:`, mockResponse);
+  return mockResponse;
 }

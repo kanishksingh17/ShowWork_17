@@ -2,9 +2,12 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import session from "express-session";
+import { RedisStore } from "connect-redis";
 import passport from "passport";
 import GoogleStrategy from "passport-google-oauth20";
 import GitHubStrategy from "passport-github2";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -13,6 +16,8 @@ import { dirname, join } from "path";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 import { validateEnvironment, getEnvConfig } from "./config/env.js";
+import { securityConfig, getEnvironmentConfig } from "./config/security.js";
+import { redis } from "../src/lib/queue/index.js";
 
 // ES Module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -43,39 +48,62 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/showwork";
 
 console.log("🔒 MongoDB Atlas detected - using TLS (MongoDB Driver v6+)");
 
+// Get environment configuration
+const envConfig = getEnvironmentConfig();
+
 // Middleware
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? [
-            process.env.FRONTEND_URL || "https://showwork-frontend.onrender.com",
-            "https://showwork-frontend.onrender.com"
-          ]
-        : ["http://localhost:3000", "http://localhost:3001"],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  }),
-);
-app.use(express.json());
+app.use(cors(securityConfig.cors));
+
+// Security middleware
+app.use(helmet(securityConfig.helmet));
+
+// Rate limiting
+const limiter = rateLimit(securityConfig.rateLimit);
+app.use(limiter);
+
+// Stricter rate limiting for auth endpoints
+const authLimiter = rateLimit(securityConfig.authRateLimit);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Session configuration with Redis store
 app.use(
   session({
+    store: new RedisStore({ client: redis }),
     secret: process.env.SESSION_SECRET || "your-secret-key",
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
+    name: "showwork.sid",
     cookie: {
-      secure: false, // Set to true in production with HTTPS
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     },
-  }),
+  })
 );
 
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Authentication middleware
+const authenticateUser = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ 
+    success: false, 
+    error: "Authentication required",
+    message: "Please log in to access this resource"
+  });
+};
+
+// Optional authentication middleware (for routes that work with or without auth)
+const optionalAuth = (req, res, next) => {
+  // Just pass through, let individual routes handle auth requirements
+  next();
+};
 
 // Passport Google OAuth Strategy
 try {
@@ -206,10 +234,98 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// ✅ Define your API routes
-app.use("/api/auth", authRoutes);
-app.use("/api/portfolio", portfolioRoutes);
-app.use("/api/dashboard", dashboardRoutes);
+// ✅ Define your API routes with authentication
+app.use("/api/auth", authLimiter, authRoutes); // Stricter rate limiting for auth
+app.use("/api/portfolio", authenticateUser, portfolioRoutes); // Protected portfolio routes
+app.use("/api/dashboard", authenticateUser, dashboardRoutes); // Protected dashboard routes
+
+// ✅ Add missing API routes for ShowWork functionality
+import { publishQueue, analyticsQueue } from "../src/lib/queue/index.js";
+
+// Calendar/Scheduling API (Protected)
+app.post("/api/calendar/schedule", authenticateUser, async (req, res) => {
+  try {
+    const { platform, content, scheduledTime } = req.body;
+    
+    // Add job to publish queue
+    const job = await publishQueue.add('schedule-post', {
+      platform,
+      content,
+      scheduledTime: new Date(scheduledTime),
+      userId: req.user?._id || 'anonymous'
+    });
+    
+    res.json({ 
+      success: true, 
+      message: "Post scheduled successfully", 
+      jobId: job.id 
+    });
+  } catch (error) {
+    console.error('Schedule post error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to schedule post' 
+    });
+  }
+});
+
+// Analytics API (Protected)
+app.post("/api/analytics", authenticateUser, async (req, res) => {
+  try {
+    const { event, platform, portfolioId, meta } = req.body;
+    
+    // Add job to analytics queue
+    const job = await analyticsQueue.add('analytics', {
+      event: {
+        eventType: event,
+        platform: platform || 'site',
+        portfolioId: portfolioId || 'unknown',
+        meta: meta || {},
+        ts: new Date()
+      }
+    });
+    
+    res.json({ 
+      success: true, 
+      message: "Analytics event queued", 
+      jobId: job.id 
+    });
+  } catch (error) {
+    console.error('Analytics error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to queue analytics event' 
+    });
+  }
+});
+
+// Portfolio Health API (Protected)
+app.get("/api/portfolio/health/:portfolioId", authenticateUser, async (req, res) => {
+  try {
+    const { portfolioId } = req.params;
+    
+    // Mock health score calculation
+    const healthScore = Math.floor(Math.random() * 40) + 60; // 60-100 range
+    
+    res.json({
+      success: true,
+      portfolioId,
+      healthScore,
+      lastUpdated: new Date(),
+      metrics: {
+        socialMedia: Math.floor(Math.random() * 20) + 80,
+        github: Math.floor(Math.random() * 30) + 70,
+        portfolio: Math.floor(Math.random() * 25) + 75
+      }
+    });
+  } catch (error) {
+    console.error('Portfolio health error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get portfolio health' 
+    });
+  }
+});
 
 // ✅ Default route to check if backend is running
 app.get("/", (req, res) => {

@@ -6,7 +6,7 @@ dotenv.config();
 
 import ScheduledPost from "../../models/ScheduledPost.js";
 import PublishLog from "../../models/PublishLog.js";
-import { publishToPlatform } from "../workers_util/publishPlatform.js";
+import { publishToPlatform } from "./workers_util/publishPlatform.js";
 
 const connection = new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false });
 
